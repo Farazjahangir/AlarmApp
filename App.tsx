@@ -10,7 +10,7 @@ import AlarmScreen from './src/Screens/AlarmScreen';
 import {NativeModules} from 'react-native';
 import AlarmManager from './src/Services/AlarmManager';
 import Navigation from './src/Navigation';
-import { navigate } from './src/Services/NavigationService';
+import {navigate} from './src/Services/NavigationService';
 
 const {AlarmSoundModule} = NativeModules;
 
@@ -34,7 +34,7 @@ function App(): React.JSX.Element {
     messaging().onMessage(async remoteMessage => {
       try {
         await AlarmManager.playAlarm();
-        navigate('Alarm Screen')
+        navigate('Alarm Screen');
       } catch (e) {
         console.log('ERR => listenForForegroundMessage', e.message);
       }
@@ -50,22 +50,46 @@ function App(): React.JSX.Element {
     const initialNotification = await notifee.getInitialNotification();
     if (initialNotification) {
       const deepLink = initialNotification.notification?.data?.deep_link;
-      console.log("App opened from a killed state via notification");
+      console.log('App opened from a killed state via notification');
 
       // Check if the notification press opened the app
       if (deepLink) {
-        console.log("deepLink ===>", deepLink)
+        console.log('deepLink ===>', deepLink);
         // Handle deep linking based on the notification action
         Linking.openURL(deepLink);
       }
     }
   };
 
+  const checkForBatteryOptimization = async () => {
+    const isOptimied = await notifee.isBatteryOptimizationEnabled();
+    if (isOptimied) {
+      Alert.alert(
+        'Restrictions Detected',
+        'To ensure notifications are delivered in backgroud, please disable battery optimization for the app.',
+        [
+          // 3. launch intent to navigate the user to the appropriate screen
+          {
+            text: 'OK, open settings',
+            onPress: async () =>
+              await notifee.openBatteryOptimizationSettings(),
+          },
+          {
+            text: 'Cancel',
+            onPress: () => console.log('Cancel Pressed'),
+            style: 'cancel',
+          },
+        ],
+        {cancelable: false},
+      );
+    }
+  };
   useEffect(() => {
     // reqPer()
     fetchToken();
     listenForForegroundMessage();
-    checkInitialNotification()
+    checkInitialNotification();
+    checkForBatteryOptimization();
   }, []);
 
   return (

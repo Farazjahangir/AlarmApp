@@ -15,7 +15,6 @@ notifee.createChannel({
 });
 
 messaging().setBackgroundMessageHandler(async remoteMessage => {
-  console.log('NOTIF RECEIVED ===>', remoteMessage);
   await AlarmManager.playAlarm();
   await notifee.displayNotification(JSON.parse(remoteMessage.data.notifee));
 });
