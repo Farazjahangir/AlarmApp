@@ -11,6 +11,7 @@ import {NativeModules} from 'react-native';
 import AlarmManager from './src/Services/AlarmManager';
 import Navigation from './src/Navigation';
 import {navigate} from './src/Services/NavigationService';
+import { checkNotificationPermission, askNotificationPermission } from './src/Utils';
 
 const {AlarmSoundModule} = NativeModules;
 
@@ -20,15 +21,8 @@ function App(): React.JSX.Element {
   const fetchToken = async () => {
     await messaging().registerDeviceForRemoteMessages();
     const token = await messaging().getToken();
-    // console.log('TOKEN', token);
+    console.log("TOKEN", token)
   };
-
-  // const reqPer = async () => {
-  //   const per = await notifee.requestPermission();
-  //   console.log('PER ===>', per);
-  //   const opt = await notifee.isBatteryOptimizationEnabled();
-  //   console.log('OPt ===>', opt);
-  // };
 
   const listenForForegroundMessage = async () => {
     messaging().onMessage(async remoteMessage => {
@@ -47,6 +41,8 @@ function App(): React.JSX.Element {
   };
 
   const checkInitialNotification = async () => {
+    const abc = await notifee.requestPermission() 
+    console.log("abc", abc)
     const initialNotification = await notifee.getInitialNotification();
     if (initialNotification) {
       const deepLink = initialNotification.notification?.data?.deep_link;
@@ -62,6 +58,7 @@ function App(): React.JSX.Element {
   };
 
   const checkForBatteryOptimization = async () => {
+    await notifee.requestPermission()
     const isOptimied = await notifee.isBatteryOptimizationEnabled();
     if (isOptimied) {
       Alert.alert(
@@ -84,12 +81,13 @@ function App(): React.JSX.Element {
       );
     }
   };
+
   useEffect(() => {
-    // reqPer()
     fetchToken();
     listenForForegroundMessage();
     checkInitialNotification();
     checkForBatteryOptimization();
+    askNotificationPermission()
   }, []);
 
   return (

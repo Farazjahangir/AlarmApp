@@ -8,6 +8,7 @@ import {name as appName} from './app.json';
 import messaging from '@react-native-firebase/messaging';
 import notifee, {EventType} from '@notifee/react-native';
 import AlarmManager from './src/Services/AlarmManager';
+import { checkNotificationPermission } from './src/Utils';
 
 notifee.createChannel({
   id: 'default',
@@ -15,6 +16,8 @@ notifee.createChannel({
 });
 
 messaging().setBackgroundMessageHandler(async remoteMessage => {
+  const denied = await checkNotificationPermission()
+  if (denied) return;
   await AlarmManager.playAlarm();
   await notifee.displayNotification(JSON.parse(remoteMessage.data.notifee));
 });
