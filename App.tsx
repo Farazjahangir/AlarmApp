@@ -1,118 +1,83 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React, {useEffect, useState} from 'react';
+import {Alert, SafeAreaView, Text, Linking} from 'react-native';
+import messaging from '@react-native-firebase/messaging';
+import {PermissionsAndroid} from 'react-native';
+import BackgroundTimer from 'react-native-background-timer';
+import Sound from 'react-native-sound';
+import a from './assets/alarm.mp3';
+import notifee, {EventType} from '@notifee/react-native';
+import AlarmScreen from './src/Screens/AlarmScreen';
+import {NativeModules} from 'react-native';
+import AlarmManager from './src/Services/AlarmManager';
+import Navigation from './src/Navigation';
+import { navigate } from './src/Services/NavigationService';
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
-
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+const {AlarmSoundModule} = NativeModules;
 
 function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+  const [alarmRinging, setAlarmRinging] = useState(false);
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  const fetchToken = async () => {
+    await messaging().registerDeviceForRemoteMessages();
+    const token = await messaging().getToken();
+    // console.log('TOKEN', token);
   };
 
+  // const reqPer = async () => {
+  //   const per = await notifee.requestPermission();
+  //   console.log('PER ===>', per);
+  //   const opt = await notifee.isBatteryOptimizationEnabled();
+  //   console.log('OPt ===>', opt);
+  // };
+
+  const listenForForegroundMessage = async () => {
+    messaging().onMessage(async remoteMessage => {
+      try {
+        await AlarmManager.playAlarm();
+        navigate('Alarm Screen')
+      } catch (e) {
+        console.log('ERR => listenForForegroundMessage', e.message);
+      }
+    });
+  };
+
+  const stopAlarm = async () => {
+    await AlarmManager.stopAlarm();
+    setAlarmRinging(false);
+  };
+
+  const checkInitialNotification = async () => {
+    const initialNotification = await notifee.getInitialNotification();
+    if (initialNotification) {
+      const deepLink = initialNotification.notification?.data?.deep_link;
+      console.log("App opened from a killed state via notification");
+
+      // Check if the notification press opened the app
+      if (deepLink) {
+        console.log("deepLink ===>", deepLink)
+        // Handle deep linking based on the notification action
+        Linking.openURL(deepLink);
+      }
+    }
+  };
+
+  useEffect(() => {
+    // reqPer()
+    fetchToken();
+    listenForForegroundMessage();
+    checkInitialNotification()
+  }, []);
+
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
+    <SafeAreaView style={{flexGrow: 1}}>
+      {/* {alarmRinging ? (
+        <AlarmScreen stopAlarm={stopAlarm} />
+      ) : (
+        <Text>Alarm App</Text>
+      )} */}
+      <Navigation />
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
 
 export default App;
