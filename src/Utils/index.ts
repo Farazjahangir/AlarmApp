@@ -1,5 +1,5 @@
 import notifee, { AuthorizationStatus } from '@notifee/react-native';
-import { Alert, Platform, Linking } from 'react-native';
+import { Alert, Platform, Linking, PermissionsAndroid } from 'react-native';
 
 export const checkNotificationPermission = async () => {
     try {
@@ -26,7 +26,6 @@ export const openAppSettings = () => {
 
 export const askNotificationPermission = async () => {
     try {
-
         const settings = await notifee.getNotificationSettings();
     
         if (settings.authorizationStatus === AuthorizationStatus.DENIED) {
@@ -38,8 +37,6 @@ export const askNotificationPermission = async () => {
                     [{ text: 'Open Settings', onPress: () => openAppSettings() }]
                 )
             )
-        } else if (settings.authorizationStatus === AuthorizationStatus.AUTHORIZED) {
-            console.log('Notification permission already granted.');
         } else {
             // Request permission if it was not determined or provisional
             const permission = await notifee.requestPermission();

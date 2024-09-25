@@ -6,20 +6,46 @@ import {AppRegistry, Linking} from 'react-native';
 import App from './App';
 import {name as appName} from './app.json';
 import messaging from '@react-native-firebase/messaging';
-import notifee, {EventType} from '@notifee/react-native';
+import notifee, {
+  EventType,
+  AndroidImportance,
+  AndroidVisibility,
+} from '@notifee/react-native';
 import AlarmManager from './src/Services/AlarmManager';
-import { checkNotificationPermission } from './src/Utils';
+import {checkNotificationPermission} from './src/Utils';
+import AlarmScreen from './src/Screens/AlarmScreen';
 
-notifee.createChannel({
-  id: 'default',
-  name: 'Default Channel',
-});
+let channelId;
+
+// Create the notification channel
+const createChannel = async () => {
+  channelId = channelId = await notifee.createChannel({
+    id: 'alarmNotif',
+    name: 'Alarm Notification',
+    importance: AndroidImportance.HIGH,
+    visibility: AndroidVisibility.PUBLIC,
+  });
+};
+
+// Immediately create the notification channel when the app starts
+createChannel();
 
 messaging().setBackgroundMessageHandler(async remoteMessage => {
-  const denied = await checkNotificationPermission()
+  const denied = await checkNotificationPermission();
   if (denied) return;
   await AlarmManager.playAlarm();
-  await notifee.displayNotification(JSON.parse(remoteMessage.data.notifee));
+  const notifeeObj = JSON.parse(remoteMessage.data.notifee)
+  await notifee.displayNotification({
+    ...notifeeObj,
+    android: {
+      ...notifeeObj.android,
+      channelId: 'alarmNotif',
+      lightUpScreen: true,
+      pressAction: {
+        id: 'default',
+      },
+    },
+  });
 });
 
 notifee.onBackgroundEvent(async ({type, detail}) => {
@@ -37,3 +63,4 @@ notifee.onBackgroundEvent(async ({type, detail}) => {
 });
 
 AppRegistry.registerComponent(appName, () => App);
+AppRegistry.registerComponent('AlarmScreen', () => AlarmScreen);

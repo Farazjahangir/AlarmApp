@@ -11,7 +11,11 @@ import {NativeModules} from 'react-native';
 import AlarmManager from './src/Services/AlarmManager';
 import Navigation from './src/Navigation';
 import {navigate} from './src/Services/NavigationService';
-import { checkNotificationPermission, askNotificationPermission } from './src/Utils';
+import {
+  checkNotificationPermission,
+  askNotificationPermission,
+} from './src/Utils';
+import {check, PERMISSIONS, RESULTS} from 'react-native-permissions';
 
 const {AlarmSoundModule} = NativeModules;
 
@@ -21,7 +25,7 @@ function App(): React.JSX.Element {
   const fetchToken = async () => {
     await messaging().registerDeviceForRemoteMessages();
     const token = await messaging().getToken();
-    console.log("TOKEN", token)
+    console.log('TOKEN', token);
   };
 
   const listenForForegroundMessage = async () => {
@@ -41,24 +45,27 @@ function App(): React.JSX.Element {
   };
 
   const checkInitialNotification = async () => {
-    const abc = await notifee.requestPermission() 
-    console.log("abc", abc)
-    const initialNotification = await notifee.getInitialNotification();
-    if (initialNotification) {
-      const deepLink = initialNotification.notification?.data?.deep_link;
-      console.log('App opened from a killed state via notification');
+    // const initialNotification = await notifee.getInitialNotification();
+    // if (initialNotification) {
+    //   const deepLink = initialNotification.notification?.data?.deep_link;
+    //   console.log('App opened from a killed state via notification');
 
-      // Check if the notification press opened the app
-      if (deepLink) {
-        console.log('deepLink ===>', deepLink);
-        // Handle deep linking based on the notification action
-        Linking.openURL(deepLink);
-      }
+    //   // Check if the notification press opened the app
+    //   if (deepLink) {
+    //     // Handle deep linking based on the notification action
+    //     Linking.openURL(deepLink);
+    //   }
+    // }
+
+    if (AlarmManager.isRinging) {
+      setTimeout(() => {
+        navigate("Alarm Screen")
+      }, 500)
     }
   };
 
   const checkForBatteryOptimization = async () => {
-    await notifee.requestPermission()
+    await notifee.requestPermission();
     const isOptimied = await notifee.isBatteryOptimizationEnabled();
     if (isOptimied) {
       Alert.alert(
@@ -83,11 +90,12 @@ function App(): React.JSX.Element {
   };
 
   useEffect(() => {
+    console.log('AlarmManager', AlarmManager);
     fetchToken();
     listenForForegroundMessage();
-    checkInitialNotification();
     checkForBatteryOptimization();
-    askNotificationPermission()
+    askNotificationPermission();
+    checkInitialNotification();
   }, []);
 
   return (
