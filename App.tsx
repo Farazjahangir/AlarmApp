@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Alert, SafeAreaView, Text, Linking} from 'react-native';
+import {Alert, SafeAreaView, Text, Linking, AppState} from 'react-native';
 import messaging from '@react-native-firebase/messaging';
 import {PermissionsAndroid} from 'react-native';
 import BackgroundTimer from 'react-native-background-timer';
@@ -14,6 +14,8 @@ import {navigate} from './src/Services/NavigationService';
 import {
   checkNotificationPermission,
   askNotificationPermission,
+  askContactsPermission,
+  checkForBatteryOptimization,
 } from './src/Utils';
 import {check, PERMISSIONS, RESULTS} from 'react-native-permissions';
 
@@ -25,7 +27,7 @@ function App(): React.JSX.Element {
   const fetchToken = async () => {
     await messaging().registerDeviceForRemoteMessages();
     const token = await messaging().getToken();
-    console.log('TOKEN', token);
+    // console.log('TOKEN', token);
   };
 
   const listenForForegroundMessage = async () => {
@@ -45,56 +47,27 @@ function App(): React.JSX.Element {
   };
 
   const checkInitialNotification = async () => {
-    // const initialNotification = await notifee.getInitialNotification();
-    // if (initialNotification) {
-    //   const deepLink = initialNotification.notification?.data?.deep_link;
-    //   console.log('App opened from a killed state via notification');
-
-    //   // Check if the notification press opened the app
-    //   if (deepLink) {
-    //     // Handle deep linking based on the notification action
-    //     Linking.openURL(deepLink);
-    //   }
-    // }
-
     if (AlarmManager.isRinging) {
       setTimeout(() => {
-        navigate("Alarm Screen")
-      }, 500)
+        navigate('Alarm Screen');
+      }, 500);
     }
   };
 
-  const checkForBatteryOptimization = async () => {
-    await notifee.requestPermission();
-    const isOptimied = await notifee.isBatteryOptimizationEnabled();
-    if (isOptimied) {
-      Alert.alert(
-        'Restrictions Detected',
-        'To ensure notifications are delivered in backgroud, please disable battery optimization for the app.',
-        [
-          // 3. launch intent to navigate the user to the appropriate screen
-          {
-            text: 'OK, open settings',
-            onPress: async () =>
-              await notifee.openBatteryOptimizationSettings(),
-          },
-          {
-            text: 'Cancel',
-            onPress: () => console.log('Cancel Pressed'),
-            style: 'cancel',
-          },
-        ],
-        {cancelable: false},
-      );
+  const takePermissions = async () => {
+    const notificationRes = await askNotificationPermission();
+    let contactRes;
+    if (notificationRes !== 'settings_opened') {
+      contactRes = await askContactsPermission();
     }
+
+    await checkForBatteryOptimization();
   };
 
   useEffect(() => {
-    console.log('AlarmManager', AlarmManager);
+    takePermissions();
     fetchToken();
     listenForForegroundMessage();
-    checkForBatteryOptimization();
-    askNotificationPermission();
     checkInitialNotification();
   }, []);
 
