@@ -1,5 +1,6 @@
 import {View, Text, TextInput, TouchableOpacity} from 'react-native';
 import {useState} from 'react';
+import {useNavigation} from '@react-navigation/native';
 
 const Signup = () => {
   const [userCreds, setUserCreds] = useState({
@@ -7,11 +8,13 @@ const Signup = () => {
     password: '',
   });
 
-    const handleTextChange = (text, key) => {
-      data = {...userCreds}
-      data[key] = text
-      setUserCreds(data)
-    };
+  const navigation = useNavigation();
+
+  const handleTextChange = (text, key) => {
+    data = {...userCreds};
+    data[key] = text;
+    setUserCreds(data);
+  };
 
   return (
     <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
@@ -57,11 +60,14 @@ const Signup = () => {
               marginTop: 10,
               padding: 4,
               borderRadius: 5,
-            }}>
+            }}
+            disabled={!userCreds.email || !userCreds.password}>
             <Text style={{color: '#ffffff', textAlign: 'center'}}>Sign Up</Text>
           </TouchableOpacity>
-          <TouchableOpacity>
-            <Text style={{ color: '#1e90ff', fontSize: 16, marginTop: 10 }}>SignIn</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+            <Text style={{color: '#1e90ff', fontSize: 16, marginTop: 10}}>
+              SignIn
+            </Text>
           </TouchableOpacity>
         </View>
       </View>

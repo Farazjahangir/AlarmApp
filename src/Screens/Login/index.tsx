@@ -1,11 +1,16 @@
 import {View, Text, TextInput, TouchableOpacity} from 'react-native';
 import {useState} from 'react';
+import { useNavigation } from '@react-navigation/native';
+import { useSelector, UseSelector } from 'react-redux';
 
 const Login = () => {
   const [userCreds, setUserCreds] = useState({
     email: '',
     password: '',
   });
+
+  const navigation = useNavigation()
+  console.log("USER", useSelector(state => state.user))
 
     const handleTextChange = (text, key) => {
       data = {...userCreds}
@@ -60,7 +65,7 @@ const Login = () => {
             }}>
             <Text style={{color: '#ffffff', textAlign: 'center'}}>Sign In</Text>
           </TouchableOpacity>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Sign Up')}>
             <Text style={{ color: '#1e90ff', fontSize: 16, marginTop: 10 }}>SignUp</Text>
           </TouchableOpacity>
         </View>

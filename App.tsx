@@ -18,6 +18,9 @@ import {
   checkForBatteryOptimization,
 } from './src/Utils';
 import {check, PERMISSIONS, RESULTS} from 'react-native-permissions';
+import {store, persistor} from './src/Redux/store';
+import {Provider} from 'react-redux';
+import {PersistGate} from 'redux-persist/integration/react';
 
 const {AlarmSoundModule} = NativeModules;
 
@@ -78,7 +81,11 @@ function App(): React.JSX.Element {
       ) : (
         <Text>Alarm App</Text>
       )} */}
-      <Navigation />
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <Navigation />
+        </PersistGate>
+      </Provider>
     </SafeAreaView>
   );
 }
