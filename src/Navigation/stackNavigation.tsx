@@ -4,8 +4,17 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Home from '../Screens/Home';
 import AlarmScreen from '../Screens/AlarmScreen';
 import Contacts from '../Screens/Contacts';
+import Login from '../Screens/Login';
 
 const Stack = createNativeStackNavigator();
+
+const AuthStack = () => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="Login" component={Login} />
+    </Stack.Navigator>
+  );
+};
 
 const AppStack = () => {
   return (
@@ -18,7 +27,7 @@ const AppStack = () => {
 };
 
 const StackNavigation = () => {
-  return <AppStack />;
+  return <AuthStack />;
 };
 
 export default StackNavigation
