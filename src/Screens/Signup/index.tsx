@@ -10,7 +10,8 @@ const Signup = () => {
   const [user, setUser] = useState({
     email: '',
     password: '',
-    name: ''
+    name: '',
+    number: null
   });
 
   const navigation = useNavigation();
@@ -29,6 +30,7 @@ const Signup = () => {
         name: user.name,
         email: user.email,
         deviceToken: token,
+        number: user.number
       })
       Alert.alert("User Created")
     } catch(e) {
@@ -55,6 +57,22 @@ const Signup = () => {
           placeholder={'Enter Name'}
           onChangeText={text => handleTextChange(text, 'name')}
           value={user.name}
+        />
+        <TextInput
+          style={{
+            borderWidth: 1,
+            borderColor: 'grey',
+            borderRadius: 10,
+            width: '100%',
+            marginTop: 20,
+            height: 45,
+            color: 'black',
+          }}
+          inputMode='numeric'
+          placeholderTextColor="black"
+          placeholder={'Contact Number'}
+          onChangeText={text => handleTextChange(text, 'number')}
+          value={user.number}
         />
         <TextInput
           style={{
@@ -95,7 +113,7 @@ const Signup = () => {
               padding: 4,
               borderRadius: 5,
             }}
-            disabled={!user.email || !user.password || !user.name}
+            disabled={!user.email || !user.password || !user.name || !user.number}
             onPress={handleSignup}>
             <Text style={{color: '#ffffff', textAlign: 'center'}}>Sign Up</Text>
           </TouchableOpacity>
