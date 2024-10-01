@@ -2,7 +2,7 @@
  * @format
  */
 
-import {AppRegistry, Linking} from 'react-native';
+import {AppRegistry, Linking, LogBox} from 'react-native';
 import App from './App';
 import {name as appName} from './app.json';
 import messaging from '@react-native-firebase/messaging';
@@ -62,5 +62,6 @@ notifee.onBackgroundEvent(async ({type, detail}) => {
   }
 });
 
+LogBox.ignoreAllLogs(true);
 AppRegistry.registerComponent(appName, () => App);
 AppRegistry.registerComponent('AlarmScreen', () => AlarmScreen);

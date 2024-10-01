@@ -1,21 +1,41 @@
 import {View, Text, TextInput, TouchableOpacity} from 'react-native';
 import {useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+
+import { fetchDeviceToken } from '../../Utils';
 
 const Signup = () => {
-  const [userCreds, setUserCreds] = useState({
+  const [user, setUser] = useState({
     email: '',
     password: '',
+    name: ''
   });
 
   const navigation = useNavigation();
 
   const handleTextChange = (text, key) => {
-    data = {...userCreds};
+    data = {...user};
     data[key] = text;
-    setUserCreds(data);
+    setUser(data);
   };
 
+  const handleSignup = async () => {
+    try {
+      const authUser = await auth().createUserWithEmailAndPassword(user.email, user.password)
+      const token = await fetchDeviceToken()
+      await firestore().collection('users').doc(authUser.user.uid).set({
+        name: user.name,
+        email: user.email,
+        deviceToken: token,
+        createdAt: firestore.FieldValue.serverTimestamp()
+      })
+      console.log("DONE")
+    } catch(e) {
+      console.log("handleSignup ==>", e.message)
+    }
+  }
   return (
     <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
       <View style={{width: 300}}>
@@ -33,9 +53,24 @@ const Signup = () => {
             color: 'black',
           }}
           placeholderTextColor="black"
+          placeholder={'Enter Name'}
+          onChangeText={text => handleTextChange(text, 'name')}
+          value={user.name}
+        />
+        <TextInput
+          style={{
+            borderWidth: 1,
+            borderColor: 'grey',
+            borderRadius: 10,
+            width: '100%',
+            marginTop: 20,
+            height: 45,
+            color: 'black',
+          }}
+          placeholderTextColor="black"
           placeholder={'Enter Email'}
           onChangeText={text => handleTextChange(text, 'email')}
-          value={userCreds.email}
+          value={user.email}
         />
         <TextInput
           style={{
@@ -50,7 +85,7 @@ const Signup = () => {
           placeholderTextColor="black"
           placeholder={'Enter Password'}
           onChangeText={text => handleTextChange(text, 'password')}
-          value={userCreds.password}
+          value={user.password}
         />
         <View style={{width: '100%', alignItems: 'flex-end'}}>
           <TouchableOpacity
@@ -61,7 +96,8 @@ const Signup = () => {
               padding: 4,
               borderRadius: 5,
             }}
-            disabled={!userCreds.email || !userCreds.password}>
+            disabled={!user.email || !user.password}
+            onPress={handleSignup}>
             <Text style={{color: '#ffffff', textAlign: 'center'}}>Sign Up</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.navigate('Login')}>

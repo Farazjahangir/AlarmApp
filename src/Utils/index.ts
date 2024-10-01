@@ -1,6 +1,7 @@
 import notifee, { AuthorizationStatus } from '@notifee/react-native';
 import { Alert, Platform, Linking, PermissionsAndroid } from 'react-native';
 import { request, PERMISSIONS, check, RESULTS } from 'react-native-permissions';
+import messaging from '@react-native-firebase/messaging';
 
 export const checkNotificationPermission = async () => {
     try {
@@ -106,5 +107,15 @@ export const checkForBatteryOptimization = async () => {
             ],
             { cancelable: false },
         );
+    }
+};
+
+export const fetchDeviceToken = async () => {
+    try {
+        await messaging().registerDeviceForRemoteMessages();
+        const token = await messaging().getToken();
+        return token
+    } catch (e) {
+        console.log("ERR fetching token", e.message)
     }
 };

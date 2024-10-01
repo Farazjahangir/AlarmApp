@@ -27,11 +27,6 @@ const {AlarmSoundModule} = NativeModules;
 function App(): React.JSX.Element {
   const [alarmRinging, setAlarmRinging] = useState(false);
 
-  const fetchToken = async () => {
-    await messaging().registerDeviceForRemoteMessages();
-    const token = await messaging().getToken();
-    console.log('TOKEN', token);
-  };
 
   const listenForForegroundMessage = async () => {
     messaging().onMessage(async remoteMessage => {
@@ -69,7 +64,6 @@ function App(): React.JSX.Element {
 
   useEffect(() => {
     takePermissions();
-    fetchToken();
     listenForForegroundMessage();
     checkInitialNotification();
   }, []);
