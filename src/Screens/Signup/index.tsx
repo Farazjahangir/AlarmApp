@@ -1,4 +1,4 @@
-import {View, Text, TextInput, TouchableOpacity} from 'react-native';
+import {View, Text, TextInput, TouchableOpacity, Alert} from 'react-native';
 import {useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
@@ -29,9 +29,8 @@ const Signup = () => {
         name: user.name,
         email: user.email,
         deviceToken: token,
-        createdAt: firestore.FieldValue.serverTimestamp()
       })
-      console.log("DONE")
+      Alert.alert("User Created")
     } catch(e) {
       console.log("handleSignup ==>", e.message)
     }
@@ -96,7 +95,7 @@ const Signup = () => {
               padding: 4,
               borderRadius: 5,
             }}
-            disabled={!user.email || !user.password}
+            disabled={!user.email || !user.password || !user.name}
             onPress={handleSignup}>
             <Text style={{color: '#ffffff', textAlign: 'center'}}>Sign Up</Text>
           </TouchableOpacity>

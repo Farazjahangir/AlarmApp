@@ -1,7 +1,11 @@
 import {View, Text, TextInput, TouchableOpacity} from 'react-native';
 import {useState} from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { useSelector, UseSelector } from 'react-redux';
+import {useNavigation} from '@react-navigation/native';
+import {useSelector, useDispatch} from 'react-redux';
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+
+import { setUser } from '../../Redux/user/userSlice';
 
 const Login = () => {
   const [userCreds, setUserCreds] = useState({
@@ -9,14 +13,25 @@ const Login = () => {
     password: '',
   });
 
-  const navigation = useNavigation()
-  console.log("USER", useSelector(state => state.user))
+  const navigation = useNavigation();
+  const dispatch = useDispatch()
 
-    const handleTextChange = (text, key) => {
-      data = {...userCreds}
-      data[key] = text
-      setUserCreds(data)
-    };
+
+  const handleTextChange = (text, key) => {
+    data = {...userCreds};
+    data[key] = text;
+    setUserCreds(data);
+  };
+
+  const handleSignin = async () => {
+    try {
+      const authUser = await auth().signInWithEmailAndPassword(userCreds.email, userCreds.password)
+      const userData = await firestore().collection('users').doc(authUser.user.uid).get()
+      dispatch(setUser(userData._data))
+    } catch(e) {
+      console.log("handleSignin ==>", e.message)
+    }
+  };
 
   return (
     <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
@@ -62,11 +77,15 @@ const Login = () => {
               marginTop: 10,
               padding: 4,
               borderRadius: 5,
-            }}>
+            }}
+            onPress={handleSignin}
+            disabled={!userCreds.email || !userCreds.password}>
             <Text style={{color: '#ffffff', textAlign: 'center'}}>Sign In</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.navigate('Sign Up')}>
-            <Text style={{ color: '#1e90ff', fontSize: 16, marginTop: 10 }}>SignUp</Text>
+            <Text style={{color: '#1e90ff', fontSize: 16, marginTop: 10}}>
+              SignUp
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
