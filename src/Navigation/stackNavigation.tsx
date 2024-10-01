@@ -5,12 +5,14 @@ import Home from '../Screens/Home';
 import AlarmScreen from '../Screens/AlarmScreen';
 import Contacts from '../Screens/Contacts';
 import Login from '../Screens/Login';
+import Signup from '../Screens/Signup';
 
 const Stack = createNativeStackNavigator();
 
 const AuthStack = () => {
   return (
     <Stack.Navigator>
+      <Stack.Screen name="Sign Up" component={Signup} />
       <Stack.Screen name="Login" component={Login} />
     </Stack.Navigator>
   );

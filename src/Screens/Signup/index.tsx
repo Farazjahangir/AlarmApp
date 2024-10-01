@@ -1,7 +1,7 @@
 import {View, Text, TextInput, TouchableOpacity} from 'react-native';
 import {useState} from 'react';
 
-const Login = () => {
+const Signup = () => {
   const [userCreds, setUserCreds] = useState({
     email: '',
     password: '',
@@ -17,7 +17,7 @@ const Login = () => {
     <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
       <View style={{width: 300}}>
         <Text style={{color: 'black', fontSize: 30, textAlign: 'center'}}>
-          Sign In
+          Sign Up
         </Text>
         <TextInput
           style={{
@@ -58,10 +58,10 @@ const Login = () => {
               padding: 4,
               borderRadius: 5,
             }}>
-            <Text style={{color: '#ffffff', textAlign: 'center'}}>Sign In</Text>
+            <Text style={{color: '#ffffff', textAlign: 'center'}}>Sign Up</Text>
           </TouchableOpacity>
           <TouchableOpacity>
-            <Text style={{ color: '#1e90ff', fontSize: 16, marginTop: 10 }}>SignUp</Text>
+            <Text style={{ color: '#1e90ff', fontSize: 16, marginTop: 10 }}>SignIn</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -69,4 +69,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Signup;

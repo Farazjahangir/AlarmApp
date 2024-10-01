@@ -27,7 +27,7 @@ function App(): React.JSX.Element {
   const fetchToken = async () => {
     await messaging().registerDeviceForRemoteMessages();
     const token = await messaging().getToken();
-    // console.log('TOKEN', token);
+    console.log('TOKEN', token);
   };
 
   const listenForForegroundMessage = async () => {
