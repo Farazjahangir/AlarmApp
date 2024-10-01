@@ -1,11 +1,13 @@
 import {useEffect, useState} from 'react';
-import {Text, FlatList, View, TouchableOpacity} from 'react-native';
+import {Text, FlatList, View, TouchableOpacity, TextInput} from 'react-native';
 import RNContacts from 'react-native-contacts';
 
 const Contacts = () => {
   const [data, setData] = useState([]);
   //   const [selectedContacts, setSelectedContacts] = useState(new Set());
   const [selectedContacts, setSelectedContacts] = useState({});
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredData, setFilteredData] = useState([]);
 
   const normalizePhoneNumber = number => {
     if (!number) return ''; // Check if number exists
@@ -45,19 +47,20 @@ const Contacts = () => {
       //   console.log('contacts', contacts[3].phoneNumbers);
       const transformedData = transformContacts(contacts);
       setData(transformedData);
+      setFilteredData(transformedData)
     } catch (e) {
       console.log('GET CONTACTS ERR', e?.message);
     }
   };
 
   const handleSelectContact = phoneNumber => {
-    const selected = { ...selectedContacts }
+    const selected = {...selectedContacts};
     if (selected[phoneNumber]) {
-        selected[phoneNumber] = false
+      selected[phoneNumber] = false;
     } else {
-        selected[phoneNumber] = true
+      selected[phoneNumber] = true;
     }
-    setSelectedContacts(selected) 
+    setSelectedContacts(selected);
   };
 
   const renderList = item => {
@@ -80,17 +83,52 @@ const Contacts = () => {
     );
   };
 
+  const handleSearch = text => {
+    setSearchTerm(text);
+
+    // Convert the input and fields to lowercase for case-insensitive matching
+    const filtered = data.filter(contact => {
+      const nameMatch = contact.displayName
+        ?.toLowerCase()
+        .includes(text.toLowerCase());
+      const phoneMatch = contact.phoneNumber
+        ?.toLowerCase()
+        .includes(text.toLowerCase());
+
+      return nameMatch || phoneMatch; // If either name or phone matches, return the contact
+    });
+
+    setFilteredData(filtered);
+  };
 
   useEffect(() => {
     fetchContacts();
   }, []);
   return (
-    <FlatList
-      data={data}
-      renderItem={renderList}
-      style={{backgroundColor: 'white', flex: 1, flexGrow: 1}}
-      extraData={selectedContacts}
-    />
+    <View style={{backgroundColor: 'white'}}>
+      <View
+        style={{
+          paddingHorizontal: 10,
+          marginTop: 10,
+        }}>
+        <TextInput
+          style={{
+            borderColor: 'grey',
+            borderWidth: 1,
+            borderRadius: 10,
+            color: 'black',
+          }}
+          onChangeText={handleSearch}
+          value={searchTerm}
+        />
+        <FlatList
+          data={filteredData}
+          renderItem={renderList}
+          extraData={filteredData}
+          style={{marginTop: 20}}
+        />
+      </View>
+    </View>
   );
 };
 
