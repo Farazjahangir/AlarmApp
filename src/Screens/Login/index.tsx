@@ -1,21 +1,27 @@
-import {View, Text, TextInput, TouchableOpacity} from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
 import {useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {useSelector, useDispatch} from 'react-redux';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 
-import { setUser } from '../../Redux/user/userSlice';
+import {setUser} from '../../Redux/user/userSlice';
 
 const Login = () => {
   const [userCreds, setUserCreds] = useState({
     email: '',
     password: '',
   });
+  const [loading, setLoading] = useState(false);
 
   const navigation = useNavigation();
-  const dispatch = useDispatch()
-
+  const dispatch = useDispatch();
 
   const handleTextChange = (text, key) => {
     data = {...userCreds};
@@ -25,11 +31,20 @@ const Login = () => {
 
   const handleSignin = async () => {
     try {
-      const authUser = await auth().signInWithEmailAndPassword(userCreds.email, userCreds.password)
-      const userData = await firestore().collection('users').doc(authUser.user.uid).get()
-      dispatch(setUser(userData._data))
-    } catch(e) {
-      console.log("handleSignin ==>", e.message)
+      setLoading(true);
+      const authUser = await auth().signInWithEmailAndPassword(
+        userCreds.email,
+        userCreds.password,
+      );
+      const userData = await firestore()
+        .collection('users')
+        .doc(authUser.user.uid)
+        .get();
+      dispatch(setUser(userData._data));
+    } catch (e) {
+      console.log('handleSignin ==>', e.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -79,8 +94,14 @@ const Login = () => {
               borderRadius: 5,
             }}
             onPress={handleSignin}
-            disabled={!userCreds.email || !userCreds.password}>
-            <Text style={{color: '#ffffff', textAlign: 'center'}}>Sign In</Text>
+            disabled={!userCreds.email || !userCreds.password || loading}>
+            {loading ? (
+              <ActivityIndicator />
+            ) : (
+              <Text style={{color: '#ffffff', textAlign: 'center'}}>
+                Sign In
+              </Text>
+            )}
           </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.navigate('Sign Up')}>
             <Text style={{color: '#1e90ff', fontSize: 16, marginTop: 10}}>

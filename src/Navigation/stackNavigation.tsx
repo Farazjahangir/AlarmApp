@@ -1,6 +1,8 @@
 import {View, Text} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import { useSelector } from 'react-redux';
+
 import Home from '../Screens/Home';
 import AlarmScreen from '../Screens/AlarmScreen';
 import Contacts from '../Screens/Contacts';
@@ -29,7 +31,8 @@ const AppStack = () => {
 };
 
 const StackNavigation = () => {
-  return <AuthStack />;
+  const user = useSelector(state => state.user.data.user)
+  return user ? <AppStack /> : <AuthStack />
 };
 
 export default StackNavigation
