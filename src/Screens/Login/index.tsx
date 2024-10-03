@@ -36,11 +36,11 @@ const Login = () => {
         userCreds.email,
         userCreds.password,
       );
-      const userData = await firestore()
+      const userDataSnapshot = await firestore()
         .collection('users')
         .doc(authUser.user.uid)
         .get();
-      dispatch(setUser(userData._data));
+      dispatch(setUser({...userDataSnapshot.data(), uid: userDataSnapshot.id}));
     } catch (e) {
       console.log('handleSignin ==>', e.message);
     } finally {

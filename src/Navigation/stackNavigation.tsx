@@ -1,13 +1,16 @@
+import { useEffect } from 'react';
 import {View, Text} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 
 import Home from '../Screens/Home';
 import AlarmScreen from '../Screens/AlarmScreen';
 import Contacts from '../Screens/Contacts';
 import Login from '../Screens/Login';
 import Signup from '../Screens/Signup';
+import { fetchContacts, checkContactsWithFirestore } from '../Utils';
+import { setContacts, setContactLoading } from '../Redux/contacts/contactSlice';
 
 const Stack = createNativeStackNavigator();
 
@@ -32,6 +35,30 @@ const AppStack = () => {
 
 const StackNavigation = () => {
   const user = useSelector(state => state.user.data.user)
+  const disptach = useDispatch()
+
+  const getContacts = async () => {
+    try {
+      console.log("FETCHING CONTACTS...")
+      disptach(setContactLoading(true))
+      const contacts = await fetchContacts();
+      const firestoreRes = await checkContactsWithFirestore(contacts, user)
+      disptach(setContacts({
+        contactsWithAccount: firestoreRes?.contactsWithAccount,
+        contactsWithoutAccount: firestoreRes?.contactsWithoutAccount
+      }))
+    } catch(e) {
+        console.log("getContacts ERRR", e?.message)
+    } finally {
+      disptach(setContactLoading(false))
+    }
+  }
+
+  useEffect(() => {
+    if (user) {
+      getContacts()
+    }
+  }, [user])
   return user ? <AppStack /> : <AuthStack />
 };
 

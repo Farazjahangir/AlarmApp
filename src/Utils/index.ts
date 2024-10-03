@@ -2,6 +2,8 @@ import notifee, { AuthorizationStatus } from '@notifee/react-native';
 import { Alert, Platform, Linking, PermissionsAndroid } from 'react-native';
 import { request, PERMISSIONS, check, RESULTS } from 'react-native-permissions';
 import messaging from '@react-native-firebase/messaging';
+import RNContacts from 'react-native-contacts';
+import firestore from '@react-native-firebase/firestore';
 
 export const checkNotificationPermission = async () => {
     try {
@@ -119,3 +121,91 @@ export const fetchDeviceToken = async () => {
         console.log("ERR fetching token", e.message)
     }
 };
+
+export const normalizePhoneNumber = number => {
+    if (!number) return ''; // Check if number exists
+    return number.replace(/\s+/g, ''); // Remove spaces
+};
+
+export const transformContacts = contacts => {
+    const transformedContacts = [];
+
+    contacts.forEach(contact => {
+        if (
+            contact.phoneNumbers &&
+            Array.isArray(contact.phoneNumbers) &&
+            contact.phoneNumbers.length
+        ) {
+            const distinctNumbers = Array.from(
+                new Set(
+                    contact.phoneNumbers
+                        .map(phone => normalizePhoneNumber(phone.number))
+                        .filter(Boolean),
+                ),
+            );
+            distinctNumbers.forEach(number => {
+                const newContact = { ...contact };
+                newContact.phoneNumber = number;
+                transformedContacts.push(newContact);
+            });
+        }
+    });
+
+    return transformedContacts;
+};
+
+export const fetchContacts = async () => {
+    const contacts = await RNContacts.getAll()
+    const transformedData = transformContacts(contacts);
+    return transformedData
+}
+
+export const checkContactsWithFirestore = async (data, authUser) => {
+    try {
+        const phoneNumbers = data.map(contact => contact.phoneNumber);
+        const batchSize = 30;
+        let contactsWithAccount = [];
+        let contactsWithoutAccount = [];
+        let firestoreNumbersSet = new Set();
+    
+        for (let i = 0; i < phoneNumbers.length; i += batchSize) {
+            const batch = phoneNumbers.slice(i, i + batchSize);
+    
+            // 4. Fetch users from Firestore in batches
+            const usersSnapshot = await firestore()
+                .collection('users')
+                .where('number', 'in', batch)
+                .get();
+    
+            usersSnapshot.forEach(doc => {
+                firestoreNumbersSet.add({ ...doc.data(), uid: doc.id });
+            });
+        }
+    
+        // 5. Split contacts into those with and without accounts
+        for (const contact of data) {
+            const phoneNumber = contact.phoneNumber;
+            let foundInFirestore = false;
+            firestoreNumbersSet.forEach(firestoreContact => {
+                // Assuming phoneNumber is formatted consistently between Firestore and transformedData
+                if (
+                    firestoreContact.number === phoneNumber &&
+                    phoneNumber !== authUser.number
+                ) {
+                    // If found in Firestore, push Firestore data to contactsWithAccount
+                    contactsWithAccount.push(firestoreContact);
+                    foundInFirestore = true;
+                }
+            });
+            if (!foundInFirestore && phoneNumber !== authUser.number) {
+                contactsWithoutAccount.push(contact);
+            }
+        }
+        return {
+            contactsWithAccount,
+            contactsWithoutAccount
+        }
+    } catch(e) {
+        console.log("checkContactsWithFirestore ERR ==>", e?.message || "Some Error")
+    }
+}
