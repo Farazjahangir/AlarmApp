@@ -95,7 +95,7 @@ const Home = () => {
       const res = await axios.post('https://8c34-144-48-129-18.ngrok-free.app/send-notifications', {
         tokens
       })
-      console.log("rES ==>", res).data
+      console.log("rES ==>", res.data)
     } catch(e) {
       console.log("ringAlarm ERR", e.message)
     }

@@ -1,16 +1,18 @@
-import { useEffect } from 'react';
+import {useEffect} from 'react';
 import {View, Text} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import { useSelector, useDispatch } from 'react-redux';
+import {useSelector, useDispatch} from 'react-redux';
+import firestore from '@react-native-firebase/firestore';
 
 import Home from '../Screens/Home';
 import AlarmScreen from '../Screens/AlarmScreen';
 import Contacts from '../Screens/Contacts';
 import Login from '../Screens/Login';
 import Signup from '../Screens/Signup';
-import { fetchContacts, checkContactsWithFirestore } from '../Utils';
-import { setContacts, setContactLoading } from '../Redux/contacts/contactSlice';
+import {fetchContacts, checkContactsWithFirestore} from '../Utils';
+import {setContacts, setContactLoading} from '../Redux/contacts/contactSlice';
+import {fetchDeviceToken} from '../Utils';
 
 const Stack = createNativeStackNavigator();
 
@@ -34,32 +36,52 @@ const AppStack = () => {
 };
 
 const StackNavigation = () => {
-  const user = useSelector(state => state.user.data.user)
-  const disptach = useDispatch()
+  const user = useSelector(state => state.user.data.user);
+  const disptach = useDispatch();
 
   const getContacts = async () => {
     try {
-      console.log("FETCHING CONTACTS...")
-      disptach(setContactLoading(true))
+      console.log('FETCHING CONTACTS...');
+      disptach(setContactLoading(true));
       const contacts = await fetchContacts();
-      const firestoreRes = await checkContactsWithFirestore(contacts, user)
-      disptach(setContacts({
-        contactsWithAccount: firestoreRes?.contactsWithAccount,
-        contactsWithoutAccount: firestoreRes?.contactsWithoutAccount
-      }))
-    } catch(e) {
-        console.log("getContacts ERRR", e?.message)
+      const firestoreRes = await checkContactsWithFirestore(contacts, user);
+      disptach(
+        setContacts({
+          contactsWithAccount: firestoreRes?.contactsWithAccount,
+          contactsWithoutAccount: firestoreRes?.contactsWithoutAccount,
+        }),
+      );
+    } catch (e) {
+      console.log('getContacts ERRR', e?.message);
     } finally {
-      disptach(setContactLoading(false))
+      disptach(setContactLoading(false));
     }
-  }
+  };
+
+  const registerDeviceForFCM = async () => {
+    try {
+      const token = await fetchDeviceToken();
+      const userDocRef = firestore().collection('users').doc(user.uid);
+      await userDocRef.update({
+        deviceToken: token
+      });
+    } catch (e) {
+      console.log('registerDeviceForFCM ERR', e.message);
+    }
+  };
 
   useEffect(() => {
     if (user) {
-      getContacts()
+      getContacts();
     }
-  }, [user])
-  return user ? <AppStack /> : <AuthStack />
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      registerDeviceForFCM();
+    }
+  }, []);
+  return user ? <AppStack /> : <AuthStack />;
 };
 
-export default StackNavigation
+export default StackNavigation;

@@ -4,8 +4,6 @@ import {useNavigation} from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 
-import { fetchDeviceToken } from '../../Utils';
-
 const Signup = () => {
   const [user, setUser] = useState({
     email: '',
@@ -25,11 +23,9 @@ const Signup = () => {
   const handleSignup = async () => {
     try {
       const authUser = await auth().createUserWithEmailAndPassword(user.email, user.password)
-      const token = await fetchDeviceToken()
       await firestore().collection('users').doc(authUser.user.uid).set({
         name: user.name,
         email: user.email,
-        deviceToken: token,
         number: user.number
       })
       Alert.alert("User Created")
