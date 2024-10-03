@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useState, useCallback} from 'react';
 import {
   Text,
   View,
@@ -9,6 +9,7 @@ import {
 import {useSelector} from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
 import axios from 'axios';
+import {useNavigation, useFocusEffect} from '@react-navigation/native';
 
 const Home = () => {
   const [groups, setGroups] = useState([]);
@@ -16,10 +17,11 @@ const Home = () => {
 
   const user = useSelector(state => state.user.data.user);
   const contatcs = useSelector(state => state.contacts.data);
+  const navigation = useNavigation();
 
   const loadUserGroups = async () => {
     try {
-      setLoading(true)
+      setLoading(true);
       const userUid = user.uid;
       const contactWithAccount = contatcs.contactsWithAccount;
       // 1. Fetch groups where the user is a member
@@ -50,7 +52,7 @@ const Home = () => {
               // 4. If member data found in Redux, push it to membersData
               membersData.push(memberData);
             } else {
-              console.log("FIRESTOER= ====>")
+              console.log('FIRESTOER= ====>');
               // 5. If member data not found in Redux, fetch from Firestore
               const userSnapshot = await firestore()
                 .collection('users')
@@ -79,27 +81,30 @@ const Home = () => {
     } catch (error) {
       console.error('Error loading groups:', error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   };
 
-  const ringAlarm = async (grpData) => {
+  const ringAlarm = async grpData => {
     try {
-      const tokens = []
+      const tokens = [];
       grpData.members.forEach(item => {
-        if(item.uid !== user.uid) {
-          tokens.push(item.deviceToken)
+        if (item.uid !== user.uid) {
+          tokens.push(item.deviceToken);
         }
-      })
-      
-      const res = await axios.post('https://8c34-144-48-129-18.ngrok-free.app/send-notifications', {
-        tokens
-      })
-      console.log("rES ==>", res.data)
-    } catch(e) {
-      console.log("ringAlarm ERR", e.message)
+      });
+
+      const res = await axios.post(
+        'https://8c34-144-48-129-18.ngrok-free.app/send-notifications',
+        {
+          tokens,
+        },
+      );
+      console.log('rES ==>', res.data);
+    } catch (e) {
+      console.log('ringAlarm ERR', e.message);
     }
-  }
+  };
 
   const renderList = ({item}) => (
     <View
@@ -109,7 +114,7 @@ const Home = () => {
         padding: 10,
         borderRadius: 5,
         alignItems: 'center',
-        marginTop: 20
+        marginTop: 20,
       }}>
       <View style={{flex: 1}}>
         <Text style={{color: 'black', fontSize: 18}}>{item.groupName}</Text>
@@ -134,12 +139,37 @@ const Home = () => {
     </View>
   );
 
-  useEffect(() => {
-    loadUserGroups();
-  }, []);
+  const navigateToContacts = () => {
+    navigation.navigate('Contacts');
+  };
+
+  // useEffect(() => {
+  //   console.log("USE EFFECT")
+  //   loadUserGroups();
+  // }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadUserGroups()
+    }, [])
+  );
+
   return (
     <View style={{paddingHorizontal: 15}}>
       <Text style={{fontSize: 25, color: 'black', marginTop: 10}}>Groups</Text>
+      <TouchableOpacity
+        style={{
+          backgroundColor: '#ff4d4d',
+          width: 100,
+          height: 30,
+          justifyContent: 'center',
+          alignItems: 'center',
+          borderRadius: 5,
+          marginTop: 10,
+        }}
+        onPress={navigateToContacts}>
+        <Text style={{color: '#ffffff'}}>Create Group</Text>
+      </TouchableOpacity>
       {loading ? (
         <View style={{marginTop: 20}}>
           <ActivityIndicator size={'large'} />

@@ -10,6 +10,7 @@ import {
 import RNContacts from 'react-native-contacts';
 import firestore from '@react-native-firebase/firestore';
 import {useSelector} from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
 
 const Contacts = () => {
   const [data, setData] = useState([]);
@@ -22,6 +23,7 @@ const Contacts = () => {
 
   const contatcs = useSelector(state => state.contacts.data);
   const user = useSelector(state => state.user.data.user);
+  const navigation = useNavigation()
 
   const handleSelectContact = phoneNumber => {
     const selected = {...selectedContacts};
@@ -138,7 +140,7 @@ const Contacts = () => {
       };
 
       await firestore().collection('groups').add(payload);
-      console.log('GRP Created');
+      navigation.navigate('Home')
     } catch (e) {
       console.log('onCreateGroup ERR', e.message);
     } finally {
