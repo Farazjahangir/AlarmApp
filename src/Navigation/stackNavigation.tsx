@@ -26,8 +26,8 @@ const AuthStack = () => {
 const AppStack = () => {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="Contacts" component={Contacts} />
       <Stack.Screen name="Home" component={Home} />
+      <Stack.Screen name="Contacts" component={Contacts} />
       <Stack.Screen name="Alarm Screen" component={AlarmScreen} />
     </Stack.Navigator>
   );
