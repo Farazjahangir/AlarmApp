@@ -1,35 +1,136 @@
-import {Text, View, TouchableOpacity} from 'react-native';
+import {useEffect, useState} from 'react';
+import {
+  Text,
+  View,
+  TouchableOpacity,
+  ActivityIndicator,
+  FlatList,
+} from 'react-native';
+import {useSelector} from 'react-redux';
+import firestore from '@react-native-firebase/firestore';
 
 const Home = () => {
+  const [groups, setGroups] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const user = useSelector(state => state.user.data.user);
+  const contatcs = useSelector(state => state.contacts.data);
+
+  const loadUserGroups = async () => {
+    try {
+      setLoading(true)
+      const userUid = user.uid;
+      const contactWithAccount = contatcs.contactsWithAccount;
+      // 1. Fetch groups where the user is a member
+      const groupSnapshots = await firestore()
+        .collection('groups')
+        .where('members', 'array-contains', userUid)
+        .get();
+
+      let groupsWithMembersData = [];
+
+      // 2. Loop through each group
+      for (const groupDoc of groupSnapshots.docs) {
+        const groupData = groupDoc.data();
+        let membersData = [];
+
+        // 3. Check for member UIDs in Redux state first
+        for (const uid of groupData.members) {
+          if (uid === userUid) {
+            membersData.push(user);
+          }
+          if (uid !== userUid) {
+            // Exclude current user
+            let memberData = contactWithAccount.find(
+              contact => contact.uid === uid,
+            );
+
+            if (memberData) {
+              // 4. If member data found in Redux, push it to membersData
+              membersData.push(memberData);
+            } else {
+              console.log("FIRESTOER= ====>")
+              // 5. If member data not found in Redux, fetch from Firestore
+              const userSnapshot = await firestore()
+                .collection('users')
+                .doc(uid)
+                .get();
+              if (userSnapshot.exists) {
+                const fetchedUserData = userSnapshot.data();
+                membersData.push({uid, ...fetchedUserData});
+              } else {
+                // 6. If not found in Firestore (optional handling)
+                membersData.push({uid});
+              }
+            }
+          }
+        }
+
+        // 7. Build the group object with member data
+        groupsWithMembersData.push({
+          groupId: groupDoc.id,
+          groupName: groupData.groupName,
+          createdBy: groupData.createdBy,
+          members: membersData,
+        });
+      }
+      setGroups(groupsWithMembersData);
+    } catch (error) {
+      console.error('Error loading groups:', error);
+    } finally {
+      setLoading(false)
+    }
+  };
+
+  const renderList = ({item}) => (
+    <View
+      style={{
+        flexDirection: 'row',
+        backgroundColor: '#ffffff',
+        padding: 10,
+        borderRadius: 5,
+        alignItems: 'center',
+        marginTop: 20
+      }}>
+      <View style={{flex: 1}}>
+        <Text style={{color: 'black', fontSize: 18}}>{item.groupName}</Text>
+        <Text style={{color: 'black', fontSize: 12}}>
+          Member Count: {item.members.length}
+        </Text>
+      </View>
+      <TouchableOpacity
+        style={{
+          backgroundColor: '#ff4d4d',
+          height: 35,
+          justifyContent: 'center',
+          width: 35,
+          alignItems: 'center',
+          borderRadius: 5,
+        }}>
+        <Text style={{color: 'black', fontSize: 14, color: '#ffffff'}}>
+          Ring
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  useEffect(() => {
+    loadUserGroups();
+  }, []);
   return (
     <View style={{paddingHorizontal: 15}}>
-      <Text style={{ fontSize: 25, color: 'black', marginTop: 10 }}>Groups</Text>
-      <View
-        style={{
-          flexDirection: 'row',
-          backgroundColor: '#ffffff',
-          padding: 10,
-          borderRadius: 5,
-          alignItems: 'center'
-        }}>
-        <View style={{flex: 1}}>
-          <Text style={{color: 'black', fontSize: 18}}>Group 1</Text>
-          <Text style={{color: 'black', fontSize: 12}}>Member Count: </Text>
+      <Text style={{fontSize: 25, color: 'black', marginTop: 10}}>Groups</Text>
+      {loading ? (
+        <View style={{marginTop: 20}}>
+          <ActivityIndicator size={'large'} />
         </View>
-        <TouchableOpacity
-          style={{
-            backgroundColor: '#ff4d4d',
-            height: 35,
-            justifyContent: 'center',
-            width: 35,
-            alignItems: 'center',
-            borderRadius: 5,
-          }}>
-          <Text style={{color: 'black', fontSize: 14, color: '#ffffff'}}>
-            Ring
-          </Text>
-        </TouchableOpacity>
-      </View>
+      ) : (
+        <FlatList
+          data={groups}
+          renderItem={renderList}
+          keyExtractor={(item, index) => item.groupId}
+        />
+      )}
     </View>
   );
 };
