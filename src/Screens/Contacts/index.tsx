@@ -16,9 +16,12 @@ const Contacts = () => {
   //   const [selectedContacts, setSelectedContacts] = useState(new Set());
   const [selectedContacts, setSelectedContacts] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
+  const [grpName, setGrpName] = useState('Grp 1');
   const [filteredData, setFilteredData] = useState([]);
+  const [createGrpLoading, setCreateGrpLoading] = useState(false);
 
   const contatcs = useSelector(state => state.contacts.data);
+  const user = useSelector(state => state.user.data.user);
 
   const handleSelectContact = phoneNumber => {
     const selected = {...selectedContacts};
@@ -50,7 +53,9 @@ const Contacts = () => {
           <Text style={{color: isSelected ? 'white' : 'black'}}>
             {item.name}
           </Text>
-          <Text style={{color: 'grey'}}>{item.number}</Text>
+          <Text style={{color: isSelected ? 'white' : 'grey'}}>
+            {item.number}
+          </Text>
         </TouchableOpacity>
       );
     } else {
@@ -103,6 +108,44 @@ const Contacts = () => {
     setFilteredData(combinedContacts);
   };
 
+  const onChangeGrpName = text => {
+    setGrpName(text);
+  };
+
+  const createSelectedUsersUIDArr = () => {
+    let selectedContactsData = [];
+
+    data.forEach(contact => {
+      // Skip headers
+      if (contact.type === 'header') return;
+
+      // If the contact number exists in selectedContacts and is true
+      if (selectedContacts[contact.number]) {
+        selectedContactsData.push(contact.uid);
+      }
+    });
+    return selectedContactsData;
+  };
+
+  const onCreateGroup = async () => {
+    try {
+      setCreateGrpLoading(true)
+      const uids = createSelectedUsersUIDArr();
+      const payload = {
+        groupName: grpName,
+        createdBy: user.uid,
+        members: [user.uid, ...uids],
+      };
+
+      await firestore().collection('groups').add(payload);
+      console.log('GRP Created');
+    } catch (e) {
+      console.log('onCreateGroup ERR', e.message);
+    } finally {
+      setCreateGrpLoading(false)
+    }
+  };
+
   useEffect(() => {
     if (
       contatcs.contactsWithAccount.lenght ||
@@ -118,7 +161,7 @@ const Contacts = () => {
           paddingHorizontal: 10,
           marginTop: 10,
         }}>
-        <TextInput
+        {/* <TextInput
           style={{
             borderColor: 'grey',
             borderWidth: 1,
@@ -127,7 +170,45 @@ const Contacts = () => {
           }}
           // onChangeText={handleSearch}
           value={searchTerm}
-        />
+        /> */}
+        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <TextInput
+            style={{
+              borderColor: 'grey',
+              borderWidth: 1,
+              borderRadius: 10,
+              color: 'black',
+              flex: 1,
+              height: 40,
+              marginRight: 15,
+            }}
+            onChangeText={onChangeGrpName}
+            value={grpName}
+            placeholder="Enter Group Name"
+            placeholderTextColor={'black'}
+          />
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#ff4d4d',
+              height: 30,
+              justifyContent: 'center',
+              paddingHorizontal: 10,
+              borderRadius: 5,
+              minWidth: 100
+            }}
+            disabled={
+              !Object.keys(selectedContacts).length ||
+              !grpName ||
+              createGrpLoading
+            }
+            onPress={onCreateGroup}>
+            {createGrpLoading ? (
+              <ActivityIndicator />
+            ) : (
+              <Text style={{color: '#ffffff'}}>Create Group</Text>
+            )}
+          </TouchableOpacity>
+        </View>
         <FlatList
           data={filteredData}
           renderItem={renderList}
