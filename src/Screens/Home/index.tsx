@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import {useSelector} from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
+import axios from 'axios';
 
 const Home = () => {
   const [groups, setGroups] = useState([]);
@@ -82,6 +83,24 @@ const Home = () => {
     }
   };
 
+  const ringAlarm = async (grpData) => {
+    try {
+      const tokens = []
+      grpData.members.forEach(item => {
+        if(item.uid !== user.uid) {
+          tokens.push(item.deviceToken)
+        }
+      })
+      
+      const res = await axios.post('https://8c34-144-48-129-18.ngrok-free.app/send-notifications', {
+        tokens
+      })
+      console.log("rES ==>", res).data
+    } catch(e) {
+      console.log("ringAlarm ERR", e.message)
+    }
+  }
+
   const renderList = ({item}) => (
     <View
       style={{
@@ -106,7 +125,8 @@ const Home = () => {
           width: 35,
           alignItems: 'center',
           borderRadius: 5,
-        }}>
+        }}
+        onPress={() => ringAlarm(item)}>
         <Text style={{color: 'black', fontSize: 14, color: '#ffffff'}}>
           Ring
         </Text>
