@@ -14,6 +14,7 @@ import {fetchContacts, checkContactsWithFirestore} from '../Utils';
 import {setContacts, setContactLoading} from '../Redux/contacts/contactSlice';
 import {fetchDeviceToken} from '../Utils';
 import Header from '../Components/Header';
+import { registerDeviceForFCM } from '../Utils';
 
 const Stack = createNativeStackNavigator();
 
@@ -59,17 +60,7 @@ const StackNavigation = () => {
     }
   };
 
-  const registerDeviceForFCM = async () => {
-    try {
-      const token = await fetchDeviceToken();
-      const userDocRef = firestore().collection('users').doc(user.uid);
-      await userDocRef.update({
-        deviceToken: token
-      });
-    } catch (e) {
-      console.log('registerDeviceForFCM ERR', e.message);
-    }
-  };
+ 
 
   useEffect(() => {
     if (user) {
@@ -79,7 +70,7 @@ const StackNavigation = () => {
 
   useEffect(() => {
     if (user) {
-      registerDeviceForFCM();
+      registerDeviceForFCM(user.uid);
     }
   }, []);
   return user ? <AppStack /> : <AuthStack />;

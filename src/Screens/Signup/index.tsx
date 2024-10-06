@@ -1,17 +1,28 @@
-import {View, Text, TextInput, TouchableOpacity, Alert} from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import {useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
+import axios from 'axios';
+
+import {BASE_URL} from '../../Utils/constants';
 
 const Signup = () => {
   const [user, setUser] = useState({
     email: '',
     password: '',
     name: '',
-    number: null
+    number: '',
   });
 
+  const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
 
   const handleTextChange = (text, key) => {
@@ -20,19 +31,47 @@ const Signup = () => {
     setUser(data);
   };
 
-  const handleSignup = async () => {
+  const checkUser = async () =>
+    firestore().collection('users').where('number', '==', user.number).get();
+
+  const createAccountWithExistingUser = async uid =>
+    await axios.post(`${BASE_URL}/user/create`, {...user, uid});
+
+  const createUser = async () => {
     try {
-      const authUser = await auth().createUserWithEmailAndPassword(user.email, user.password)
+      const authUser = await auth().createUserWithEmailAndPassword(
+        user.email,
+        user.password,
+      );
       await firestore().collection('users').doc(authUser.user.uid).set({
         name: user.name,
         email: user.email,
-        number: user.number
-      })
-      Alert.alert("User Created")
-    } catch(e) {
-      console.log("handleSignup ==>", e.message)
+        number: user.number,
+        isActive: true,
+      });
+    } catch (e) {
+      throw new Error(e)
     }
-  }
+  };
+
+  const handleSignup = async () => {
+    try {
+      setLoading(true);
+      const userSnapshot = await checkUser();
+      if (!userSnapshot.empty) {
+        const uid = userSnapshot.docs[0].id;
+        await createAccountWithExistingUser(uid);
+      } else {
+        await createUser();
+      }
+
+      Alert.alert('User Created');
+    } catch (e) {
+      console.log('handleSignup ==>', e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
       <View style={{width: 300}}>
@@ -64,7 +103,7 @@ const Signup = () => {
             height: 45,
             color: 'black',
           }}
-          inputMode='numeric'
+          inputMode="numeric"
           placeholderTextColor="black"
           placeholder={'Contact Number'}
           onChangeText={text => handleTextChange(text, 'number')}
@@ -109,9 +148,17 @@ const Signup = () => {
               padding: 4,
               borderRadius: 5,
             }}
-            disabled={!user.email || !user.password || !user.name || !user.number}
+            disabled={
+              !user.email || !user.password || !user.name || !user.number
+            }
             onPress={handleSignup}>
-            <Text style={{color: '#ffffff', textAlign: 'center'}}>Sign Up</Text>
+            {loading ? (
+              <ActivityIndicator />
+            ) : (
+              <Text style={{color: '#ffffff', textAlign: 'center'}}>
+                Sign Up
+              </Text>
+            )}
           </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.navigate('Login')}>
             <Text style={{color: '#1e90ff', fontSize: 16, marginTop: 10}}>

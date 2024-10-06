@@ -4,6 +4,7 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
+  Alert
 } from 'react-native';
 import {useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
@@ -12,6 +13,7 @@ import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 
 import {setUser} from '../../Redux/user/userSlice';
+import { registerDeviceForFCM } from '../../Utils';
 
 const Login = () => {
   const [userCreds, setUserCreds] = useState({
@@ -41,8 +43,9 @@ const Login = () => {
         .doc(authUser.user.uid)
         .get();
       dispatch(setUser({...userDataSnapshot.data(), uid: userDataSnapshot.id}));
+      registerDeviceForFCM(authUser.user.uid)
     } catch (e) {
-      console.log('handleSignin ==>', e.message);
+      Alert.alert("ERROR", e?.message || "Something went wrong")
     } finally {
       setLoading(false);
     }

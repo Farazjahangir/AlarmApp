@@ -167,22 +167,22 @@ export const checkContactsWithFirestore = async (data, authUser) => {
         let contactsWithAccount = [];
         let contactsWithoutAccount = [];
         let firestoreNumbersSet = new Set();
-    
+
         for (let i = 0; i < phoneNumbers.length; i += batchSize) {
             const batch = phoneNumbers.slice(i, i + batchSize);
-    
+
             // 4. Fetch users from Firestore in batches
             const usersSnapshot = await firestore()
                 .collection('users')
                 .where('number', 'in', batch)
                 .where('isActive', '==', true)
                 .get();
-    
+
             usersSnapshot.forEach(doc => {
                 firestoreNumbersSet.add({ ...doc.data(), uid: doc.id });
             });
         }
-    
+
         // 5. Split contacts into those with and without accounts
         for (const contact of data) {
             const phoneNumber = contact.phoneNumber;
@@ -206,7 +206,19 @@ export const checkContactsWithFirestore = async (data, authUser) => {
             contactsWithAccount,
             contactsWithoutAccount
         }
-    } catch(e) {
+    } catch (e) {
         console.log("checkContactsWithFirestore ERR ==>", e?.message || "Some Error")
     }
 }
+
+export const registerDeviceForFCM = async (uid) => {
+    try {
+        const token = await fetchDeviceToken();
+        const userDocRef = firestore().collection('users').doc(uid);
+        await userDocRef.update({
+            deviceToken: token
+        });
+    } catch (e) {
+        console.log('registerDeviceForFCM ERR', e.message);
+    }
+};
