@@ -13,6 +13,7 @@ import Signup from '../Screens/Signup';
 import {fetchContacts, checkContactsWithFirestore} from '../Utils';
 import {setContacts, setContactLoading} from '../Redux/contacts/contactSlice';
 import {fetchDeviceToken} from '../Utils';
+import Header from '../Components/Header';
 
 const Stack = createNativeStackNavigator();
 
@@ -27,7 +28,7 @@ const AuthStack = () => {
 
 const AppStack = () => {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{ header: (props) => <Header {...props} /> }}>
       <Stack.Screen name="Home" component={Home} />
       <Stack.Screen name="Contacts" component={Contacts} />
       <Stack.Screen name="Alarm Screen" component={AlarmScreen} />
