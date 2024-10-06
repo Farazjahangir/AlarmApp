@@ -50,7 +50,7 @@ const Signup = () => {
         isActive: true,
       });
     } catch (e) {
-      throw new Error(e)
+      throw new Error(e);
     }
   };
 
@@ -60,14 +60,18 @@ const Signup = () => {
       const userSnapshot = await checkUser();
       if (!userSnapshot.empty) {
         const uid = userSnapshot.docs[0].id;
+        if (userSnapshot.docs[0].data().isActive) {
+          throw new Error('User Already Exist')
+        }
         await createAccountWithExistingUser(uid);
       } else {
         await createUser();
       }
 
-      Alert.alert('User Created');
+      Alert.alert('Success', 'User Created');
     } catch (e) {
-      console.log('handleSignup ==>', e.message);
+      console.log("ERRR", e.response.data)
+      Alert.alert('ERROR', e?.response?.data?.message || e?.message || 'Something went wrong');
     } finally {
       setLoading(false);
     }
