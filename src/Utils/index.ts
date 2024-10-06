@@ -175,6 +175,7 @@ export const checkContactsWithFirestore = async (data, authUser) => {
             const usersSnapshot = await firestore()
                 .collection('users')
                 .where('number', 'in', batch)
+                .where('isActive', '==', true)
                 .get();
     
             usersSnapshot.forEach(doc => {
