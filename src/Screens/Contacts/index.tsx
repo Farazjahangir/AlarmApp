@@ -4,13 +4,17 @@ import {
   FlatList,
   View,
   TouchableOpacity,
-  TextInput,
   ActivityIndicator,
 } from 'react-native';
 import RNContacts from 'react-native-contacts';
 import firestore from '@react-native-firebase/firestore';
 import {useSelector} from 'react-redux';
 import {useNavigation} from '@react-navigation/native';
+
+import Button from '../../Components/Button';
+import TextInput from '../../Components/TextInput';
+import ContactList from './ContactList';
+import styles from './style';
 
 const Contacts = () => {
   const [data, setData] = useState([]);
@@ -35,33 +39,15 @@ const Contacts = () => {
     setSelectedContacts(selected);
   };
 
-  const renderList = ({item}) => {
-    if (item.type === 'header') {
-      return (
-        <Text style={{color: '#ff4d4d', marginTop: 20, fontSize: 17}}>
-          {item.title}
-        </Text>
-      );
-    } else {
-      const isSelected = selectedContacts[item?.number || item.phoneNumber];
-      return (
-        <TouchableOpacity
-          style={{
-            paddingHorizontal: 10,
-            paddingVertical: 7,
-            backgroundColor: isSelected ? '#ff4d4d' : '#ffffff',
-          }}
-          onPress={() => handleSelectContact(item?.number || item.phoneNumber)}>
-          <Text style={{color: isSelected ? 'white' : 'black'}}>
-            {item?.name || item.displayName}
-          </Text>
-          <Text style={{color: isSelected ? 'white' : 'grey'}}>
-            {item?.number || item.phoneNumber}
-          </Text>
-        </TouchableOpacity>
-      );
-    }
-  };
+  const renderList = ({item}) => (
+    <ContactList
+      item={item}
+      selectedContacts={selectedContacts}
+      handleSelectContact={() =>
+        handleSelectContact(item?.number || item.phoneNumber)
+      }
+    />
+  );
 
   const handleSearch = text => {
     setSearchTerm(text);
@@ -242,59 +228,26 @@ const Contacts = () => {
     }
   }, [contatcs.contactsWithAccount, contatcs.contactsWithoutAccount]);
   return (
-    <View style={{backgroundColor: 'white'}}>
-      <View
-        style={{
-          paddingHorizontal: 10,
-          marginTop: 10,
-        }}>
+    <View style={styles.container}>
+      <View style={styles.contentBox}>
         <TextInput
-          style={{
-            borderColor: 'grey',
-            borderWidth: 1,
-            borderRadius: 10,
-            color: 'black',
-          }}
+          placeholder="Search Contact"
           onChangeText={handleSearch}
           value={searchTerm}
         />
-        <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          <TextInput
-            style={{
-              borderColor: 'grey',
-              borderWidth: 1,
-              borderRadius: 10,
-              color: 'black',
-              flex: 1,
-              height: 40,
-              marginRight: 15,
-            }}
-            onChangeText={onChangeGrpName}
-            value={grpName}
-            placeholder="Enter Group Name"
-            placeholderTextColor={'black'}
+        <Text style={styles.title}>Create Group</Text>
+        <TextInput
+          onChangeText={onChangeGrpName}
+          value={grpName}
+          placeholder="Enter Group Name"
+        />
+        <View style={styles.createBtnBox}>
+          <Button
+            text="Create Group"
+            onPress={onCreateGroup}
+            loading={createGrpLoading}
+            disabled={!grpName || !!selectedContacts.length}
           />
-          <TouchableOpacity
-            style={{
-              backgroundColor: '#ff4d4d',
-              height: 30,
-              justifyContent: 'center',
-              paddingHorizontal: 10,
-              borderRadius: 5,
-              minWidth: 100,
-            }}
-            disabled={
-              !Object.keys(selectedContacts).length ||
-              !grpName ||
-              createGrpLoading
-            }
-            onPress={onCreateGroup}>
-            {createGrpLoading ? (
-              <ActivityIndicator />
-            ) : (
-              <Text style={{color: '#ffffff'}}>Create Group</Text>
-            )}
-          </TouchableOpacity>
         </View>
         <FlatList
           data={filteredData}

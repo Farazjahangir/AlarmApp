@@ -9,7 +9,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderRadius: 5,
         marginTop: 10,
-        padding: 5
+        padding: 5,
+        minWidth: 80
     },
     text: {
         color: COLORS.white
