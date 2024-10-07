@@ -11,6 +11,12 @@ import firestore from '@react-native-firebase/firestore';
 import axios from 'axios';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
 
+import Modal from '../../Components/Modal';
+import Button from '../../Components/Button';
+import GroupBox from './GroupBox';
+import { BASE_URL } from '../../Utils/constants';
+import styles from './style';
+
 const Home = () => {
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -77,6 +83,7 @@ const Home = () => {
           members: membersData,
         });
       }
+      console.log('groupsWithMembersData', groupsWithMembersData[0].members);
       setGroups(groupsWithMembersData);
     } catch (error) {
       console.error('Error loading groups:', error);
@@ -95,7 +102,7 @@ const Home = () => {
       });
 
       const res = await axios.post(
-        'https://8c34-144-48-129-18.ngrok-free.app/send-notifications',
+        `${BASE_URL}/send-notifications`,
         {
           tokens,
         },
@@ -107,35 +114,8 @@ const Home = () => {
   };
 
   const renderList = ({item}) => (
-    <View
-      style={{
-        flexDirection: 'row',
-        backgroundColor: '#ffffff',
-        padding: 10,
-        borderRadius: 5,
-        alignItems: 'center',
-        marginTop: 20,
-      }}>
-      <View style={{flex: 1}}>
-        <Text style={{color: 'black', fontSize: 18}}>{item.groupName}</Text>
-        <Text style={{color: 'black', fontSize: 12}}>
-          Member Count: {item.members.length}
-        </Text>
-      </View>
-      <TouchableOpacity
-        style={{
-          backgroundColor: '#ff4d4d',
-          height: 35,
-          justifyContent: 'center',
-          width: 35,
-          alignItems: 'center',
-          borderRadius: 5,
-        }}
-        onPress={() => ringAlarm(item)}>
-        <Text style={{color: 'black', fontSize: 14, color: '#ffffff'}}>
-          Ring
-        </Text>
-      </TouchableOpacity>
+    <View style={styles.grpListBox}>
+    <GroupBox item={item} onPress={() => ringAlarm(item)} />
     </View>
   );
 
@@ -150,26 +130,14 @@ const Home = () => {
 
   useFocusEffect(
     useCallback(() => {
-      loadUserGroups()
-    }, [])
+      loadUserGroups();
+    }, []),
   );
 
   return (
-    <View style={{paddingHorizontal: 15}}>
-      <Text style={{fontSize: 25, color: 'black', marginTop: 10}}>Groups</Text>
-      <TouchableOpacity
-        style={{
-          backgroundColor: '#ff4d4d',
-          width: 100,
-          height: 30,
-          justifyContent: 'center',
-          alignItems: 'center',
-          borderRadius: 5,
-          marginTop: 10,
-        }}
-        onPress={navigateToContacts}>
-        <Text style={{color: '#ffffff'}}>Create Group</Text>
-      </TouchableOpacity>
+    <View style={styles.container}>
+      <Text style={styles.title}>Groups</Text>
+      <Button text="Create Group" onPress={navigateToContacts} containerStyle={styles.createGrpBtncontainer} />
       {loading ? (
         <View style={{marginTop: 20}}>
           <ActivityIndicator size={'large'} />
