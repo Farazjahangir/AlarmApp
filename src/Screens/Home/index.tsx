@@ -11,15 +11,17 @@ import firestore from '@react-native-firebase/firestore';
 import axios from 'axios';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
 
-import Modal from '../../Components/Modal';
 import Button from '../../Components/Button';
 import GroupBox from './GroupBox';
-import { BASE_URL } from '../../Utils/constants';
+import {BASE_URL} from '../../Utils/constants';
+import MembersList from './MemberList';
 import styles from './style';
 
 const Home = () => {
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [openMembersModal, setOpenMembersModal] = useState(false);
 
   const user = useSelector(state => state.user.data.user);
   const contatcs = useSelector(state => state.contacts.data);
@@ -101,21 +103,31 @@ const Home = () => {
         }
       });
 
-      const res = await axios.post(
-        `${BASE_URL}/send-notifications`,
-        {
-          tokens,
-        },
-      );
+      const res = await axios.post(`${BASE_URL}/send-notifications`, {
+        tokens,
+      });
       console.log('rES ==>', res.data);
     } catch (e) {
       console.log('ringAlarm ERR', e.message);
     }
   };
 
+  const toggleModal = () => {
+    setOpenMembersModal(!openMembersModal)
+  }
+
+  const onBoxPress = data => {
+    setSelectedGroup(data);
+    toggleModal()
+  };
+
   const renderList = ({item}) => (
     <View style={styles.grpListBox}>
-    <GroupBox item={item} onPress={() => ringAlarm(item)} />
+      <GroupBox
+        item={item}
+        onBtnPress={() => ringAlarm(item)}
+        onBoxPress={() => onBoxPress(item)}
+      />
     </View>
   );
 
@@ -135,21 +147,28 @@ const Home = () => {
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Groups</Text>
-      <Button text="Create Group" onPress={navigateToContacts} containerStyle={styles.createGrpBtncontainer} />
-      {loading ? (
-        <View style={{marginTop: 20}}>
-          <ActivityIndicator size={'large'} />
-        </View>
-      ) : (
-        <FlatList
-          data={groups}
-          renderItem={renderList}
-          keyExtractor={(item, index) => item.groupId}
+    <>
+      <MembersList data={selectedGroup} onClose={toggleModal} isVisible={openMembersModal} />
+      <View style={styles.container}>
+        <Text style={styles.title}>Groups</Text>
+        <Button
+          text="Create Group"
+          onPress={navigateToContacts}
+          containerStyle={styles.createGrpBtncontainer}
         />
-      )}
-    </View>
+        {loading ? (
+          <View style={{marginTop: 20}}>
+            <ActivityIndicator size={'large'} />
+          </View>
+        ) : (
+          <FlatList
+            data={groups}
+            renderItem={renderList}
+            keyExtractor={(item, index) => item.groupId}
+          />
+        )}
+      </View>
+    </>
   );
 };
 
