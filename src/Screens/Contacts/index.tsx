@@ -63,23 +63,41 @@ const Contacts = () => {
     }
   };
 
-  // const handleSearch = text => {
-  //   setSearchTerm(text);
+  const handleSearch = text => {
+    setSearchTerm(text);
+    const lowerCaseSearchTerm = text.toLowerCase();
+    // Filter the 'withAccount' section
+    const withAccountContacts = data.filter(
+      contact =>
+        contact.type === 'withAccount' &&
+        (contact.name.toLowerCase().includes(lowerCaseSearchTerm) ||
+          contact.number.includes(lowerCaseSearchTerm)),
+    );
 
-  //   // Convert the input and fields to lowercase for case-insensitive matching
-  //   const filteredContacts = checkContacts.filter(item => {
-  //     if (item.type === 'header') return true; // Always include headers
-  //     const searchText = text.toLowerCase();
-  //     // console.log("searchText", searchText)
-  //     // console.log("item?.phoneNumber.includes(searchText)", item?.phoneNumber.includes(searchText))
-  //     return (
-  //       item?.displayName?.toLowerCase().includes(searchText) ||
-  //       item?.name?.toLowerCase().includes(searchText)
-  //     );
-  //   });
+    // Filter the 'withoutAccount' section
+    const withoutAccountContacts = data.filter(
+      contact =>
+        contact.type === 'withoutAccount' &&
+        (contact.displayName.toLowerCase().includes(lowerCaseSearchTerm) ||
+          contact.phoneNumber.includes(lowerCaseSearchTerm)),
+    );
 
-  //   setFilteredData(filteredContacts);
-  // };
+    // Prepare the filtered data
+    let filteredData = [];
+
+    // Add 'withAccount' section if it has data
+    if (withAccountContacts.length > 0) {
+      filteredData.push({type: 'header', title: 'Contacts on AlarmApp'});
+      filteredData = filteredData.concat(withAccountContacts);
+    }
+
+    // Add 'withoutAccount' section if it has data
+    if (withoutAccountContacts.length > 0) {
+      filteredData.push({type: 'header', title: 'Contacts Not on AlarmApp'});
+      filteredData = filteredData.concat(withoutAccountContacts);
+    }
+    setFilteredData(filteredData);
+  };
 
   const mergeData = () => {
     const combinedContacts = [
@@ -230,16 +248,16 @@ const Contacts = () => {
           paddingHorizontal: 10,
           marginTop: 10,
         }}>
-        {/* <TextInput
+        <TextInput
           style={{
             borderColor: 'grey',
             borderWidth: 1,
             borderRadius: 10,
             color: 'black',
           }}
-          // onChangeText={handleSearch}
+          onChangeText={handleSearch}
           value={searchTerm}
-        /> */}
+        />
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
           <TextInput
             style={{
