@@ -98,7 +98,7 @@ const Home = () => {
     try {
       const tokens = [];
       grpData.members.forEach(item => {
-        if (item.uid !== user.uid) {
+        if (item.uid !== user.uid && item.deviceToken) {
           tokens.push(item.deviceToken);
         }
       });
