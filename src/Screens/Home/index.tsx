@@ -10,6 +10,7 @@ import {useSelector} from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
 import axios from 'axios';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
+import parsePhoneNumberFromString, { findNumbers } from 'libphonenumber-js';
 
 import Button from '../../Components/Button';
 import GroupBox from './GroupBox';
@@ -38,55 +39,57 @@ const Home = () => {
         .where('members', 'array-contains', userUid)
         .get();
 
-      let groupsWithMembersData = [];
+      if (!groupSnapshots.empty) {
+        let groupsWithMembersData = [];
 
-      // 2. Loop through each group
-      for (const groupDoc of groupSnapshots.docs) {
-        const groupData = groupDoc.data();
-        let membersData = [];
+        // 2. Loop through each group
+        for (const groupDoc of groupSnapshots.docs) {
+          const groupData = groupDoc.data();
+          let membersData = [];
 
-        // 3. Check for member UIDs in Redux state first
-        for (const uid of groupData.members) {
-          if (uid === userUid) {
-            membersData.push(user);
-          }
-          if (uid !== userUid) {
-            // Exclude current user
-            let memberData = contactWithAccount.find(
-              contact => contact.uid === uid,
-            );
+          // 3. Check for member UIDs in Redux state first
+          for (const uid of groupData.members) {
+            if (uid === userUid) {
+              membersData.push(user);
+            }
+            if (uid !== userUid) {
+              // Exclude current user
+              let memberData = contactWithAccount.find(
+                contact => contact.uid === uid,
+              );
 
-            if (memberData) {
-              // 4. If member data found in Redux, push it to membersData
-              membersData.push(memberData);
-            } else {
-              console.log('FIRESTOER= ====>');
-              // 5. If member data not found in Redux, fetch from Firestore
-              const userSnapshot = await firestore()
-                .collection('users')
-                .doc(uid)
-                .get();
-              if (userSnapshot.exists) {
-                const fetchedUserData = userSnapshot.data();
-                membersData.push({uid, ...fetchedUserData});
+              if (memberData) {
+                // 4. If member data found in Redux, push it to membersData
+                membersData.push(memberData);
               } else {
-                // 6. If not found in Firestore (optional handling)
-                membersData.push({uid});
+                console.log('FIRESTOER= ====>');
+                // 5. If member data not found in Redux, fetch from Firestore
+                const userSnapshot = await firestore()
+                  .collection('users')
+                  .doc(uid)
+                  .get();
+                if (userSnapshot.exists) {
+                  const fetchedUserData = userSnapshot.data();
+                  membersData.push({uid, ...fetchedUserData});
+                } else {
+                  // 6. If not found in Firestore (optional handling)
+                  membersData.push({uid});
+                }
               }
             }
           }
-        }
 
-        // 7. Build the group object with member data
-        groupsWithMembersData.push({
-          groupId: groupDoc.id,
-          groupName: groupData.groupName,
-          createdBy: groupData.createdBy,
-          members: membersData,
-        });
+          // 7. Build the group object with member data
+          groupsWithMembersData.push({
+            groupId: groupDoc.id,
+            groupName: groupData.groupName,
+            createdBy: groupData.createdBy,
+            members: membersData,
+          });
+        }
+        console.log('groupsWithMembersData', groupsWithMembersData[0].members);
+        setGroups(groupsWithMembersData);
       }
-      console.log('groupsWithMembersData', groupsWithMembersData[0].members);
-      setGroups(groupsWithMembersData);
     } catch (error) {
       console.error('Error loading groups:', error);
     } finally {
@@ -113,12 +116,12 @@ const Home = () => {
   };
 
   const toggleModal = () => {
-    setOpenMembersModal(!openMembersModal)
-  }
+    setOpenMembersModal(!openMembersModal);
+  };
 
   const onBoxPress = data => {
     setSelectedGroup(data);
-    toggleModal()
+    toggleModal();
   };
 
   const renderList = ({item}) => (
@@ -146,9 +149,21 @@ const Home = () => {
     }, []),
   );
 
+  // useEffect(() => {
+  //   const phoneNumber = parsePhoneNumberFromString('03442779759', 'PK');
+  //   console.log('******************');
+  //   console.log('ISVALID ====>', phoneNumber?.isValid());
+  //   console.log('number', phoneNumber?.number);
+  //   console.log('country', phoneNumber?.country);
+  // }, []);
+
   return (
     <>
-      <MembersList data={selectedGroup} onClose={toggleModal} isVisible={openMembersModal} />
+      <MembersList
+        data={selectedGroup}
+        onClose={toggleModal}
+        isVisible={openMembersModal}
+      />
       <View style={styles.container}>
         <Text style={styles.title}>Groups</Text>
         <Button
