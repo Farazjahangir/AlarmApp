@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   FlatList,
+  Alert,
 } from 'react-native';
 import {useSelector} from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
@@ -109,9 +110,9 @@ const Home = () => {
       const res = await axios.post(`${BASE_URL}/send-notifications`, {
         tokens,
       });
-      console.log('rES ==>', res.data);
+      Alert.alert("Success", "Alarm Rang")
     } catch (e) {
-      console.log('ringAlarm ERR', e.message);
+      Alert.alert("Error", e?.message)
     }
   };
 
