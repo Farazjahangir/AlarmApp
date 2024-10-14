@@ -4,17 +4,17 @@ import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {useSelector, useDispatch} from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
+import { request, PERMISSIONS, check, RESULTS } from 'react-native-permissions';
 
 import Home from '../Screens/Home';
 import AlarmScreen from '../Screens/AlarmScreen';
 import Contacts from '../Screens/Contacts';
 import Login from '../Screens/Login';
 import Signup from '../Screens/Signup';
-import {fetchContacts, checkContactsWithFirestore} from '../Utils';
+import {fetchContacts, checkContactsWithFirestore, hasContactPermission} from '../Utils';
 import {setContacts, setContactLoading} from '../Redux/contacts/contactSlice';
-import {fetchDeviceToken} from '../Utils';
 import Header from '../Components/Header';
-import { registerDeviceForFCM } from '../Utils';
+import { registerDeviceForFCM, checkForBatteryOptimization } from '../Utils';
 
 const Stack = createNativeStackNavigator();
 
@@ -43,7 +43,8 @@ const StackNavigation = () => {
 
   const getContacts = async () => {
     try {
-      console.log('FETCHING CONTACTS...');
+      const hasPermission = await hasContactPermission()
+      if (!hasPermission) return
       disptach(setContactLoading(true));
       const contacts = await fetchContacts();
       const firestoreRes = await checkContactsWithFirestore(contacts, user);
@@ -60,11 +61,15 @@ const StackNavigation = () => {
     }
   };
 
+  const checkBatteryOptimization = async () => {
+    await checkForBatteryOptimization();
+  }
  
 
   useEffect(() => {
     if (user) {
       getContacts();
+      checkBatteryOptimization()
     }
   }, [user]);
 

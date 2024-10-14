@@ -25,6 +25,12 @@ const styles = StyleSheet.create({
     },
     grpListBox: {
         marginTop: 15
+    },
+    noDataMessage: {
+        color: COLORS.black,
+        textAlign: 'center',
+        marginTop: 20,
+        fontSize: RFPercentage(3)
     }
 });
 

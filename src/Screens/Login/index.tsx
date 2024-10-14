@@ -86,6 +86,7 @@ const Login = () => {
           placeholder={'Enter Password'}
           onChangeText={text => handleTextChange(text, 'password')}
           value={userCreds.password}
+          secureTextEntry
         />
         <View style={{width: '100%', alignItems: 'flex-end'}}>
           <TouchableOpacity

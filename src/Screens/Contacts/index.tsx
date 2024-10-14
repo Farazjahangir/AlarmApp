@@ -5,16 +5,24 @@ import {
   View,
   TouchableOpacity,
   ActivityIndicator,
+  Alert
 } from 'react-native';
 import RNContacts from 'react-native-contacts';
 import firestore from '@react-native-firebase/firestore';
-import {useSelector} from 'react-redux';
+import {useSelector, useDispatch} from 'react-redux';
 import {useNavigation} from '@react-navigation/native';
 
 import Button from '../../Components/Button';
 import TextInput from '../../Components/TextInput';
 import ContactList from './ContactList';
-import { cleanString } from '../../Utils';
+import {
+  cleanString,
+  hasContactPermission,
+  fetchContacts,
+  checkContactsWithFirestore,
+  askContactsPermission,
+} from '../../Utils';
+import { setContacts ,setContactLoading } from '../../Redux/contacts/contactSlice';
 import styles from './style';
 
 const Contacts = () => {
@@ -27,15 +35,17 @@ const Contacts = () => {
   const [createGrpLoading, setCreateGrpLoading] = useState(false);
   const [errors, setErrors] = useState({
     grpName: '',
-    contacts: ''
-  })
+    contacts: '',
+  });
 
   const contatcs = useSelector(state => state.contacts.data);
+  const contactsLoading = useSelector(state => state.contacts.loading);
   const user = useSelector(state => state.user.data.user);
   const navigation = useNavigation();
+  const dispatch = useDispatch()
 
   const handleSelectContact = phoneNumber => {
-    setErrors({...errors, contacts: ''})
+    setErrors({...errors, contacts: ''});
     const selected = {...selectedContacts};
     if (selected[phoneNumber]) {
       delete selected[phoneNumber];
@@ -110,7 +120,7 @@ const Contacts = () => {
 
   const onChangeGrpName = text => {
     setGrpName(text);
-    setErrors({...errors, grpName: ''})
+    setErrors({...errors, grpName: ''});
   };
 
   const separateActiveAndNonActiveContacts = () => {
@@ -174,13 +184,15 @@ const Contacts = () => {
       // Step 3: Handle remaining contacts not found in Firestore (create new users)
       for (const contact of contactsWithoutUID) {
         if (!existingUIDs.has(contact.phoneNumber)) {
-          const newUserRef = await firestore().collection('users').add({
-            name: contact.displayName,
-            number: cleanString(contact.phoneNumber),
-            isActive: false,
-            deviceToken: '',
-            email: '',
-          });
+          const newUserRef = await firestore()
+            .collection('users')
+            .add({
+              name: contact.displayName,
+              number: cleanString(contact.phoneNumber),
+              isActive: false,
+              deviceToken: '',
+              email: '',
+            });
 
           // Add the new user's UID to the array
           newUserUIDs.push(newUserRef.id);
@@ -209,32 +221,32 @@ const Contacts = () => {
 
   const validate = () => {
     let isValid = true;
-    const errorText = { ...errors }
+    const errorText = {...errors};
 
-    if (!grpName){
-      errorText.grpName = 'Required'
-      isValid = false
+    if (!grpName) {
+      errorText.grpName = 'Required';
+      isValid = false;
     }
 
     if (!Object.keys(selectedContacts).length) {
-      errorText.contacts = 'Please Select atleast on contact'
-      isValid = false
+      errorText.contacts = 'Please Select atleast on contact';
+      isValid = false;
     }
 
-    setErrors(errorText)
-    return isValid
-  }
+    setErrors(errorText);
+    return isValid;
+  };
 
   const onCreateGroup = async () => {
     try {
-      if (!validate()) return
+      if (!validate()) return;
       setCreateGrpLoading(true);
       const uids = await createSelectedUsersUIDArr();
       const payload = {
         groupName: grpName,
         createdBy: user.uid,
         members: [user.uid, ...uids],
-        createdAt: firestore.FieldValue.serverTimestamp()
+        createdAt: firestore.FieldValue.serverTimestamp(),
       };
 
       await firestore().collection('groups').add(payload);
@@ -246,6 +258,33 @@ const Contacts = () => {
     }
   };
 
+  const getContacts = async () => {
+    try {
+
+      const hasPermission = await hasContactPermission();
+      if (!hasPermission) {
+        await askContactsPermission();
+      }
+  
+      console.log("FETCHING")
+      dispatch(setContactLoading(true));
+      if (!contatcs.contactsWithAccount.length || !contatcs.contactsWithoutAccount.length) {
+        const contacts = await fetchContacts();
+        const firestoreRes = await checkContactsWithFirestore(contacts, user);
+        dispatch(
+          setContacts({
+            contactsWithAccount: firestoreRes?.contactsWithAccount,
+            contactsWithoutAccount: firestoreRes?.contactsWithoutAccount,
+          }),
+        );
+      }
+    } catch(e) {
+      Alert.alert("Error in read contacts", e?.message || "Something went wrong") 
+    } finally {
+      dispatch(setContactLoading(false));
+    }
+  };
+
   useEffect(() => {
     if (
       contatcs.contactsWithAccount.lenght ||
@@ -254,6 +293,10 @@ const Contacts = () => {
       mergeData();
     }
   }, [contatcs.contactsWithAccount, contatcs.contactsWithoutAccount]);
+
+  useEffect(() => {
+    getContacts();
+  }, []);
   return (
     <View style={styles.container}>
       <View style={styles.contentBox}>
@@ -278,12 +321,13 @@ const Contacts = () => {
           />
         </View>
         {errors.contacts && <Text style={styles.error}>{errors.contacts}</Text>}
-        <FlatList
+        {contactsLoading && <View style={{ marginTop: 20 }}><ActivityIndicator size='large' /></View>}
+        {!contactsLoading && <FlatList
           data={filteredData}
           renderItem={renderList}
           extraData={filteredData}
           keyExtractor={(item, index) => item.number}
-        />
+        />}
       </View>
     </View>
   );

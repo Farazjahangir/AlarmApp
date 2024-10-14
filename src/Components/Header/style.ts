@@ -12,11 +12,11 @@ const styles = StyleSheet.create({
     },
     screenName: {
         color: COLORS.black, 
-        fontSize: RFPercentage(3)
+        fontSize: RFPercentage(2.6)
     },
     username: {
         color: COLORS.black, 
-        fontSize: RFPercentage(2.5)
+        fontSize: RFPercentage(2)
     },
     leftSide: {
         flexDirection: 'row',

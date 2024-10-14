@@ -11,7 +11,7 @@ import {useSelector} from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
 import axios from 'axios';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
-import parsePhoneNumberFromString, { findNumbers } from 'libphonenumber-js';
+import parsePhoneNumberFromString, {findNumbers} from 'libphonenumber-js';
 
 import Button from '../../Components/Button';
 import GroupBox from './GroupBox';
@@ -108,13 +108,16 @@ const Home = () => {
         }
       });
 
-
-      const res = await axios.post(`${BASE_URL}/send-notifications`, {
-        tokens,
-      });
-      Alert.alert("Success", "Alarm Rang")
+      console.log("TOKEN", tokens)
+      if (tokens.length) {
+        console.log('IFFFFFFFFFFFFF')
+        const res = await axios.post(`${BASE_URL}/send-notifications`, {
+          tokens,
+        });
+      }
+      Alert.alert('Success', 'Alarm Rang');
     } catch (e) {
-      Alert.alert("Error", e?.message)
+      Alert.alert('Error', e?.message);
     }
   };
 
@@ -174,11 +177,14 @@ const Home = () => {
           onPress={navigateToContacts}
           containerStyle={styles.createGrpBtncontainer}
         />
-        {loading ? (
+        {loading && (
           <View style={{marginTop: 20}}>
             <ActivityIndicator size={'large'} />
           </View>
-        ) : (
+        )}
+
+        {!loading && !groups.length && <Text style={styles.noDataMessage}>No Groups</Text>}
+        {!loading && !!groups.length && (
           <FlatList
             data={groups}
             renderItem={renderList}

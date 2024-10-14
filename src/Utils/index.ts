@@ -243,3 +243,9 @@ export const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
 };
+
+export const hasContactPermission = async () => {
+    const hasPermission = await check(PERMISSIONS.ANDROID.READ_CONTACTS)
+    if (hasPermission === RESULTS.GRANTED) return true
+    return false
+}
