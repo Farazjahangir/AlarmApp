@@ -222,3 +222,7 @@ export const registerDeviceForFCM = async (uid) => {
         console.log('registerDeviceForFCM ERR', e.message);
     }
 };
+
+export const removeSpaces = (str) => {
+    return str.replace(/\s+/g, '');
+};

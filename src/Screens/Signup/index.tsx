@@ -6,13 +6,16 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import {useState} from 'react';
+import {useState, useRef} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
+import firestore, {Filter} from '@react-native-firebase/firestore';
+import PhoneInput from '../../Components/PhoneInput';
+import parsePhoneNumber from 'libphonenumber-js';
 import axios from 'axios';
 
 import {BASE_URL} from '../../Utils/constants';
+import {removeSpaces} from '../../Utils';
 
 const Signup = () => {
   const [user, setUser] = useState({
@@ -24,18 +27,43 @@ const Signup = () => {
 
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
+  const phoneInputRef = useRef(null);
 
   const handleTextChange = (text, key) => {
-    data = {...user};
+    const data = {...user};
     data[key] = text;
     setUser(data);
   };
 
-  const checkUser = async () =>
-    firestore().collection('users').where('number', '==', user.number).get();
+  const checkUser = async () => {
+    try {
+      const countryCode = phoneInputRef.current.getCountryCode();
+      const num = parsePhoneNumber(user.number, countryCode);
+      const internationalFormat = num.formatInternational();
+      const nationalFormat = num.formatNational();
+      const snapShot = await firestore()
+        .collection('users')
+        .where(
+          Filter.or(
+            Filter('number', '==', removeSpaces(internationalFormat)),
+            Filter('number', '==', removeSpaces(nationalFormat)),
+            Filter('number', '==', user.number),
+          ),
+        )
+        .get();
+
+      return snapShot;
+    } catch (e) {
+      Alert.alert('Error', e?.message || 'Something Went Wrong');
+    }
+  };
 
   const createAccountWithExistingUser = async uid =>
-    await axios.post(`${BASE_URL}/user/create`, {...user, uid});
+    await axios.post(`${BASE_URL}/user/create`, {
+      ...user,
+      uid,
+      countryCode: phoneInputRef.current.getCountryCode(),
+    });
 
   const createUser = async () => {
     try {
@@ -61,7 +89,7 @@ const Signup = () => {
       if (!userSnapshot.empty) {
         const uid = userSnapshot.docs[0].id;
         if (userSnapshot.docs[0].data().isActive) {
-          throw new Error('User Already Exist')
+          throw new Error('Phone number Already Exist');
         }
         await createAccountWithExistingUser(uid);
       } else {
@@ -70,8 +98,11 @@ const Signup = () => {
 
       Alert.alert('Success', 'User Created');
     } catch (e) {
-      console.log("ERRR", e.response.data)
-      Alert.alert('ERROR', e?.response?.data?.message || e?.message || 'Something went wrong');
+      console.log('e?.response?.data', e?.response);
+      Alert.alert(
+        'ERROR',
+        e?.response?.data?.message || e?.message || 'Something went wrong',
+      );
     } finally {
       setLoading(false);
     }
@@ -91,13 +122,21 @@ const Signup = () => {
             marginTop: 20,
             height: 45,
             color: 'black',
+            backgroundColor: 'white',
           }}
           placeholderTextColor="black"
           placeholder={'Enter Name'}
           onChangeText={text => handleTextChange(text, 'name')}
           value={user.name}
         />
-        <TextInput
+        <View style={{marginTop: 20}}>
+          <PhoneInput
+            ref={phoneInputRef}
+            onChangeText={text => handleTextChange(text, 'number')}
+            value={user.number}
+          />
+        </View>
+        {/* <TextInput
           style={{
             borderWidth: 1,
             borderColor: 'grey',
@@ -112,7 +151,8 @@ const Signup = () => {
           placeholder={'Contact Number'}
           onChangeText={text => handleTextChange(text, 'number')}
           value={user.number}
-        />
+        /> */}
+
         <TextInput
           style={{
             borderWidth: 1,
@@ -122,6 +162,7 @@ const Signup = () => {
             marginTop: 20,
             height: 45,
             color: 'black',
+            backgroundColor: 'white',
           }}
           placeholderTextColor="black"
           placeholder={'Enter Email'}
@@ -137,6 +178,7 @@ const Signup = () => {
             marginTop: 20,
             height: 45,
             color: 'black',
+            backgroundColor: 'white',
           }}
           placeholderTextColor="black"
           placeholder={'Enter Password'}
