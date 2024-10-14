@@ -14,6 +14,7 @@ import {useNavigation} from '@react-navigation/native';
 import Button from '../../Components/Button';
 import TextInput from '../../Components/TextInput';
 import ContactList from './ContactList';
+import { cleanString } from '../../Utils';
 import styles from './style';
 
 const Contacts = () => {
@@ -169,7 +170,7 @@ const Contacts = () => {
         if (!existingUIDs.has(contact.phoneNumber)) {
           const newUserRef = await firestore().collection('users').add({
             name: contact.displayName,
-            number: contact.phoneNumber,
+            number: cleanString(contact.phoneNumber),
             isActive: false,
             deviceToken: '',
             email: '',

@@ -107,6 +107,7 @@ const Home = () => {
         }
       });
 
+
       const res = await axios.post(`${BASE_URL}/send-notifications`, {
         tokens,
       });

@@ -76,6 +76,7 @@ const Signup = () => {
         email: user.email,
         number: user.number,
         isActive: true,
+        countryCode: phoneInputRef.current.getCountryCode()
       });
     } catch (e) {
       throw new Error(e);

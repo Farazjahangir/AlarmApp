@@ -226,3 +226,14 @@ export const registerDeviceForFCM = async (uid) => {
 export const removeSpaces = (str) => {
     return str.replace(/\s+/g, '');
 };
+
+export const cleanString = (str) => {
+    // Check if the string starts with a '+'
+    const hasPlus = str.startsWith('+');
+
+    // Remove all characters except digits and the starting '+'
+    const cleaned = str.replace(/[^0-9]/g, '');
+
+    // Add back the '+' at the start if it was present
+    return hasPlus ? `+${cleaned}` : cleaned;
+};
