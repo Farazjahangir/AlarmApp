@@ -1,7 +1,6 @@
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   Alert,
   ActivityIndicator,
@@ -16,6 +15,9 @@ import axios from 'axios';
 
 import {BASE_URL} from '../../Utils/constants';
 import {removeSpaces} from '../../Utils';
+import TextInput from '../../Components/TextInput';
+import Button from '../../Components/Button';
+import styles from './style';
 
 const Signup = () => {
   const [user, setUser] = useState({
@@ -76,7 +78,7 @@ const Signup = () => {
         email: user.email,
         number: user.number,
         isActive: true,
-        countryCode: phoneInputRef.current.getCountryCode()
+        countryCode: phoneInputRef.current.getCountryCode(),
       });
     } catch (e) {
       throw new Error(e);
@@ -109,106 +111,49 @@ const Signup = () => {
     }
   };
   return (
-    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-      <View style={{width: 300}}>
-        <Text style={{color: 'black', fontSize: 30, textAlign: 'center'}}>
-          Sign Up
-        </Text>
-        <TextInput
-          style={{
-            borderWidth: 1,
-            borderColor: 'grey',
-            borderRadius: 10,
-            width: '100%',
-            marginTop: 20,
-            height: 45,
-            color: 'black',
-            backgroundColor: 'white',
-          }}
-          placeholderTextColor="black"
-          placeholder={'Enter Name'}
-          onChangeText={text => handleTextChange(text, 'name')}
-          value={user.name}
-        />
-        <View style={{marginTop: 20}}>
+    <View style={styles.container}>
+      <View style={styles.contentBox}>
+        <Text style={styles.title}>Sign Up</Text>
+        <View style={styles.inputBox}>
+          <TextInput
+            placeholder={'Enter Name'}
+            onChangeText={text => handleTextChange(text, 'name')}
+            value={user.name}
+          />
+        </View>
+        <View style={styles.inputBox}>
           <PhoneInput
             ref={phoneInputRef}
             onChangeText={text => handleTextChange(text, 'number')}
             value={user.number}
           />
         </View>
-        {/* <TextInput
-          style={{
-            borderWidth: 1,
-            borderColor: 'grey',
-            borderRadius: 10,
-            width: '100%',
-            marginTop: 20,
-            height: 45,
-            color: 'black',
-          }}
-          inputMode="numeric"
-          placeholderTextColor="black"
-          placeholder={'Contact Number'}
-          onChangeText={text => handleTextChange(text, 'number')}
-          value={user.number}
-        /> */}
-
-        <TextInput
-          style={{
-            borderWidth: 1,
-            borderColor: 'grey',
-            borderRadius: 10,
-            width: '100%',
-            marginTop: 20,
-            height: 45,
-            color: 'black',
-            backgroundColor: 'white',
-          }}
-          placeholderTextColor="black"
-          placeholder={'Enter Email'}
-          onChangeText={text => handleTextChange(text, 'email')}
-          value={user.email}
-        />
-        <TextInput
-          style={{
-            borderWidth: 1,
-            borderColor: 'grey',
-            borderRadius: 10,
-            width: '100%',
-            marginTop: 20,
-            height: 45,
-            color: 'black',
-            backgroundColor: 'white',
-          }}
-          placeholderTextColor="black"
-          placeholder={'Enter Password'}
-          onChangeText={text => handleTextChange(text, 'password')}
-          value={user.password}
-        />
-        <View style={{width: '100%', alignItems: 'flex-end'}}>
-          <TouchableOpacity
-            style={{
-              backgroundColor: '#ee5253',
-              width: 100,
-              marginTop: 10,
-              padding: 4,
-              borderRadius: 5,
-            }}
+        <View style={styles.inputBox}>
+          <TextInput
+            placeholder={'Enter Email'}
+            onChangeText={text => handleTextChange(text, 'email')}
+            value={user.email}
+          />
+        </View>
+        <View style={styles.inputBox}>
+          <TextInput
+            placeholder={'Enter Password'}
+            onChangeText={text => handleTextChange(text, 'password')}
+            value={user.password}
+            secureTextEntry
+          />
+        </View>
+        <View style={styles.btnBox}>
+          <Button
+            text={'Signup'}
             disabled={
               !user.email || !user.password || !user.name || !user.number
             }
-            onPress={handleSignup}>
-            {loading ? (
-              <ActivityIndicator />
-            ) : (
-              <Text style={{color: '#ffffff', textAlign: 'center'}}>
-                Sign Up
-              </Text>
-            )}
-          </TouchableOpacity>
+            onPress={handleSignup}
+            loading={loading}
+          />
           <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-            <Text style={{color: '#1e90ff', fontSize: 16, marginTop: 10}}>
+            <Text style={styles.linkText}>
               SignIn
             </Text>
           </TouchableOpacity>

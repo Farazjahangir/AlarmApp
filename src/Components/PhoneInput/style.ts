@@ -4,9 +4,9 @@ import COLORS from '../../Constants/colors';
 
 const styles = StyleSheet.create({
     container: {
-        borderRadius: 10,
+        borderRadius: 6,
         borderWidth: 1,
-        borderColor: 'grey',
+        borderColor: COLORS.inputBorder,
         width: '100%',
     },
     textContainer: {
@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
         paddingVertical: 0,
     },
     textInput: {
-        height: 45,
+        height: 40,
         fontSize: 16,
         padding: 0,
         margin: 0,
