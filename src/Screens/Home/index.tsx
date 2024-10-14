@@ -38,6 +38,7 @@ const Home = () => {
       const groupSnapshots = await firestore()
         .collection('groups')
         .where('members', 'array-contains', userUid)
+        .orderBy('createdAt', 'desc')
         .get();
 
       if (!groupSnapshots.empty) {

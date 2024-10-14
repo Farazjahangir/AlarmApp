@@ -234,6 +234,7 @@ const Contacts = () => {
         groupName: grpName,
         createdBy: user.uid,
         members: [user.uid, ...uids],
+        createdAt: firestore.FieldValue.serverTimestamp()
       };
 
       await firestore().collection('groups').add(payload);
