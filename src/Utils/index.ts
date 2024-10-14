@@ -237,3 +237,9 @@ export const cleanString = (str) => {
     // Add back the '+' at the start if it was present
     return hasPlus ? `+${cleaned}` : cleaned;
 };
+
+export const validateEmail = (email) => {
+    // Regular expression for basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+};

@@ -24,6 +24,10 @@ const styles = StyleSheet.create({
     codeText: {
         fontSize: 16,
         color: COLORS.black,
+    },
+    error: {
+        color: COLORS.error,
+        fontSize: RFPercentage(2.2)
     }
 });
 

@@ -10,8 +10,12 @@ const styles = StyleSheet.create({
         color: COLORS.black,
         height: 40,
         width: '100%',
-        backgroundColor: COLORS.white
+        backgroundColor: COLORS.white,
     },
+    error: {
+        color: COLORS.error,
+        fontSize: RFPercentage(2.2)
+    }   
 });
 
 export default styles;

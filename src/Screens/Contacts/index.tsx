@@ -25,15 +25,20 @@ const Contacts = () => {
   const [grpName, setGrpName] = useState('');
   const [filteredData, setFilteredData] = useState([]);
   const [createGrpLoading, setCreateGrpLoading] = useState(false);
+  const [errors, setErrors] = useState({
+    grpName: '',
+    contacts: ''
+  })
 
   const contatcs = useSelector(state => state.contacts.data);
   const user = useSelector(state => state.user.data.user);
   const navigation = useNavigation();
 
   const handleSelectContact = phoneNumber => {
+    setErrors({...errors, contacts: ''})
     const selected = {...selectedContacts};
     if (selected[phoneNumber]) {
-      selected[phoneNumber] = false;
+      delete selected[phoneNumber];
     } else {
       selected[phoneNumber] = true;
     }
@@ -105,6 +110,7 @@ const Contacts = () => {
 
   const onChangeGrpName = text => {
     setGrpName(text);
+    setErrors({...errors, grpName: ''})
   };
 
   const separateActiveAndNonActiveContacts = () => {
@@ -201,8 +207,27 @@ const Contacts = () => {
     return [...selectedContactsData, ...foundUserUIDs, ...newUserUIDs];
   };
 
+  const validate = () => {
+    let isValid = true;
+    const errorText = { ...errors }
+
+    if (!grpName){
+      errorText.grpName = 'Required'
+      isValid = false
+    }
+
+    if (!Object.keys(selectedContacts).length) {
+      errorText.contacts = 'Please Select atleast on contact'
+      isValid = false
+    }
+
+    setErrors(errorText)
+    return isValid
+  }
+
   const onCreateGroup = async () => {
     try {
+      if (!validate()) return
       setCreateGrpLoading(true);
       const uids = await createSelectedUsersUIDArr();
       const payload = {
@@ -241,15 +266,17 @@ const Contacts = () => {
           onChangeText={onChangeGrpName}
           value={grpName}
           placeholder="Enter Group Name"
+          error={errors.grpName}
         />
         <View style={styles.createBtnBox}>
           <Button
             text="Create Group"
             onPress={onCreateGroup}
             loading={createGrpLoading}
-            disabled={!grpName || !!selectedContacts.length}
+            disabled={createGrpLoading}
           />
         </View>
+        {errors.contacts && <Text style={styles.error}>{errors.contacts}</Text>}
         <FlatList
           data={filteredData}
           renderItem={renderList}

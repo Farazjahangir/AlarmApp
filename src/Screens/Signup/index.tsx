@@ -17,10 +17,18 @@ import {BASE_URL} from '../../Utils/constants';
 import {removeSpaces} from '../../Utils';
 import TextInput from '../../Components/TextInput';
 import Button from '../../Components/Button';
+import { validateEmail } from '../../Utils';
 import styles from './style';
 
 const Signup = () => {
   const [user, setUser] = useState({
+    email: '',
+    password: '',
+    name: '',
+    number: '',
+  });
+
+  const [errors, setErrors] = useState({
     email: '',
     password: '',
     name: '',
@@ -33,8 +41,12 @@ const Signup = () => {
 
   const handleTextChange = (text, key) => {
     const data = {...user};
+    const errorsText = {...errors};
+
     data[key] = text;
+    errorsText[key] = ''
     setUser(data);
+    setErrors(errorsText)
   };
 
   const checkUser = async () => {
@@ -65,17 +77,18 @@ const Signup = () => {
       ...user,
       uid,
       countryCode: phoneInputRef.current.getCountryCode(),
+      email: user.email.trim()
     });
 
   const createUser = async () => {
     try {
       const authUser = await auth().createUserWithEmailAndPassword(
-        user.email,
+        user.email.trim(),
         user.password,
       );
       await firestore().collection('users').doc(authUser.user.uid).set({
         name: user.name,
-        email: user.email,
+        email: user.email.trim(),
         number: user.number,
         isActive: true,
         countryCode: phoneInputRef.current.getCountryCode(),
@@ -85,8 +98,38 @@ const Signup = () => {
     }
   };
 
+  const validateInputs = () => {
+    const errorText = { ...errors }
+    let isValid = true
+
+    if (!user.name) {
+      errorText.name = 'Required'
+      isValid = false
+    }
+    if (!user.email) {
+      errorText.email = 'Required'
+      isValid = false
+    }
+    if (user.email && !validateEmail(user.email)) {
+      errorText.email = 'Email is not valid'
+      isValid = false
+    }
+    if (!user.number) {
+      errorText.number = 'Required'
+      isValid = false
+    }
+    if (!user.password) {
+      errorText.password = 'Required'
+      isValid = false
+    }
+
+    setErrors(errorText)
+    return isValid
+  }
+
   const handleSignup = async () => {
     try {
+      if(!validateInputs()) return
       setLoading(true);
       const userSnapshot = await checkUser();
       if (!userSnapshot.empty) {
@@ -100,6 +143,7 @@ const Signup = () => {
       }
 
       Alert.alert('Success', 'User Created');
+      navigation.navigate('Login')
     } catch (e) {
       console.log('e?.response?.data', e?.response);
       Alert.alert(
@@ -119,6 +163,7 @@ const Signup = () => {
             placeholder={'Enter Name'}
             onChangeText={text => handleTextChange(text, 'name')}
             value={user.name}
+            error={errors.name}
           />
         </View>
         <View style={styles.inputBox}>
@@ -126,6 +171,7 @@ const Signup = () => {
             ref={phoneInputRef}
             onChangeText={text => handleTextChange(text, 'number')}
             value={user.number}
+            error={errors.number}
           />
         </View>
         <View style={styles.inputBox}>
@@ -133,6 +179,7 @@ const Signup = () => {
             placeholder={'Enter Email'}
             onChangeText={text => handleTextChange(text, 'email')}
             value={user.email}
+            error={errors.email}
           />
         </View>
         <View style={styles.inputBox}>
@@ -141,14 +188,13 @@ const Signup = () => {
             onChangeText={text => handleTextChange(text, 'password')}
             value={user.password}
             secureTextEntry
+            error={errors.password}
           />
         </View>
         <View style={styles.btnBox}>
           <Button
             text={'Signup'}
-            disabled={
-              !user.email || !user.password || !user.name || !user.number
-            }
+            disabled={loading}
             onPress={handleSignup}
             loading={loading}
           />

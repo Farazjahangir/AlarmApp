@@ -18,6 +18,10 @@ const styles = StyleSheet.create({
     },
     createBtnBox: {
         alignItems: 'flex-end',
+    },
+    error: {
+        color: COLORS.error,
+        fontSize: RFPercentage(2.2)
     }
 });
 
