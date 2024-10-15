@@ -80,6 +80,7 @@ const Home = () => {
             }
           }
 
+
           // 7. Build the group object with member data
           groupsWithMembersData.push({
             groupId: groupDoc.id,
@@ -88,6 +89,7 @@ const Home = () => {
             members: membersData,
           });
         }
+        console.log("groupsWithMembersData", groupsWithMembersData[0].members)
         setGroups(groupsWithMembersData);
       }
     } catch (error) {
@@ -125,6 +127,7 @@ const Home = () => {
 
   const onBoxPress = data => {
     setSelectedGroup(data);
+    console.log("data", data.members)
     toggleModal();
   };
 

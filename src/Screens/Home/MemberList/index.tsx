@@ -10,7 +10,7 @@ const MembersList = ({ data, onClose, isVisible }) => {
        <Modal isVisible={isVisible} title={data?.groupName} onClose={onClose}>
         {data?.members.map(item => (
             <View style={styles.container}>
-                <Text style={styles.name}>{item?.name || item.displayName}</Text>
+                <Text style={styles.name}>{item?.localData?.displayName || item.name}</Text>
                 {item.uid === data.createdBy && <Chip text='Admin' />}
             </View>
         ))}
