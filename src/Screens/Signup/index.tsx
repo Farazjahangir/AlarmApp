@@ -17,7 +17,7 @@ import {BASE_URL} from '../../Utils/constants';
 import {removeSpaces} from '../../Utils';
 import TextInput from '../../Components/TextInput';
 import Button from '../../Components/Button';
-import { validateEmail } from '../../Utils';
+import {validateEmail} from '../../Utils';
 import styles from './style';
 
 const Signup = () => {
@@ -44,9 +44,9 @@ const Signup = () => {
     const errorsText = {...errors};
 
     data[key] = text;
-    errorsText[key] = ''
+    errorsText[key] = '';
     setUser(data);
-    setErrors(errorsText)
+    setErrors(errorsText);
   };
 
   const checkUser = async () => {
@@ -77,7 +77,7 @@ const Signup = () => {
       ...user,
       uid,
       countryCode: phoneInputRef.current.getCountryCode(),
-      email: user.email.trim()
+      email: user.email.trim(),
     });
 
   const createUser = async () => {
@@ -99,37 +99,48 @@ const Signup = () => {
   };
 
   const validateInputs = () => {
-    const errorText = { ...errors }
-    let isValid = true
+    const errorText = {...errors};
+    let isValid = true;
 
     if (!user.name) {
-      errorText.name = 'Required'
-      isValid = false
+      errorText.name = 'Required';
+      isValid = false;
     }
     if (!user.email) {
-      errorText.email = 'Required'
-      isValid = false
+      errorText.email = 'Required';
+      isValid = false;
     }
     if (user.email && !validateEmail(user.email)) {
-      errorText.email = 'Email is not valid'
-      isValid = false
+      errorText.email = 'Email is not valid';
+      isValid = false;
     }
     if (!user.number) {
-      errorText.number = 'Required'
-      isValid = false
-    }
-    if (!user.password) {
-      errorText.password = 'Required'
-      isValid = false
+      errorText.number = 'Required';
+      isValid = false;
     }
 
-    setErrors(errorText)
-    return isValid
-  }
+    if (user.number) {
+      if (
+        user.number.startsWith('0') ||
+        !phoneInputRef.current.isValidNumber(user.number)
+      ) {
+        errorText.number = 'Please enter valid number';
+        isValid = false;
+      }
+    }
+
+    if (!user.password) {
+      errorText.password = 'Required';
+      isValid = false;
+    }
+
+    setErrors(errorText);
+    return isValid;
+  };
 
   const handleSignup = async () => {
     try {
-      if(!validateInputs()) return
+      if (!validateInputs()) return;
       setLoading(true);
       const userSnapshot = await checkUser();
       if (!userSnapshot.empty) {
@@ -143,7 +154,7 @@ const Signup = () => {
       }
 
       Alert.alert('Success', 'User Created');
-      navigation.navigate('Login')
+      navigation.navigate('Login');
     } catch (e) {
       console.log('e?.response?.data', e?.response);
       Alert.alert(
@@ -199,9 +210,7 @@ const Signup = () => {
             loading={loading}
           />
           <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.linkText}>
-              SignIn
-            </Text>
+            <Text style={styles.linkText}>SignIn</Text>
           </TouchableOpacity>
         </View>
       </View>
