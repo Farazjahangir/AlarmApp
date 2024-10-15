@@ -64,7 +64,6 @@ const Home = () => {
                 // 4. If member data found in Redux, push it to membersData
                 membersData.push(memberData);
               } else {
-                console.log('FIRESTOER= ====>');
                 // 5. If member data not found in Redux, fetch from Firestore
                 const userSnapshot = await firestore()
                   .collection('users')
@@ -89,7 +88,6 @@ const Home = () => {
             members: membersData,
           });
         }
-        console.log('groupsWithMembersData', groupsWithMembersData[0].members);
         setGroups(groupsWithMembersData);
       }
     } catch (error) {

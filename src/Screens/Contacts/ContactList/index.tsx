@@ -12,10 +12,12 @@ const ContactList = ({item, selectedContacts, handleSelectContact}) => {
         style={[styles.box, isSelected ? styles.bgPrimeOrange : styles.bgWhite]}
         onPress={handleSelectContact}>
         <Text style={[isSelected ? styles.textWhite : styles.textBlack]}>
-          {item?.name || item.displayName}
+          {/* {item?.name || item.displayName} */}
+          {item?.localData?.displayName || item?.displayName}
         </Text>
         <Text style={[isSelected ? styles.textWhite : styles.textGrey]}>
-          {item?.number || item.phoneNumber}
+          {/* {item?.number || item.phoneNumber} */}
+          {item?.localData?.phoneNumber || item?.phoneNumber}
         </Text>
       </TouchableOpacity>
     );

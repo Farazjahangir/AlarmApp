@@ -72,9 +72,10 @@ const Contacts = () => {
     const withAccountContacts = data.filter(
       contact =>
         contact.type === 'withAccount' &&
-        (contact.name.toLowerCase().includes(lowerCaseSearchTerm) ||
-          contact.number.includes(lowerCaseSearchTerm)),
+        (contact?.localData?.displayName.toLowerCase().includes(lowerCaseSearchTerm) ||
+          contact?.localData?.phoneNumber.includes(lowerCaseSearchTerm)),
     );
+
 
     // Filter the 'withoutAccount' section
     const withoutAccountContacts = data.filter(
@@ -83,6 +84,10 @@ const Contacts = () => {
         (contact.displayName.toLowerCase().includes(lowerCaseSearchTerm) ||
           contact.phoneNumber.includes(lowerCaseSearchTerm)),
     );
+
+    // console.log("withAccountContacts", withAccountContacts)
+    // console.log("withoutAccountContacts", withoutAccountContacts)
+
 
     // Prepare the filtered data
     let filteredData = [];
@@ -101,7 +106,9 @@ const Contacts = () => {
     setFilteredData(filteredData);
   };
 
+  // console.log("DATA ===>", data)
   const mergeData = () => {
+    // console.log("contatcs.contactsWithAccount ====>", contatcs.contactsWithAccount)
     const combinedContacts = [
       {type: 'header', title: 'Contacts on AlarmApp'},
       ...contatcs.contactsWithAccount.map(contact => ({
@@ -266,7 +273,6 @@ const Contacts = () => {
         await askContactsPermission();
       }
   
-      console.log("FETCHING")
       dispatch(setContactLoading(true));
       if (!contatcs.contactsWithAccount.length || !contatcs.contactsWithoutAccount.length) {
         const contacts = await fetchContacts();
@@ -287,7 +293,7 @@ const Contacts = () => {
 
   useEffect(() => {
     if (
-      contatcs.contactsWithAccount.lenght ||
+      contatcs.contactsWithAccount.length ||
       contatcs.contactsWithoutAccount.length
     ) {
       mergeData();

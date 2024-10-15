@@ -10,6 +10,7 @@ const styles = StyleSheet.create({
     contentBox: {
         paddingHorizontal: 10,
         marginTop: 10,
+        flex: 1
     },
     title: {
         fontSize: RFPercentage(3.5),

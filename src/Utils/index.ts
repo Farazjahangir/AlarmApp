@@ -4,6 +4,7 @@ import { request, PERMISSIONS, check, RESULTS } from 'react-native-permissions';
 import messaging from '@react-native-firebase/messaging';
 import RNContacts from 'react-native-contacts';
 import firestore from '@react-native-firebase/firestore';
+import { parsePhoneNumber } from 'libphonenumber-js';
 
 export const checkNotificationPermission = async () => {
     try {
@@ -127,9 +128,27 @@ export const normalizePhoneNumber = number => {
     return number.replace(/\s+/g, ''); // Remove spaces
 };
 
+export const normalizePhoneNumberOnLocalFormat = (phoneNumber) => {
+    // Remove spaces and other characters, keep + at the start if it exists
+    let cleanedNumber = phoneNumber;
+
+    if (cleanedNumber.startsWith('+')) {
+        const num = parsePhoneNumber(cleanedNumber);
+        const nationalFormat = num.formatNational();
+        cleanedNumber = removeSpaces(nationalFormat)
+        // Removing all special characters
+        cleanedNumber = cleanedNumber.replace(/(?!^\+)[^\d]/g, '')
+        // Add other country handling as needed
+    }
+
+    if (cleanedNumber.startsWith('0')) {
+        cleanedNumber = cleanedNumber.substring(1);
+    }
+    return cleanedNumber;
+};
+
 export const transformContacts = contacts => {
     const transformedContacts = [];
-
     contacts.forEach(contact => {
         if (
             contact.phoneNumbers &&
@@ -139,13 +158,14 @@ export const transformContacts = contacts => {
             const distinctNumbers = Array.from(
                 new Set(
                     contact.phoneNumbers
-                        .map(phone => normalizePhoneNumber(phone.number))
+                        .map(phone => normalizePhoneNumberOnLocalFormat(phone.number))
                         .filter(Boolean),
                 ),
             );
             distinctNumbers.forEach(number => {
                 const newContact = { ...contact };
                 newContact.phoneNumber = number;
+                newContact.localFormat = normalizePhoneNumberOnLocalFormat(number)
                 transformedContacts.push(newContact);
             });
         }
@@ -162,7 +182,8 @@ export const fetchContacts = async () => {
 
 export const checkContactsWithFirestore = async (data, authUser) => {
     try {
-        const phoneNumbers = data.map(contact => contact.phoneNumber);
+        const phoneNumbers = data.map(contact => (contact.localFormat));
+        console.log("phoneNumbers ==>", phoneNumbers)
         const batchSize = 30;
         let contactsWithAccount = [];
         let contactsWithoutAccount = [];
@@ -185,7 +206,7 @@ export const checkContactsWithFirestore = async (data, authUser) => {
 
         // 5. Split contacts into those with and without accounts
         for (const contact of data) {
-            const phoneNumber = contact.phoneNumber;
+            const phoneNumber = contact.localFormat;
             let foundInFirestore = false;
             firestoreNumbersSet.forEach(firestoreContact => {
                 // Assuming phoneNumber is formatted consistently between Firestore and transformedData
@@ -193,6 +214,7 @@ export const checkContactsWithFirestore = async (data, authUser) => {
                     firestoreContact.number === phoneNumber &&
                     phoneNumber !== authUser.number
                 ) {
+                    firestoreContact.localData = contact
                     // If found in Firestore, push Firestore data to contactsWithAccount
                     contactsWithAccount.push(firestoreContact);
                     foundInFirestore = true;
@@ -202,6 +224,7 @@ export const checkContactsWithFirestore = async (data, authUser) => {
                 contactsWithoutAccount.push(contact);
             }
         }
+        // console.log("contactsWithAccount ===>", contactsWithAccount)
         return {
             contactsWithAccount,
             contactsWithoutAccount
