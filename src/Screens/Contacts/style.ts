@@ -5,7 +5,7 @@ import COLORS from '../../Constants/colors';
 const styles = StyleSheet.create({
     container: {
         backgroundColor: COLORS.white,
-        height:'100%'
+        height:'100%',
     },
     contentBox: {
         paddingHorizontal: 10,

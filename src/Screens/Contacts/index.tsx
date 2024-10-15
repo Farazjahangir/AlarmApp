@@ -5,7 +5,8 @@ import {
   View,
   TouchableOpacity,
   ActivityIndicator,
-  Alert
+  Alert,
+  RefreshControl,
 } from 'react-native';
 import RNContacts from 'react-native-contacts';
 import firestore from '@react-native-firebase/firestore';
@@ -22,7 +23,10 @@ import {
   checkContactsWithFirestore,
   askContactsPermission,
 } from '../../Utils';
-import { setContacts ,setContactLoading } from '../../Redux/contacts/contactSlice';
+import {
+  setContacts,
+  setContactLoading,
+} from '../../Redux/contacts/contactSlice';
 import styles from './style';
 
 const Contacts = () => {
@@ -42,7 +46,7 @@ const Contacts = () => {
   const contactsLoading = useSelector(state => state.contacts.loading);
   const user = useSelector(state => state.user.data.user);
   const navigation = useNavigation();
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   const handleSelectContact = phoneNumber => {
     setErrors({...errors, contacts: ''});
@@ -72,10 +76,11 @@ const Contacts = () => {
     const withAccountContacts = data.filter(
       contact =>
         contact.type === 'withAccount' &&
-        (contact?.localData?.displayName.toLowerCase().includes(lowerCaseSearchTerm) ||
+        (contact?.localData?.displayName
+          .toLowerCase()
+          .includes(lowerCaseSearchTerm) ||
           contact?.localData?.phoneNumber.includes(lowerCaseSearchTerm)),
     );
-
 
     // Filter the 'withoutAccount' section
     const withoutAccountContacts = data.filter(
@@ -87,7 +92,6 @@ const Contacts = () => {
 
     // console.log("withAccountContacts", withAccountContacts)
     // console.log("withoutAccountContacts", withoutAccountContacts)
-
 
     // Prepare the filtered data
     let filteredData = [];
@@ -267,27 +271,37 @@ const Contacts = () => {
 
   const getContacts = async () => {
     try {
+      console.log('getContacts ====>');
+      dispatch(setContactLoading(true));
+      // await new Promise(resolve => setTimeout(resolve, 500));
 
+      const contacts = await fetchContacts();
+      const firestoreRes = await checkContactsWithFirestore(contacts, user);
+      dispatch(
+        setContacts({
+          contactsWithAccount: firestoreRes?.contactsWithAccount,
+          contactsWithoutAccount: firestoreRes?.contactsWithoutAccount,
+        }),
+      );
+    } catch (e) {
+      Alert.alert(
+        'Error in read contacts',
+        e?.message || 'Something went wrong',
+      );
+    } finally {
+      dispatch(setContactLoading(false));
+    }
+  };
+
+  const checkForContactPermission = async () => {
+    try {
       const hasPermission = await hasContactPermission();
       if (!hasPermission) {
         await askContactsPermission();
+        getContacts();
       }
-  
-      dispatch(setContactLoading(true));
-      if (!contatcs.contactsWithAccount.length || !contatcs.contactsWithoutAccount.length) {
-        const contacts = await fetchContacts();
-        const firestoreRes = await checkContactsWithFirestore(contacts, user);
-        dispatch(
-          setContacts({
-            contactsWithAccount: firestoreRes?.contactsWithAccount,
-            contactsWithoutAccount: firestoreRes?.contactsWithoutAccount,
-          }),
-        );
-      }
-    } catch(e) {
-      Alert.alert("Error in read contacts", e?.message || "Something went wrong") 
-    } finally {
-      dispatch(setContactLoading(false));
+    } catch (e) {
+      Alert.alert('Permission Error', e?.message || 'Something went wrong');
     }
   };
 
@@ -301,7 +315,7 @@ const Contacts = () => {
   }, [contatcs.contactsWithAccount, contatcs.contactsWithoutAccount]);
 
   useEffect(() => {
-    getContacts();
+    checkForContactPermission();
   }, []);
   return (
     <View style={styles.container}>
@@ -327,13 +341,23 @@ const Contacts = () => {
           />
         </View>
         {errors.contacts && <Text style={styles.error}>{errors.contacts}</Text>}
-        {contactsLoading && <View style={{ marginTop: 20 }}><ActivityIndicator size='large' /></View>}
-        {!contactsLoading && <FlatList
+        {/* {contactsLoading && (
+          <View style={{marginTop: 20}}>
+            <ActivityIndicator size="large" />
+          </View>
+        )} */}
+        <FlatList
           data={filteredData}
           renderItem={renderList}
           extraData={filteredData}
           keyExtractor={(item, index) => item.number}
-        />}
+          refreshControl={
+            <RefreshControl
+              refreshing={contactsLoading}
+              onRefresh={getContacts}
+            />
+          }
+        />
       </View>
     </View>
   );

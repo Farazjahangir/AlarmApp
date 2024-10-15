@@ -21,7 +21,6 @@ const Header = ({route, navigation}) => {
         )}
         <Text style={styles.screenName}>{route.name}</Text>
       </View>
-      <Text style={styles.username}>Hi, {user.name}</Text>
       <Button text="Logout" onPress={() => dispatch(logout())} />
     </View>
   );

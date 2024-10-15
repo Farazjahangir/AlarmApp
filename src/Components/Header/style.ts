@@ -14,10 +14,6 @@ const styles = StyleSheet.create({
         color: COLORS.black, 
         fontSize: RFPercentage(2.6)
     },
-    username: {
-        color: COLORS.black, 
-        fontSize: RFPercentage(2)
-    },
     leftSide: {
         flexDirection: 'row',
         alignItems: 'center'
