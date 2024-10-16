@@ -4,7 +4,8 @@ import COLORS from '../../Constants/colors';
 
 const styles = StyleSheet.create({
     container: {
-        paddingHorizontal: 15
+        paddingHorizontal: 15,
+        flex: 1
     },
     title: {
         fontSize: RFPercentage(3), 

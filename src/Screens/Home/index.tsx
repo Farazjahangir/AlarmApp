@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   FlatList,
   Alert,
+  RefreshControl
 } from 'react-native';
 import {useSelector} from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
@@ -24,6 +25,7 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [openMembersModal, setOpenMembersModal] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const user = useSelector(state => state.user.data.user);
   const contatcs = useSelector(state => state.contacts.data);
@@ -144,7 +146,6 @@ const Home = () => {
   const navigateToContacts = () => {
     navigation.navigate('Contacts');
   };
-
   // useEffect(() => {
   //   console.log("USE EFFECT")
   //   loadUserGroups();
@@ -152,7 +153,7 @@ const Home = () => {
 
   useFocusEffect(
     useCallback(() => {
-      loadUserGroups();
+      loadUserGroups()
     }, []),
   );
 
@@ -190,6 +191,13 @@ const Home = () => {
             data={groups}
             renderItem={renderList}
             keyExtractor={(item, index) => item.groupId}
+            contentContainerStyle={{ flexGrow: 1 }}
+            refreshControl={
+              <RefreshControl
+                refreshing={false}
+                onRefresh={loadUserGroups}
+              />
+            }
           />
         )}
       </View>
