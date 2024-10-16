@@ -1,10 +1,9 @@
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   ActivityIndicator,
-  Alert
+  Alert,
 } from 'react-native';
 import {useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
@@ -13,7 +12,10 @@ import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 
 import {setUser} from '../../Redux/user/userSlice';
-import { registerDeviceForFCM } from '../../Utils';
+import {registerDeviceForFCM} from '../../Utils';
+import TextInput from '../../Components/TextInput';
+import Button from '../../Components/Button';
+import styles from "./style"
 
 const Login = () => {
   const [userCreds, setUserCreds] = useState({
@@ -21,18 +23,44 @@ const Login = () => {
     password: '',
   });
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({
+    email: '',
+    password: '',
+  });
 
   const navigation = useNavigation();
   const dispatch = useDispatch();
 
   const handleTextChange = (text, key) => {
-    data = {...userCreds};
+    const data = {...userCreds};
+    const error = { ...errors }
     data[key] = text;
+    error[key] = ''
     setUserCreds(data);
+    setErrors(error)
   };
+
+  const isValidFields = () => {
+    let isValid = true
+    const error = { ...errors }
+
+    if (!userCreds.email) {
+      error.email = 'Required'
+      isValid = false
+    }
+
+    if (!userCreds.password) {
+      error.password = 'Required'
+      isValid = false
+    }
+
+    setErrors(error)
+    return isValid
+  }
 
   const handleSignin = async () => {
     try {
+      if (!isValidFields()) return
       setLoading(true);
       const authUser = await auth().signInWithEmailAndPassword(
         userCreds.email,
@@ -43,72 +71,46 @@ const Login = () => {
         .doc(authUser.user.uid)
         .get();
       dispatch(setUser({...userDataSnapshot.data(), uid: userDataSnapshot.id}));
-      registerDeviceForFCM(authUser.user.uid)
+      registerDeviceForFCM(authUser.user.uid);
     } catch (e) {
-      Alert.alert("ERROR", e?.message || "Something went wrong")
+      Alert.alert('ERROR', e?.message || 'Something went wrong');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-      <View style={{width: 300}}>
-        <Text style={{color: 'black', fontSize: 30, textAlign: 'center'}}>
+    <View style={styles.container}>
+      <View style={styles.contentBox}>
+        <Text style={styles.title}>
           Sign In
         </Text>
-        <TextInput
-          style={{
-            borderWidth: 1,
-            borderColor: 'grey',
-            borderRadius: 10,
-            width: '100%',
-            marginTop: 20,
-            height: 45,
-            color: 'black',
-          }}
-          placeholderTextColor="black"
-          placeholder={'Enter Email'}
-          onChangeText={text => handleTextChange(text, 'email')}
-          value={userCreds.email}
-        />
-        <TextInput
-          style={{
-            borderWidth: 1,
-            borderColor: 'grey',
-            borderRadius: 10,
-            width: '100%',
-            marginTop: 20,
-            height: 45,
-            color: 'black',
-          }}
-          placeholderTextColor="black"
-          placeholder={'Enter Password'}
-          onChangeText={text => handleTextChange(text, 'password')}
-          value={userCreds.password}
-          secureTextEntry
-        />
-        <View style={{width: '100%', alignItems: 'flex-end'}}>
-          <TouchableOpacity
-            style={{
-              backgroundColor: '#ee5253',
-              width: 100,
-              marginTop: 10,
-              padding: 4,
-              borderRadius: 5,
-            }}
+        <View style={styles.inputBox}>
+          <TextInput
+            placeholder={'Enter Email'}
+            onChangeText={text => handleTextChange(text, 'email')}
+            value={userCreds.email}
+            error={errors.email}
+          />
+        </View>
+        <View style={styles.inputBox}>
+          <TextInput
+            placeholder={'Enter Password'}
+            onChangeText={text => handleTextChange(text, 'password')}
+            value={userCreds.password}
+            secureTextEntry
+            error={errors.password}
+          />
+        </View>
+        <View style={styles.btnBox}>
+          <Button
+            text="Signin"
             onPress={handleSignin}
-            disabled={!userCreds.email || !userCreds.password || loading}>
-            {loading ? (
-              <ActivityIndicator />
-            ) : (
-              <Text style={{color: '#ffffff', textAlign: 'center'}}>
-                Sign In
-              </Text>
-            )}
-          </TouchableOpacity>
+            disabled={loading}
+            loading={loading}
+          />
           <TouchableOpacity onPress={() => navigation.navigate('Sign Up')}>
-            <Text style={{color: '#1e90ff', fontSize: 16, marginTop: 10}}>
+            <Text style={styles.link}>
               SignUp
             </Text>
           </TouchableOpacity>
