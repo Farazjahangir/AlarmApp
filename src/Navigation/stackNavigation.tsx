@@ -4,17 +4,21 @@ import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {useSelector, useDispatch} from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
-import { request, PERMISSIONS, check, RESULTS } from 'react-native-permissions';
+import {request, PERMISSIONS, check, RESULTS} from 'react-native-permissions';
 
 import Home from '../Screens/Home';
 import AlarmScreen from '../Screens/AlarmScreen';
 import Contacts from '../Screens/Contacts';
 import Login from '../Screens/Login';
 import Signup from '../Screens/Signup';
-import {fetchContacts, checkContactsWithFirestore, hasContactPermission} from '../Utils';
+import {
+  fetchContacts,
+  checkContactsWithFirestore,
+  hasContactPermission,
+} from '../Utils';
 import {setContacts, setContactLoading} from '../Redux/contacts/contactSlice';
 import Header from '../Components/Header';
-import { registerDeviceForFCM, checkForBatteryOptimization } from '../Utils';
+import {registerDeviceForFCM, checkForBatteryOptimization} from '../Utils';
 
 const Stack = createNativeStackNavigator();
 
@@ -29,7 +33,7 @@ const AuthStack = () => {
 
 const AppStack = () => {
   return (
-    <Stack.Navigator screenOptions={{ header: (props) => <Header {...props} /> }}>
+    <Stack.Navigator screenOptions={{header: props => <Header {...props} />}}>
       <Stack.Screen name="Home" component={Home} />
       <Stack.Screen name="Contacts" component={Contacts} />
       <Stack.Screen name="Alarm Screen" component={AlarmScreen} />
@@ -43,8 +47,8 @@ const StackNavigation = () => {
 
   const getContacts = async () => {
     try {
-      const hasPermission = await hasContactPermission()
-      if (!hasPermission) return
+      const hasPermission = await hasContactPermission();
+      if (!hasPermission) return;
       disptach(setContactLoading(true));
       const contacts = await fetchContacts();
       const firestoreRes = await checkContactsWithFirestore(contacts, user);
@@ -63,13 +67,12 @@ const StackNavigation = () => {
 
   const checkBatteryOptimization = async () => {
     await checkForBatteryOptimization();
-  }
- 
+  };
 
   useEffect(() => {
     if (user) {
       getContacts();
-      checkBatteryOptimization()
+      checkBatteryOptimization();
     }
   }, [user]);
 

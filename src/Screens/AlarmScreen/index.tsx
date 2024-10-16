@@ -1,27 +1,19 @@
-import {Text, View, TouchableOpacity, Button} from 'react-native';
+import {Text, View, TouchableOpacity} from 'react-native';
+
 import AlarmManager from '../../Services/AlarmManager';
+import Button from '../../Components/Button';
+import styles from './style';
 
 const AlarmScreen = ({navigation}) => {
-
   const stopAlarm = async () => {
     await AlarmManager.stopAlarm();
     navigation.navigate('Home');
   };
   return (
-    <View
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100%',
-      }}>
-      <View style={{width: '70%'}}>
-        <Text style={{fontSize: 20, marginBottom: 10, textAlign: 'center'}}>
-          Alarm Ringing
-        </Text>
-        <TouchableOpacity>
-          <Button title="Mute Alarm" onPress={stopAlarm} />
-        </TouchableOpacity>
+    <View style={styles.container}>
+      <View style={styles.contentBox}>
+        <Text style={styles.text}>Alarm Ringing</Text>
+        <Button text="Mute Alarm" onPress={stopAlarm} />
       </View>
     </View>
   );
