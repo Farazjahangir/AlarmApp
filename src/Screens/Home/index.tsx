@@ -91,7 +91,6 @@ const Home = () => {
             members: membersData,
           });
         }
-        console.log("groupsWithMembersData", groupsWithMembersData[0].members)
         setGroups(groupsWithMembersData);
       }
     } catch (error) {

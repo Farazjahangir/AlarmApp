@@ -134,8 +134,7 @@ export const normalizePhoneNumberOnLocalFormat = (phoneNumber) => {
 
     if (cleanedNumber.startsWith('+')) {
         const num = parsePhoneNumber(cleanedNumber);
-        const nationalFormat = num.formatNational();
-        cleanedNumber = removeSpaces(nationalFormat)
+        cleanedNumber = num.formatNational();
         // Removing all special characters
         cleanedNumber = cleanedNumber.replace(/(?!^\+)[^\d]/g, '')
         // Add other country handling as needed
@@ -144,6 +143,7 @@ export const normalizePhoneNumberOnLocalFormat = (phoneNumber) => {
     if (cleanedNumber.startsWith('0')) {
         cleanedNumber = cleanedNumber.substring(1);
     }
+    cleanedNumber = removeSpaces(cleanedNumber)
     return cleanedNumber;
 };
 
@@ -183,7 +183,6 @@ export const fetchContacts = async () => {
 export const checkContactsWithFirestore = async (data, authUser) => {
     try {
         const phoneNumbers = data.map(contact => (contact.localFormat));
-        console.log("phoneNumbers ==>", phoneNumbers)
         const batchSize = 30;
         let contactsWithAccount = [];
         let contactsWithoutAccount = [];
@@ -224,7 +223,6 @@ export const checkContactsWithFirestore = async (data, authUser) => {
                 contactsWithoutAccount.push(contact);
             }
         }
-        // console.log("contactsWithAccount ===>", contactsWithAccount)
         return {
             contactsWithAccount,
             contactsWithoutAccount
