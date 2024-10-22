@@ -41,7 +41,7 @@ const AppStack = () => {
     <Stack.Navigator screenOptions={{header: props => <Header {...props} />}}>
       <Stack.Screen name="Home" component={Home} />
       <Stack.Screen name="Contacts" component={Contacts} />
-      <Stack.Screen name="Alarm Screen" component={AlarmScreen} />
+      <Stack.Screen name="Alarm Screen" component={AlarmScreen} /> 
     </Stack.Navigator>
   );
 };

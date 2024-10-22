@@ -54,6 +54,9 @@
             tools:replace="android:exported" />
 
             
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyC8sVgVKmP1C0gNoBuKEeiVVporq8wBVl4"/>
 
             
     </application>
