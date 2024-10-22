@@ -11,9 +11,11 @@ import notifee, {
   AndroidImportance,
   AndroidVisibility,
 } from '@notifee/react-native';
+
 import AlarmManager from './src/Services/AlarmManager';
 import {checkNotificationPermission} from './src/Utils';
 import AlarmScreen from './src/Screens/AlarmScreen';
+import { storeDataInAsync } from './src/Utils';
 
 let channelId;
 
@@ -46,6 +48,8 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {
       },
     },
   });
+  Linking.openURL(notifeeObj.data.deep_link);
+  await storeDataInAsync(notifeeObj.data, 'notif')
 });
 
 notifee.onBackgroundEvent(async ({type, detail}) => {
@@ -54,6 +58,7 @@ notifee.onBackgroundEvent(async ({type, detail}) => {
   }
 
   if (type === EventType.PRESS) {
+    console.log("onBackgroundEvent =====>")
     const deepLink = detail.notification.data?.deep_link;
     if (deepLink) {
       // Open app with deep link

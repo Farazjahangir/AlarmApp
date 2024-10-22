@@ -5,6 +5,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {useSelector, useDispatch} from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
 import {request, PERMISSIONS, check, RESULTS} from 'react-native-permissions';
+import messaging from '@react-native-firebase/messaging';
 
 import Home from '../Screens/Home';
 import AlarmScreen from '../Screens/AlarmScreen';
@@ -18,7 +19,11 @@ import {
 } from '../Utils';
 import {setContacts, setContactLoading} from '../Redux/contacts/contactSlice';
 import Header from '../Components/Header';
-import {registerDeviceForFCM, checkForBatteryOptimization} from '../Utils';
+import {
+  registerDeviceForFCM,
+  checkForBatteryOptimization,
+  requestLocationPermission,
+} from '../Utils';
 
 const Stack = createNativeStackNavigator();
 

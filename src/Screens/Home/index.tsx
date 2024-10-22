@@ -18,6 +18,7 @@ import Button from '../../Components/Button';
 import GroupBox from './GroupBox';
 import {BASE_URL} from '../../Utils/constants';
 import MembersList from './MemberList';
+import { requestLocationPermission, getPositionAsync } from '../../Utils';
 import styles from './style';
 
 const Home = () => {
@@ -100,8 +101,14 @@ const Home = () => {
     }
   };
 
+  const checkForLocationPermission = () => (
+    requestLocationPermission()
+  )
+
   const ringAlarm = async grpData => {
     try {
+    if (!(await checkForLocationPermission())) return
+    const userLocation = await getPositionAsync()
       const tokens = [];
       grpData.members.forEach(item => {
         if (item.uid !== user.uid && item.deviceToken) {
@@ -109,11 +116,16 @@ const Home = () => {
         }
       });
 
-      console.log("TOKEN", tokens)
+      const payload = {
+        coords: {
+          latitude: userLocation.coords.latitude,
+          longitude: userLocation.coords.longitude
+        }
+      }
       if (tokens.length) {
-        console.log('IFFFFFFFFFFFFF')
         const res = await axios.post(`${BASE_URL}/send-notifications`, {
           tokens,
+          payload
         });
       }
       Alert.alert('Success', 'Alarm Rang');

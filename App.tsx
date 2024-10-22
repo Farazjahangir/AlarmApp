@@ -21,6 +21,8 @@ import {check, PERMISSIONS, RESULTS} from 'react-native-permissions';
 import {store, persistor} from './src/Redux/store';
 import {Provider} from 'react-redux';
 import {PersistGate} from 'redux-persist/integration/react';
+import { getDataFromAsync, removeValueFromAsync } from './src/Utils';
+
 
 const {AlarmSoundModule} = NativeModules;
 
@@ -31,8 +33,12 @@ function App(): React.JSX.Element {
   const listenForForegroundMessage = async () => {
     messaging().onMessage(async remoteMessage => {
       try {
+        const notifeeObj = JSON.parse(remoteMessage.data.notifee)
         await AlarmManager.playAlarm();
-        navigate('Alarm Screen');
+        navigate('Alarm Screen', {
+          latitude: notifeeObj.data.latitude,
+          longitude: notifeeObj.data.longitude,
+        });
       } catch (e) {
         console.log('ERR => listenForForegroundMessage', e.message);
       }
@@ -44,11 +50,27 @@ function App(): React.JSX.Element {
     setAlarmRinging(false);
   };
 
-  const checkInitialNotification = async () => {
-    if (AlarmManager.isRinging) {
-      setTimeout(() => {
-        navigate('Alarm Screen');
-      }, 500);
+  const checkAsyncForNotif = async () => {
+    try {
+      const notifData = await getDataFromAsync('notif')
+      let latitude;
+      let longitude
+      
+      if (notifData) {
+       latitude = notifData.latitude
+       longitude = notifData.longitude
+       await removeValueFromAsync('notif')
+      }
+      if (AlarmManager.isRinging) {
+        setTimeout(() => {
+          navigate('Alarm Screen', {
+            latitude,
+            longitude,
+          });
+        }, 500);
+      }
+    } catch(e) {
+      console.log("checkAsyncForNotif ERR ==>", e.message)
     }
   };
 
@@ -62,10 +84,21 @@ function App(): React.JSX.Element {
     await checkForBatteryOptimization();
   };
 
+  const handleAppStateChange = async (nextAppState) => {
+    if (nextAppState === 'active') {
+      checkAsyncForNotif()
+    }
+  }
+
   useEffect(() => {
     takePermissions();
     listenForForegroundMessage();
-    checkInitialNotification();
+    checkAsyncForNotif()
+    const appStateListener = AppState.addEventListener('change', handleAppStateChange)
+
+    return () => {
+      appStateListener.remove()
+    };
   }, []);
 
   return (

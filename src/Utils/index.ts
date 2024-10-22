@@ -5,6 +5,8 @@ import messaging from '@react-native-firebase/messaging';
 import RNContacts from 'react-native-contacts';
 import firestore from '@react-native-firebase/firestore';
 import { parsePhoneNumber } from 'libphonenumber-js';
+import Geolocation from 'react-native-geolocation-service';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const checkNotificationPermission = async () => {
     try {
@@ -270,3 +272,82 @@ export const hasContactPermission = async () => {
     if (hasPermission === RESULTS.GRANTED) return true
     return false
 }
+
+export const requestLocationPermission = async () => {
+    try {
+        const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        );
+
+        if (granted === RESULTS.GRANTED) {
+            return true
+        }
+
+        else {
+            Alert.alert(
+                'Permission Required',
+                'Location permission is denied permanently. Please enable it from settings.',
+                [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'Open Settings', onPress: () => openAppSettings() },
+                ],
+                { cancelable: true },
+            );
+            return false
+        }
+
+    } catch (e) {
+        console.log("requestLocationPermission ==>", e?.message)
+    }
+}
+
+export const getPositionAsync = async () => {
+    return new Promise((resolve, reject) => {
+        Geolocation.getCurrentPosition(
+            (position) => {
+                resolve(position);
+            },
+            (error) => {
+                reject(error);
+            },
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+        );
+    });
+}
+
+export const storeDataInAsync = async (value, key) => {
+    try {
+        if (typeof value === 'string') {
+            await AsyncStorage.setItem(key, value);
+        }
+        else if (typeof value === 'object') {
+            const jsonValue = JSON.stringify(value);
+            await AsyncStorage.setItem(key, jsonValue);
+        }
+
+    } catch (e) {
+        console.log("storeDataInAsync ==>", e.message)
+    }
+};
+
+export const getDataFromAsync = async (key) => {
+    try {
+        const value = await AsyncStorage.getItem(key);
+        if (value !== null) {
+            try {
+                const parsedValue = JSON.parse(value);
+                return parsedValue;
+            } catch (e) {
+                return value;
+            }
+        }
+        return null;
+    } catch (e) {
+        console.error('Error reading value from AsyncStorage', e.message);
+        return null;
+    }
+};
+
+export const removeValueFromAsync = (key) => (
+    AsyncStorage.removeItem(key)
+)
