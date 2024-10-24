@@ -1,13 +1,16 @@
-import { Text, View } from "react-native"
+import {Text, View} from 'react-native';
 
-import styles from "./styles"
+import styles from './styles';
 
-const Chip = ({ text }) => {
-    return (
-        <View style={styles.container}>
-            <Text style={styles.text}>{text}</Text>
-        </View>
-    )
+interface ChipProps {
+  text: string;
 }
+const Chip = ({text}: ChipProps) => {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.text}>{text}</Text>
+    </View>
+  );
+};
 
-export default Chip
+export default Chip;

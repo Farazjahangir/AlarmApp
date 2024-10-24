@@ -1,6 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit'
+import { PayloadAction } from '@reduxjs/toolkit';
 
-const initialState = {
+import { ContactReducer } from '../../Types/reducers/contactReducer';
+
+const initialState: ContactReducer = {
   loading: false,
   data: {
     contactsWithAccount: [],
@@ -8,11 +11,14 @@ const initialState = {
   },
 }
 
+type SetContact = ContactReducer['data']
+
+
 export const contactSlice = createSlice({
   name: 'contacts',
   initialState,
   reducers: {
-    setContacts: (state, action) => {
+    setContacts: (state, action: PayloadAction<SetContact>) => {
       state.data.contactsWithAccount = action.payload.contactsWithAccount;
       state.data.contactsWithoutAccount = action.payload.contactsWithoutAccount;
     },

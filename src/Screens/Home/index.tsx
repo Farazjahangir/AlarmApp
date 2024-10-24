@@ -6,36 +6,40 @@ import {
   ActivityIndicator,
   FlatList,
   Alert,
-  RefreshControl
+  RefreshControl,
 } from 'react-native';
-import {useSelector} from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
 import axios from 'axios';
-import {useNavigation, useFocusEffect} from '@react-navigation/native';
-import parsePhoneNumberFromString, {findNumbers} from 'libphonenumber-js';
+import {useFocusEffect} from '@react-navigation/native';
+import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 
 import Button from '../../Components/Button';
 import GroupBox from './GroupBox';
-import {BASE_URL} from '../../Utils/constants';
+import {BASE_URL} from '../../Constants';
 import MembersList from './MemberList';
-import { requestLocationPermission, getPositionAsync } from '../../Utils';
+import {requestLocationPermission, getPositionAsync} from '../../Utils';
+import {RootStackParamList} from '../../Types/navigationTypes';
+import {ScreenNameConstants} from '../../Constants/navigationConstants';
+import { useAppSelector } from '../../Hooks/useAppSelector';
 import styles from './style';
 
-const Home = () => {
+const Home = ({navigation}: NativeStackScreenProps<
+  RootStackParamList,
+  ScreenNameConstants.HOME
+>) => {
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [openMembersModal, setOpenMembersModal] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  const user = useSelector(state => state.user.data.user);
-  const contatcs = useSelector(state => state.contacts.data);
-  const navigation = useNavigation();
+  const user = useAppSelector(state => state.user.data.user);
+  const contatcs = useAppSelector(state => state.contacts.data);
 
   const loadUserGroups = async () => {
     try {
       setLoading(true);
-      const userUid = user.uid;
+      const userUid = user?.uid;
       const contactWithAccount = contatcs.contactsWithAccount;
       // 1. Fetch groups where the user is a member
       const groupSnapshots = await firestore()
@@ -60,7 +64,7 @@ const Home = () => {
             if (uid !== userUid) {
               // Exclude current user
               let memberData = contactWithAccount.find(
-                contact => contact.uid === uid,
+                (contact) => contact.user.uid === uid,
               );
 
               if (memberData) {
@@ -83,7 +87,6 @@ const Home = () => {
             }
           }
 
-
           // 7. Build the group object with member data
           groupsWithMembersData.push({
             groupId: groupDoc.id,
@@ -101,14 +104,12 @@ const Home = () => {
     }
   };
 
-  const checkForLocationPermission = () => (
-    requestLocationPermission()
-  )
+  const checkForLocationPermission = () => requestLocationPermission();
 
   const ringAlarm = async grpData => {
     try {
-    if (!(await checkForLocationPermission())) return
-    const userLocation = await getPositionAsync()
+      if (!(await checkForLocationPermission())) return;
+      const userLocation = await getPositionAsync();
       const tokens = [];
       grpData.members.forEach(item => {
         if (item.uid !== user.uid && item.deviceToken) {
@@ -119,13 +120,13 @@ const Home = () => {
       const payload = {
         coords: {
           latitude: userLocation.coords.latitude,
-          longitude: userLocation.coords.longitude
-        }
-      }
+          longitude: userLocation.coords.longitude,
+        },
+      };
       if (tokens.length) {
         const res = await axios.post(`${BASE_URL}/send-notifications`, {
           tokens,
-          payload
+          payload,
         });
       }
       Alert.alert('Success', 'Alarm Rang');
@@ -140,7 +141,7 @@ const Home = () => {
 
   const onBoxPress = data => {
     setSelectedGroup(data);
-    console.log("data", data.members)
+    console.log('data', data.members);
     toggleModal();
   };
 
@@ -155,7 +156,7 @@ const Home = () => {
   );
 
   const navigateToContacts = () => {
-    navigation.navigate('Contacts');
+    navigation.navigate(ScreenNameConstants.CONTACTS);
   };
   // useEffect(() => {
   //   console.log("USE EFFECT")
@@ -164,7 +165,7 @@ const Home = () => {
 
   useFocusEffect(
     useCallback(() => {
-      loadUserGroups()
+      loadUserGroups();
     }, []),
   );
 
@@ -196,18 +197,17 @@ const Home = () => {
           </View>
         )}
 
-        {!loading && !groups.length && <Text style={styles.noDataMessage}>No Groups</Text>}
+        {!loading && !groups.length && (
+          <Text style={styles.noDataMessage}>No Groups</Text>
+        )}
         {!loading && !!groups.length && (
           <FlatList
             data={groups}
             renderItem={renderList}
             keyExtractor={(item, index) => item.groupId}
-            contentContainerStyle={{ flexGrow: 1 }}
+            contentContainerStyle={{flexGrow: 1}}
             refreshControl={
-              <RefreshControl
-                refreshing={false}
-                onRefresh={loadUserGroups}
-              />
+              <RefreshControl refreshing={false} onRefresh={loadUserGroups} />
             }
           />
         )}

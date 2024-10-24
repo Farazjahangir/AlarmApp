@@ -4,9 +4,11 @@ import { request, PERMISSIONS, check, RESULTS } from 'react-native-permissions';
 import messaging from '@react-native-firebase/messaging';
 import RNContacts from 'react-native-contacts';
 import firestore from '@react-native-firebase/firestore';
-import { parsePhoneNumber } from 'libphonenumber-js';
+import { parsePhoneNumber, AsYouType } from 'libphonenumber-js';
 import Geolocation from 'react-native-geolocation-service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Contact as ContactLibType } from 'react-native-contacts/type';
+import { Contact, ContactWithAccount, User } from '../Types/dataType';
 
 export const checkNotificationPermission = async () => {
     try {
@@ -18,7 +20,7 @@ export const checkNotificationPermission = async () => {
 
         return denied
     } catch (e) {
-        return e
+        throw e
     }
 }
 
@@ -56,7 +58,7 @@ export const askNotificationPermission = async () => {
             const permission = await notifee.requestPermission();
             return permission.authorizationStatus === AuthorizationStatus.AUTHORIZED ? "granted" : "denied"
         }
-    } catch (e) {
+    } catch (e: any) {
         console.log("ERR", e.message)
     }
 }
@@ -120,19 +122,19 @@ export const fetchDeviceToken = async () => {
         await messaging().registerDeviceForRemoteMessages();
         const token = await messaging().getToken();
         return token
-    } catch (e) {
+    } catch (e: any) {
         console.log("ERR fetching token", e.message)
     }
 };
 
-export const normalizePhoneNumber = number => {
+export const normalizePhoneNumber = (number: string) => {
     if (!number) return ''; // Check if number exists
     return number.replace(/\s+/g, ''); // Remove spaces
 };
 
-export const normalizePhoneNumberOnLocalFormat = (phoneNumber) => {
+export const normalizePhoneNumberOnLocalFormat = (phoneNumber: string) => {
     // Remove spaces and other characters, keep + at the start if it exists
-    let cleanedNumber = phoneNumber;
+    let cleanedNumber: string = phoneNumber;
 
     if (cleanedNumber.startsWith('+')) {
         const num = parsePhoneNumber(cleanedNumber);
@@ -149,8 +151,8 @@ export const normalizePhoneNumberOnLocalFormat = (phoneNumber) => {
     return cleanedNumber;
 };
 
-export const transformContacts = contacts => {
-    const transformedContacts = [];
+export const transformContacts = (contacts: ContactLibType[]) => {
+    const transformedContacts: Contact[] = [];
     contacts.forEach(contact => {
         if (
             contact.phoneNumbers &&
@@ -165,9 +167,11 @@ export const transformContacts = contacts => {
                 ),
             );
             distinctNumbers.forEach(number => {
-                const newContact = { ...contact };
-                newContact.phoneNumber = number;
-                newContact.localFormat = normalizePhoneNumberOnLocalFormat(number)
+                const newContact: Contact = {
+                    ...contact,
+                    phoneNumber: number,
+                    localFormat: normalizePhoneNumberOnLocalFormat(number)
+                };
                 transformedContacts.push(newContact);
             });
         }
@@ -182,13 +186,16 @@ export const fetchContacts = async () => {
     return transformedData
 }
 
-export const checkContactsWithFirestore = async (data, authUser) => {
+export const checkContactsWithFirestore = async (data: Contact[], authUser: User | null): Promise<{
+    contactsWithAccount: ContactWithAccount[];
+    contactsWithoutAccount: ContactLibType[];
+}> => {
     try {
         const phoneNumbers = data.map(contact => (contact.localFormat));
         const batchSize = 30;
-        let contactsWithAccount = [];
-        let contactsWithoutAccount = [];
-        let firestoreNumbersSet = new Set();
+        let contactsWithAccount: ContactWithAccount[] = [];
+        let contactsWithoutAccount: ContactLibType[] = [];
+        let firestoreNumbersSet = new Set<User>();
 
         for (let i = 0; i < phoneNumbers.length; i += batchSize) {
             const batch = phoneNumbers.slice(i, i + batchSize);
@@ -201,7 +208,7 @@ export const checkContactsWithFirestore = async (data, authUser) => {
                 .get();
 
             usersSnapshot.forEach(doc => {
-                firestoreNumbersSet.add({ ...doc.data(), uid: doc.id });
+                firestoreNumbersSet.add({ ...doc.data() as User, uid: doc.id });
             });
         }
 
@@ -213,15 +220,19 @@ export const checkContactsWithFirestore = async (data, authUser) => {
                 // Assuming phoneNumber is formatted consistently between Firestore and transformedData
                 if (
                     firestoreContact.number === phoneNumber &&
-                    phoneNumber !== authUser.number
+                    phoneNumber !== authUser?.number
                 ) {
-                    firestoreContact.localData = contact
+                    const firebaseContactWithLocalData: ContactWithAccount = {
+                        ...contact,
+                        user: firestoreContact
+                    }
+                    // firestoreContact.localData = contact
                     // If found in Firestore, push Firestore data to contactsWithAccount
-                    contactsWithAccount.push(firestoreContact);
+                    contactsWithAccount.push(firebaseContactWithLocalData);
                     foundInFirestore = true;
                 }
             });
-            if (!foundInFirestore && phoneNumber !== authUser.number) {
+            if (!foundInFirestore && phoneNumber !== authUser?.number) {
                 contactsWithoutAccount.push(contact);
             }
         }
@@ -231,10 +242,14 @@ export const checkContactsWithFirestore = async (data, authUser) => {
         }
     } catch (e) {
         console.log("checkContactsWithFirestore ERR ==>", e?.message || "Some Error")
+        return {
+            contactsWithAccount: [],
+            contactsWithoutAccount: []
+        };
     }
 }
 
-export const registerDeviceForFCM = async (uid) => {
+export const registerDeviceForFCM = async (uid: string) => {
     try {
         const token = await fetchDeviceToken();
         const userDocRef = firestore().collection('users').doc(uid);
@@ -246,11 +261,14 @@ export const registerDeviceForFCM = async (uid) => {
     }
 };
 
-export const removeSpaces = (str) => {
-    return str.replace(/\s+/g, '');
+export const removeSpaces = (str?: string) => {
+    if (str) {
+        return str.replace(/\s+/g, '');
+    }
+    return ""
 };
 
-export const cleanString = (str) => {
+export const cleanString = (str: string) => {
     // Check if the string starts with a '+'
     const hasPlus = str.startsWith('+');
 
@@ -261,7 +279,7 @@ export const cleanString = (str) => {
     return hasPlus ? `+${cleaned}` : cleaned;
 };
 
-export const validateEmail = (email) => {
+export const validateEmail = (email: string) => {
     // Regular expression for basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -305,17 +323,19 @@ export const getPositionAsync = async () => {
     return new Promise((resolve, reject) => {
         Geolocation.getCurrentPosition(
             (position) => {
+                console.log("POSITION ==>", position)
                 resolve(position);
             },
             (error) => {
+                console.log("ERRRRR", error)
                 reject(error);
             },
-            { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+            { enableHighAccuracy: true, timeout: 30000, maximumAge: 10000 }
         );
     });
 }
 
-export const storeDataInAsync = async (value, key) => {
+export const storeDataInAsync = async (value: string | object, key: string) => {
     try {
         if (typeof value === 'string') {
             await AsyncStorage.setItem(key, value);
@@ -330,7 +350,7 @@ export const storeDataInAsync = async (value, key) => {
     }
 };
 
-export const getDataFromAsync = async (key) => {
+export const getDataFromAsync = async (key: string) => {
     try {
         const value = await AsyncStorage.getItem(key);
         if (value !== null) {
@@ -348,6 +368,6 @@ export const getDataFromAsync = async (key) => {
     }
 };
 
-export const removeValueFromAsync = (key) => (
+export const removeValueFromAsync = (key: string) => (
     AsyncStorage.removeItem(key)
 )

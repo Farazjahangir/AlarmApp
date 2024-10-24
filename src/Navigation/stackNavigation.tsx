@@ -1,17 +1,7 @@
 import {useEffect} from 'react';
-import {View, Text} from 'react-native';
-import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {useSelector, useDispatch} from 'react-redux';
-import firestore from '@react-native-firebase/firestore';
-import {request, PERMISSIONS, check, RESULTS} from 'react-native-permissions';
-import messaging from '@react-native-firebase/messaging';
 
-import Home from '../Screens/Home';
-import AlarmScreen from '../Screens/AlarmScreen';
-import Contacts from '../Screens/Contacts';
-import Login from '../Screens/Login';
-import Signup from '../Screens/Signup';
 import {
   fetchContacts,
   checkContactsWithFirestore,
@@ -19,19 +9,25 @@ import {
 } from '../Utils';
 import {setContacts, setContactLoading} from '../Redux/contacts/contactSlice';
 import Header from '../Components/Header';
+import {registerDeviceForFCM, checkForBatteryOptimization} from '../Utils';
+import {RootStackParamList} from '../Types/navigationTypes';
 import {
-  registerDeviceForFCM,
-  checkForBatteryOptimization,
-  requestLocationPermission,
-} from '../Utils';
+  appNavigationList,
+  authNavigationList,
+} from '../Constants/navigationConstants';
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const AuthStack = () => {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="Login" component={Login} />
-      <Stack.Screen name="Sign Up" component={Signup} />
+      {authNavigationList.map(item => (
+        <Stack.Screen
+          name={item.name}
+          component={item.component}
+          key={Date.now()}
+        />
+      ))}
     </Stack.Navigator>
   );
 };
@@ -39,9 +35,13 @@ const AuthStack = () => {
 const AppStack = () => {
   return (
     <Stack.Navigator screenOptions={{header: props => <Header {...props} />}}>
-      <Stack.Screen name="Home" component={Home} />
-      <Stack.Screen name="Contacts" component={Contacts} />
-      <Stack.Screen name="Alarm Screen" component={AlarmScreen} /> 
+      {appNavigationList.map(item => (
+        <Stack.Screen
+          name={item.name}
+          component={item.component}
+          key={Date.now()}
+        />
+      ))}
     </Stack.Navigator>
   );
 };

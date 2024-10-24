@@ -60,6 +60,7 @@ notifee.onBackgroundEvent(async ({type, detail}) => {
   if (type === EventType.PRESS) {
     console.log("onBackgroundEvent =====>")
     const deepLink = detail.notification.data?.deep_link;
+    console.log("deepLink =========>", deepLink)
     if (deepLink) {
       // Open app with deep link
       Linking.openURL(deepLink);

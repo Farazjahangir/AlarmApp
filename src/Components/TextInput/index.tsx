@@ -1,9 +1,17 @@
-import {TextInput as RNTextInput, View, Text} from 'react-native';
+import {TextInput as RNTextInput, View, Text, TextInputProps as RNTextInputProps} from 'react-native';
 
 import COLORS from '../../Constants/colors';
 import styles from './style';
 
-const TextInput = ({placeholder, value, onChangeText, secureTextEntry, error}) => {
+interface TextInputProps {
+  placeholder?: string;
+  value: RNTextInputProps['value'];
+  onChangeText: RNTextInputProps['onChangeText'];
+  secureTextEntry?: RNTextInputProps['secureTextEntry'];
+  error?: string
+}
+
+const TextInput = ({placeholder, value, onChangeText, secureTextEntry, error}: TextInputProps) => {
   return (
     <View>
       <RNTextInput

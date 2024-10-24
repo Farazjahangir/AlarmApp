@@ -1,12 +1,19 @@
 import {Text, View, Image, TouchableOpacity} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
+import { RouteProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../Types/navigationTypes';
 
 import {logout} from '../../Redux/user/userSlice';
 import Button from '../Button';
 import backIcon from '../../Assets/icons/back.png';
 import styles from './style';
 
-const Header = ({route, navigation}) => {
+interface HeaderProps {
+  route: RouteProp<RootStackParamList, keyof RootStackParamList>;
+  navigation: NativeStackNavigationProp<RootStackParamList>;
+}
+const Header = ({route, navigation}: HeaderProps) => {
   const dispatch = useDispatch();
   const user = useSelector(state => state.user.data.user);
   return (

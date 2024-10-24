@@ -6,29 +6,42 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import {useState, useRef} from 'react';
-import {useNavigation} from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
 import firestore, {Filter} from '@react-native-firebase/firestore';
 import PhoneInput from '../../Components/PhoneInput';
-import parsePhoneNumber from 'libphonenumber-js';
+import parsePhoneNumber, { CountryCode } from 'libphonenumber-js';
+import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import RNPhoneInput from 'react-native-phone-number-input';
 import axios from 'axios';
 
-import {BASE_URL} from '../../Utils/constants';
+import {BASE_URL} from '../../Constants';
 import {removeSpaces} from '../../Utils';
 import TextInput from '../../Components/TextInput';
 import Button from '../../Components/Button';
 import {validateEmail} from '../../Utils';
+import {RootStackParamList} from '../../Types/navigationTypes';
+import {ScreenNameConstants} from '../../Constants/navigationConstants';
 import styles from './style';
 
-const Signup = () => {
-  const [user, setUser] = useState({
+type User = {
+  email: string,
+  password: string,
+  name: string,
+  number: string,
+}
+
+type Keys = keyof User;
+
+
+const Signup = ({navigation}: NativeStackScreenProps<RootStackParamList, ScreenNameConstants.SIGNUP>) => {
+  const [user, setUser] = useState<User>({
     email: '',
     password: '',
     name: '',
     number: '',
   });
 
-  const [errors, setErrors] = useState({
+  const [errors, setErrors] = useState<User>({
     email: '',
     password: '',
     name: '',
@@ -36,10 +49,9 @@ const Signup = () => {
   });
 
   const [loading, setLoading] = useState(false);
-  const navigation = useNavigation();
-  const phoneInputRef = useRef(null);
+  const phoneInputRef = useRef<RNPhoneInput>(null);
 
-  const handleTextChange = (text, key) => {
+  const handleTextChange = (text: string, key: Keys) => {
     const data = {...user};
     const errorsText = {...errors};
 
@@ -51,10 +63,10 @@ const Signup = () => {
 
   const checkUser = async () => {
     try {
-      const countryCode = phoneInputRef.current.getCountryCode();
+      const countryCode = phoneInputRef.current?.getCountryCode() as CountryCode;
       const num = parsePhoneNumber(user.number, countryCode);
-      const internationalFormat = num.formatInternational();
-      const nationalFormat = num.formatNational();
+      const internationalFormat = num?.formatInternational();
+      const nationalFormat = num?.formatNational();
       const snapShot = await firestore()
         .collection('users')
         .where(
@@ -72,11 +84,11 @@ const Signup = () => {
     }
   };
 
-  const createAccountWithExistingUser = async uid =>
+  const createAccountWithExistingUser = async (uid: string) =>
     await axios.post(`${BASE_URL}/user/create`, {
       ...user,
       uid,
-      countryCode: phoneInputRef.current.getCountryCode(),
+      countryCode: phoneInputRef.current?.getCountryCode(),
       email: user.email.trim(),
     });
 
@@ -91,7 +103,7 @@ const Signup = () => {
         email: user.email.trim(),
         number: user.number,
         isActive: true,
-        countryCode: phoneInputRef.current.getCountryCode(),
+        countryCode: phoneInputRef.current?.getCountryCode(),
       });
     } catch (e) {
       throw new Error(e);
@@ -122,7 +134,7 @@ const Signup = () => {
     if (user.number) {
       if (
         user.number.startsWith('0') ||
-        !phoneInputRef.current.isValidNumber(user.number)
+        !phoneInputRef.current?.isValidNumber(user.number)
       ) {
         errorText.number = 'Please enter valid number';
         isValid = false;
@@ -143,18 +155,20 @@ const Signup = () => {
       if (!validateInputs()) return;
       setLoading(true);
       const userSnapshot = await checkUser();
-      if (!userSnapshot.empty) {
-        const uid = userSnapshot.docs[0].id;
-        if (userSnapshot.docs[0].data().isActive) {
+      if (!userSnapshot?.empty) {
+        const uid = userSnapshot?.docs[0].id;
+        if (userSnapshot?.docs[0].data().isActive) {
           throw new Error('Phone number Already Exist');
         }
-        await createAccountWithExistingUser(uid);
+        if (uid) {
+          await createAccountWithExistingUser(uid);
+        }
       } else {
         await createUser();
       }
 
       Alert.alert('Success', 'User Created');
-      navigation.navigate('Login');
+      navigation.navigate(ScreenNameConstants.LOGIN);
     } catch (e) {
       console.log('e?.response?.data', e?.response);
       Alert.alert(
@@ -209,7 +223,7 @@ const Signup = () => {
             onPress={handleSignup}
             loading={loading}
           />
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+          <TouchableOpacity onPress={() => navigation.navigate(ScreenNameConstants.LOGIN)}>
             <Text style={styles.linkText}>SignIn</Text>
           </TouchableOpacity>
         </View>

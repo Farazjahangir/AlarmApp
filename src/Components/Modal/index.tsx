@@ -1,10 +1,18 @@
+import { ReactNode } from 'react';
 import {View, Text, ScrollView, Image, TouchableOpacity} from 'react-native';
 import RNModal from 'react-native-modal';
 
 import closeIcon from '../../Assets/icons/close.png';
 import styles from './style';
 
-const Modal = ({ children, isVisible, title, onClose }) => {
+interface ModalProps {
+  children: ReactNode; // Type for children
+  isVisible: boolean; // Control modal visibility
+  title: string; // Optional title
+  onClose: () => void; // Function to handle close
+}
+
+const Modal = ({ children, isVisible, title, onClose }: ModalProps) => {
   return (
     <RNModal isVisible={isVisible} backdropOpacity={0.4}>
       <View style={styles.container}>

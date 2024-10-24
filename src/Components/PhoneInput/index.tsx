@@ -1,16 +1,24 @@
-import {forwardRef} from 'react';
+import {forwardRef, Ref} from 'react';
 import { View, Text } from 'react-native';
-import RNPhoneInput from 'react-native-phone-number-input';
+import RNPhoneInput, { PhoneInputProps as RNPhoneInputProps} from 'react-native-phone-number-input';
 
 import styles from './style';
 
-const PhoneInput = forwardRef(({
+interface PhoneInputProps {
+  onChangeText?: RNPhoneInputProps['onChangeText'];
+  onChangeFormattedText?: RNPhoneInputProps['onChangeFormattedText'];
+  onChangeCountry?: RNPhoneInputProps['onChangeCountry'];
+  value: RNPhoneInputProps['value'];
+  error?: string
+}
+
+const PhoneInput = forwardRef<RNPhoneInput, PhoneInputProps>(({
     onChangeText,
     onChangeFormattedText,
     onChangeCountry,
     value,
     error
-}, ref) => {
+}: PhoneInputProps, ref: Ref<RNPhoneInput>) => {
   return (
     <View>
       <RNPhoneInput

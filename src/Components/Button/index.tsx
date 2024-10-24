@@ -1,7 +1,15 @@
-import {TouchableOpacity, Text, ActivityIndicator} from 'react-native';
+import {TouchableOpacity, Text, ActivityIndicator, TouchableOpacityProps, ViewStyle} from 'react-native';
 import styles from './styles';
 
-const Button = ({text, onPress, containerStyle, loading, disabled}) => {
+interface ButtonProps {
+  text: string;
+  onPress?: TouchableOpacityProps["onPress"],
+  containerStyle?: ViewStyle;
+  loading?: boolean;
+  disabled?: boolean
+}
+
+const Button = ({text, onPress, containerStyle, loading, disabled}: ButtonProps) => {
   return (
     <TouchableOpacity
       style={[styles.container, containerStyle]}
@@ -14,6 +22,11 @@ const Button = ({text, onPress, containerStyle, loading, disabled}) => {
       )}
     </TouchableOpacity>
   );
+};
+
+Button.defaultProps = {
+  loading: false,
+  disabled: false,
 };
 
 export default Button;

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {Alert, SafeAreaView, Text, Linking, AppState} from 'react-native';
 import messaging from '@react-native-firebase/messaging';
 import {PermissionsAndroid} from 'react-native';
@@ -21,21 +21,22 @@ import {check, PERMISSIONS, RESULTS} from 'react-native-permissions';
 import {store, persistor} from './src/Redux/store';
 import {Provider} from 'react-redux';
 import {PersistGate} from 'redux-persist/integration/react';
-import { getDataFromAsync, removeValueFromAsync } from './src/Utils';
-
+import {getDataFromAsync, removeValueFromAsync} from './src/Utils';
+import {ScreenNameConstants} from './src/Constants/navigationConstants';
 
 const {AlarmSoundModule} = NativeModules;
 
 function App(): React.JSX.Element {
   const [alarmRinging, setAlarmRinging] = useState(false);
 
+  const appStateRef = useRef(false);
 
   const listenForForegroundMessage = async () => {
     messaging().onMessage(async remoteMessage => {
       try {
-        const notifeeObj = JSON.parse(remoteMessage.data.notifee)
+        const notifeeObj = JSON.parse(remoteMessage.data?.notifee as string);
         await AlarmManager.playAlarm();
-        navigate('Alarm Screen', {
+        navigate(ScreenNameConstants.ALARM_SCREEN, {
           latitude: notifeeObj.data.latitude,
           longitude: notifeeObj.data.longitude,
         });
@@ -52,25 +53,27 @@ function App(): React.JSX.Element {
 
   const checkAsyncForNotif = async () => {
     try {
-      const notifData = await getDataFromAsync('notif')
-      let latitude;
-      let longitude
-      
+      const notifData = await getDataFromAsync('notif');
+      let latitude: number;
+      let longitude: number;
+
+      console.log("notifData ====>", notifData)
+
       if (notifData) {
-       latitude = notifData.latitude
-       longitude = notifData.longitude
-       await removeValueFromAsync('notif')
+        latitude = notifData.latitude;
+        longitude = notifData.longitude;
+        // await removeValueFromAsync('notif');
       }
-      if (AlarmManager.isRinging) {
-        setTimeout(() => {
-          navigate('Alarm Screen', {
-            latitude,
-            longitude,
-          });
-        }, 500);
+      if (AlarmManager.isAlarmRinging) {
+          setTimeout(() => {
+            navigate(ScreenNameConstants.ALARM_SCREEN, {
+              latitude,
+              longitude,
+            });
+          }, 500);
       }
-    } catch(e) {
-      console.log("checkAsyncForNotif ERR ==>", e.message)
+    } catch (e) {
+      console.log('checkAsyncForNotif ERR ==>', e.message);
     }
   };
 
@@ -84,20 +87,28 @@ function App(): React.JSX.Element {
     await checkForBatteryOptimization();
   };
 
-  const handleAppStateChange = async (nextAppState) => {
+  const handleAppStateChange = async (nextAppState: string) => {
+    console.log("handleAppStateChange ==========>")
     if (nextAppState === 'active') {
-      checkAsyncForNotif()
+      // appStateRef.current = true;
+      checkAsyncForNotif();
     }
-  }
+    // else if (nextAppState !== 'active') {
+    //   appStateRef.current = false;
+    // }
+  };
 
   useEffect(() => {
     takePermissions();
     listenForForegroundMessage();
-    checkAsyncForNotif()
-    const appStateListener = AppState.addEventListener('change', handleAppStateChange)
+    checkAsyncForNotif();
+    const appStateListener = AppState.addEventListener(
+      'change',
+      handleAppStateChange,
+    );
 
     return () => {
-      appStateListener.remove()
+      appStateListener.remove();
     };
   }, []);
 

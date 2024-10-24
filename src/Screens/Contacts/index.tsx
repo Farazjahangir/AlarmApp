@@ -10,8 +10,7 @@ import {
 } from 'react-native';
 import RNContacts from 'react-native-contacts';
 import firestore from '@react-native-firebase/firestore';
-import {useSelector, useDispatch} from 'react-redux';
-import {useNavigation} from '@react-navigation/native';
+import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 
 import Button from '../../Components/Button';
 import TextInput from '../../Components/TextInput';
@@ -27,30 +26,51 @@ import {
   setContacts,
   setContactLoading,
 } from '../../Redux/contacts/contactSlice';
+import {RootStackParamList} from '../../Types/navigationTypes';
+import {ScreenNameConstants} from '../../Constants/navigationConstants';
+import { useAppSelector } from '../../Hooks/useAppSelector';
+import { useAppDispatch } from '../../Hooks/useAppDispatch';
+import { Contact, ContactWithAccount } from '../../Types/dataType';
 import styles from './style';
 
-const Contacts = () => {
-  const [data, setData] = useState([]);
+interface SelectedContacts {
+  [phoneNumber: string]: boolean; // Using an index signature
+}
+
+interface Header {
+  type: 'header';
+  title: string;
+}
+
+export type CombinedContact = 
+    | (ContactWithAccount & { type: 'withAccount' })
+    | (Contact & { type: 'withoutAccount' })
+    | Header;
+
+const Contacts = ({navigation}: NativeStackScreenProps<
+  RootStackParamList,
+  ScreenNameConstants.CONTACTS
+>) => {
+  const [data, setData] = useState<CombinedContact[]>([]);
   //   const [selectedContacts, setSelectedContacts] = useState(new Set());
-  const [selectedContacts, setSelectedContacts] = useState({});
+  const [selectedContacts, setSelectedContacts] = useState<SelectedContacts>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [grpName, setGrpName] = useState('');
-  const [filteredData, setFilteredData] = useState([]);
+  const [filteredData, setFilteredData] = useState<CombinedContact[]>([]);
   const [createGrpLoading, setCreateGrpLoading] = useState(false);
   const [errors, setErrors] = useState({
     grpName: '',
     contacts: '',
   });
 
-  const contatcs = useSelector(state => state.contacts.data);
-  const contactsLoading = useSelector(state => state.contacts.loading);
-  const user = useSelector(state => state.user.data.user);
-  const navigation = useNavigation();
-  const dispatch = useDispatch();
+  const contatcs = useAppSelector(state => state.contacts.data);
+  const contactsLoading = useAppSelector(state => state.contacts.loading);
+  const user = useAppSelector(state => state.user.data.user);
+  const dispatch = useAppDispatch();
 
-  const handleSelectContact = phoneNumber => {
+  const handleSelectContact = (phoneNumber: string) => {
     setErrors({...errors, contacts: ''});
-    const selected = {...selectedContacts};
+    const selected: SelectedContacts = {...selectedContacts};
     if (selected[phoneNumber]) {
       delete selected[phoneNumber];
     } else {
@@ -59,27 +79,32 @@ const Contacts = () => {
     setSelectedContacts(selected);
   };
 
-  const renderList = ({item}) => (
-    <ContactList
-      item={item}
-      selectedContacts={selectedContacts}
-      handleSelectContact={() =>
-        handleSelectContact(item?.number || item.phoneNumber)
-      }
-    />
-  );
+  const renderList = ({ item }: { item: CombinedContact }) => {
+    return (
+      <ContactList
+        item={item}
+        selectedContacts={selectedContacts}
+        // handleSelectContact={() =>
+        //   handleSelectContact((item as ContactWithAccount)?.user.number || (item as Contact).phoneNumber)
+        // }
+         handleSelectContact={() =>
+          handleSelectContact((item as Contact).phoneNumber)
+        }
+      />
+    )
+  };
 
-  const handleSearch = text => {
+  const handleSearch = (text: string) => {
     setSearchTerm(text);
     const lowerCaseSearchTerm = text.toLowerCase();
     // Filter the 'withAccount' section
     const withAccountContacts = data.filter(
       contact =>
         contact.type === 'withAccount' &&
-        (contact?.localData?.displayName
+        (contact.displayName
           .toLowerCase()
           .includes(lowerCaseSearchTerm) ||
-          contact?.localData?.phoneNumber.includes(lowerCaseSearchTerm)),
+          contact.phoneNumber.includes(lowerCaseSearchTerm)),
     );
 
     // Filter the 'withoutAccount' section
@@ -94,7 +119,7 @@ const Contacts = () => {
     // console.log("withoutAccountContacts", withoutAccountContacts)
 
     // Prepare the filtered data
-    let filteredData = [];
+    let filteredData: CombinedContact[] = [];
 
     // Add 'withAccount' section if it has data
     if (withAccountContacts.length > 0) {
@@ -113,39 +138,60 @@ const Contacts = () => {
   // console.log("DATA ===>", data)
   const mergeData = () => {
     // console.log("contatcs.contactsWithAccount ====>", contatcs.contactsWithAccount)
-    const combinedContacts = [
-      {type: 'header', title: 'Contacts on AlarmApp'},
-      ...contatcs.contactsWithAccount.map(contact => ({
-        ...contact,
-        type: 'withAccount',
-      })),
-      {type: 'header', title: 'Contacts Not on AlarmApp'},
-      ...contatcs.contactsWithoutAccount.map(contact => ({
-        ...contact,
-        type: 'withoutAccount',
-      })),
-    ];
+    const combinedContacts: CombinedContact[] = []
+
+    if (contatcs.contactsWithAccount.length) {
+      combinedContacts.push({ type: 'header', title: 'Contacts on AlarmApp' });
+      combinedContacts.push(...contatcs.contactsWithAccount.map(contact => ({
+          ...contact,
+          type: 'withAccount' as const, // Ensure the type is added
+      })));
+  }
+  
+  if (contatcs.contactsWithoutAccount.length) {
+      combinedContacts.push({ type: 'header', title: 'Contacts Not on AlarmApp' });
+      combinedContacts.push(...contatcs.contactsWithoutAccount.map(contact => {
+        return ({
+          ...contact as Contact,
+          type: 'withoutAccount' as const, // Ensure the type is added
+      })
+      }));
+  }
+  //   const combinedContacts: CombinedContact[] = [
+  //     { type: 'header', title: 'Contacts on AlarmApp' },
+  //     ...contatcs.contactsWithAccount.map((contact: ContactWithAccount) => ({
+  //         ...contact,
+  //         type: 'withAccount' as const, // Use 'as const' to assert the string literal
+  //     })),
+  //     { type: 'header', title: 'Contacts Not on AlarmApp' },
+  //     ...contatcs.contactsWithoutAccount.map((contact: Contact) => ({
+  //         ...contact,
+  //         type: 'withoutAccount' as const, // Use 'as const' to assert the string literal
+  //     })),
+  // ];
     setData(combinedContacts);
     setFilteredData(combinedContacts);
   };
 
-  const onChangeGrpName = text => {
+  const onChangeGrpName = (text: string) => {
     setGrpName(text);
     setErrors({...errors, grpName: ''});
   };
 
   const separateActiveAndNonActiveContacts = () => {
-    const selectedContactsData = [];
-    const contactsWithoutUID = [];
+    const selectedContactsData: string[] = [];
+    const contactsWithoutUID: Contact[] = [];
 
     data.forEach(contact => {
       // Skip headers
       if (contact.type === 'header') return;
 
-      if (selectedContacts[contact?.number || contact.phoneNumber]) {
-        if (contact.uid) {
+      if (selectedContacts[contact.phoneNumber]) {
+        console.log("contact as ContactWithAccount).user.uid", contact)
+        if ((contact as ContactWithAccount)?.user?.uid) {
+        console.log("IFFFF 2")
           // Add contacts with UID directly
-          selectedContactsData.push(contact.uid);
+          selectedContactsData.push((contact as ContactWithAccount).user.uid);
         } else {
           // Collect contacts without UID for later processing
           contactsWithoutUID.push(contact);
@@ -159,9 +205,9 @@ const Contacts = () => {
     };
   };
 
-  const processFirestoreData = async contactsWithoutUID => {
-    const foundUserUIDs = [];
-    const newUserUIDs = [];
+  const processFirestoreData = async (contactsWithoutUID: Contact[]) => {
+    const foundUserUIDs: string[] = [];
+    const newUserUIDs: string[] = [];
     const batchSize = 2; // Firestore 'in' query can handle up to 30 numbers
     const existingUIDs = new Set();
 
@@ -217,7 +263,8 @@ const Contacts = () => {
 
   const createSelectedUsersUIDArr = async () => {
     const {selectedContactsData, contactsWithoutUID} =
-      separateActiveAndNonActiveContacts();
+    separateActiveAndNonActiveContacts();
+    console.log("createSelectedUsersUIDArr")
 
     // If no contacts need further processing, return early
     if (contactsWithoutUID.length === 0) return selectedContactsData;
@@ -255,13 +302,13 @@ const Contacts = () => {
       const uids = await createSelectedUsersUIDArr();
       const payload = {
         groupName: grpName,
-        createdBy: user.uid,
-        members: [user.uid, ...uids],
+        createdBy: user?.uid,
+        members: [user?.uid, ...uids],
         createdAt: firestore.FieldValue.serverTimestamp(),
       };
 
       await firestore().collection('groups').add(payload);
-      navigation.navigate('Home');
+      navigation.navigate(ScreenNameConstants.HOME);
     } catch (e) {
       console.log('onCreateGroup ERR', e.message);
     } finally {
@@ -271,7 +318,6 @@ const Contacts = () => {
 
   const getContacts = async () => {
     try {
-      console.log('getContacts ====>');
       dispatch(setContactLoading(true));
       // await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -350,7 +396,7 @@ const Contacts = () => {
           data={filteredData}
           renderItem={renderList}
           extraData={filteredData}
-          keyExtractor={(item, index) => item.number}
+          keyExtractor={(item, index) => (item as Contact).phoneNumber}
           refreshControl={
             <RefreshControl
               refreshing={contactsLoading}

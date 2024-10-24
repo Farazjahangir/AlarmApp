@@ -2,7 +2,20 @@ import MapView, {PROVIDER_GOOGLE, Marker} from 'react-native-maps';
 
 import styles from './style';
 
-const Map = ({latitude = 0, longitude = 0, markers = []}) => {
+interface MapProps {
+  latitude: number;
+  longitude: number;
+  markers?: {
+    coords: {
+      latitude: number;
+      longitude: number;
+    },
+    title?: string,
+    description?: string
+  }[];
+}
+
+const Map = ({latitude = 0, longitude = 0, markers = []}: MapProps) => {
   return (
     <MapView
       provider={PROVIDER_GOOGLE} // remove if not using Google Maps
@@ -14,8 +27,7 @@ const Map = ({latitude = 0, longitude = 0, markers = []}) => {
         longitudeDelta: 0.0121,
       }}
       scrollEnabled
-      zoomEnabled
-      >
+      zoomEnabled>
       {markers.map(item => (
         <Marker
           coordinate={item.coords}

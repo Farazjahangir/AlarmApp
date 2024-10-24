@@ -1,22 +1,29 @@
 import {useEffect} from 'react';
 import {Text, View, TouchableOpacity, Linking} from 'react-native';
-import {useRoute} from '@react-navigation/native';
+import {useRoute, RouteProp} from '@react-navigation/native';
+import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 
 import AlarmManager from '../../Services/AlarmManager';
 import Button from '../../Components/Button';
 import Map from '../../Components/Map';
+import {RootStackParamList} from '../../Types/navigationTypes';
+import {ScreenNameConstants} from '../../Constants/navigationConstants';
 import styles from './style';
 
-const AlarmScreen = ({navigation}) => {
-  const route = useRoute();
-  console.log('ROUTE', route?.params);
-  const latitude = route?.params?.latitude;
-  const longitude = route?.params?.longitude;
+const AlarmScreen = ({
+  navigation,
+}: NativeStackScreenProps<
+  RootStackParamList,
+  ScreenNameConstants.ALARM_SCREEN
+>) => {
+  const route = useRoute<RouteProp<RootStackParamList, ScreenNameConstants.ALARM_SCREEN>>();
+  console.log("route ==========>", route)
+  const latitude = Number(route?.params?.latitude);
+  const longitude = Number(route?.params?.longitude);
 
-  console.log('latitude ======>', latitude);
   const stopAlarm = async () => {
     await AlarmManager.stopAlarm();
-    navigation.navigate('Home');
+    navigation.navigate(ScreenNameConstants.HOME);
   };
 
   // const handleUrl = (url) => {
@@ -44,7 +51,7 @@ const AlarmScreen = ({navigation}) => {
 
   return (
     <View style={styles.mainContainer}>
-      {true && true && (
+      {!!latitude && !!longitude && (
         <Map
           latitude={latitude}
           longitude={longitude}

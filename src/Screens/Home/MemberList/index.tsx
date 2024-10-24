@@ -8,12 +8,14 @@ import styles from "./style"
 const MembersList = ({ data, onClose, isVisible }) => {
     return (
        <Modal isVisible={isVisible} title={data?.groupName} onClose={onClose}>
-        {data?.members.map(item => (
-            <View style={styles.container}>
-                <Text style={styles.name}>{item?.localData?.displayName || item.name}</Text>
-                {item.uid === data.createdBy && <Chip text='Admin' />}
-            </View>
-        ))}
+        {data?.members.map(item => {
+            return (
+                <View style={styles.container}>
+                    <Text style={styles.name}>{item?.displayName || item.name}</Text>
+                    {(item?.uid || item?.user?.uid) === data.createdBy && <Chip text='Admin' />}
+                </View>
+            )
+        })}
        </Modal>
     )
 }
