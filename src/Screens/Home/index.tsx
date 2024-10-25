@@ -12,6 +12,7 @@ import firestore from '@react-native-firebase/firestore';
 import axios from 'axios';
 import {useFocusEffect} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import {GeoPosition} from 'react-native-geolocation-service';
 
 import Button from '../../Components/Button';
 import GroupBox from './GroupBox';
@@ -21,15 +22,23 @@ import {requestLocationPermission, getPositionAsync} from '../../Utils';
 import {RootStackParamList} from '../../Types/navigationTypes';
 import {ScreenNameConstants} from '../../Constants/navigationConstants';
 import { useAppSelector } from '../../Hooks/useAppSelector';
+import { ContactWithAccount } from '../../Types/dataType';
 import styles from './style';
+
+export type Group = {
+  groupId: string,
+  groupName: string,
+  createdBy: string,
+  members: ContactWithAccount[],
+}
 
 const Home = ({navigation}: NativeStackScreenProps<
   RootStackParamList,
   ScreenNameConstants.HOME
 >) => {
-  const [groups, setGroups] = useState([]);
+  const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [openMembersModal, setOpenMembersModal] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -49,22 +58,22 @@ const Home = ({navigation}: NativeStackScreenProps<
         .get();
 
       if (!groupSnapshots.empty) {
-        let groupsWithMembersData = [];
+        let groupsWithMembersData:Group[] = [];
 
         // 2. Loop through each group
         for (const groupDoc of groupSnapshots.docs) {
           const groupData = groupDoc.data();
-          let membersData = [];
+          let membersData: ContactWithAccount[] = [];
 
           // 3. Check for member UIDs in Redux state first
           for (const uid of groupData.members) {
             if (uid === userUid) {
-              membersData.push(user);
+              membersData.push({user});
             }
             if (uid !== userUid) {
               // Exclude current user
               let memberData = contactWithAccount.find(
-                (contact) => contact.user.uid === uid,
+                (contact) => contact.user?.uid === uid,
               );
 
               if (memberData) {
@@ -78,10 +87,7 @@ const Home = ({navigation}: NativeStackScreenProps<
                   .get();
                 if (userSnapshot.exists) {
                   const fetchedUserData = userSnapshot.data();
-                  membersData.push({uid, ...fetchedUserData});
-                } else {
-                  // 6. If not found in Firestore (optional handling)
-                  membersData.push({uid});
+                  membersData.push({user: {...fetchedUserData, uid}});
                 }
               }
             }
@@ -106,14 +112,14 @@ const Home = ({navigation}: NativeStackScreenProps<
 
   const checkForLocationPermission = () => requestLocationPermission();
 
-  const ringAlarm = async grpData => {
+  const ringAlarm = async (grpData: Group) => {
     try {
       if (!(await checkForLocationPermission())) return;
       const userLocation = await getPositionAsync();
-      const tokens = [];
+      const tokens: string[] = [];
       grpData.members.forEach(item => {
-        if (item.uid !== user.uid && item.deviceToken) {
-          tokens.push(item.deviceToken);
+        if (item.user?.uid !== user?.uid && item.user?.deviceToken) {
+          tokens.push(item.user?.deviceToken);
         }
       });
 
@@ -139,13 +145,13 @@ const Home = ({navigation}: NativeStackScreenProps<
     setOpenMembersModal(!openMembersModal);
   };
 
-  const onBoxPress = data => {
+  const onBoxPress = (data: Group) => {
     setSelectedGroup(data);
     console.log('data', data.members);
     toggleModal();
   };
 
-  const renderList = ({item}) => (
+  const renderList = ({item}:{item: Group}) => (
     <View style={styles.grpListBox}>
       <GroupBox
         item={item}

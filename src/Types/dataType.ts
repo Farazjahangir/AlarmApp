@@ -15,8 +15,8 @@ export interface Contact extends ContactLibType {
     localFormat: string
 }
 
-export interface ContactWithAccount extends Contact {
-    user: User
+export interface ContactWithAccount extends Partial<Contact> {
+    user?: Partial<User> | null;
 }
 // export type ContactWithAccount = User & {
 //     localData: Contact;

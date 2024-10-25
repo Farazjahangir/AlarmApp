@@ -78,13 +78,16 @@ function App(): React.JSX.Element {
   };
 
   const takePermissions = async () => {
-    const notificationRes = await askNotificationPermission();
-    let contactRes;
-    if (notificationRes !== 'settings_opened') {
-      contactRes = await askContactsPermission();
+    try {
+      const notificationRes = await askNotificationPermission();
+      let contactRes;
+      if (notificationRes !== 'settings_opened') {
+        contactRes = await askContactsPermission();
+      }
+      await checkForBatteryOptimization();
+    } catch (e) {
+      console.log("takePermissions ==>", e.message)
     }
-
-    await checkForBatteryOptimization();
   };
 
   const handleAppStateChange = async (nextAppState: string) => {

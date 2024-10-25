@@ -1,9 +1,16 @@
-import {TouchableOpacity, Text, View} from 'react-native';
+import {TouchableOpacity, Text, View, TouchableOpacityProps} from 'react-native';
 
 import Button from '../../../Components/Button';
+import { Group } from '..';
 import styles from './style';
 
-const GroupBox = ({ item, onBoxPress, onBtnPress }) => {
+interface GroupBoxProps {
+  item: Group;
+  onBoxPress: TouchableOpacityProps['onPress'];
+  onBtnPress: TouchableOpacityProps['onPress']
+}
+
+const GroupBox = ({ item, onBoxPress, onBtnPress }: GroupBoxProps) => {
   return (
     <TouchableOpacity style={styles.container} onPress={onBoxPress}>
       <View style={styles.leftContainer}>

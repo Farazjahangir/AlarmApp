@@ -5,7 +5,7 @@ import messaging from '@react-native-firebase/messaging';
 import RNContacts from 'react-native-contacts';
 import firestore from '@react-native-firebase/firestore';
 import { parsePhoneNumber, AsYouType } from 'libphonenumber-js';
-import Geolocation from 'react-native-geolocation-service';
+import Geolocation, { GeoPosition, GeoError } from 'react-native-geolocation-service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Contact as ContactLibType } from 'react-native-contacts/type';
 import { Contact, ContactWithAccount, User } from '../Types/dataType';
@@ -32,38 +32,34 @@ export const openAppSettings = async () => {
     }
 }
 
-export const askNotificationPermission = async () => {
-    try {
-        const settings = await notifee.getNotificationSettings();
-        if (settings.authorizationStatus === AuthorizationStatus.AUTHORIZED) {
-            return "granted"
-        }
+export const askNotificationPermission = async (): Promise<'granted' | 'never_ask_again' | 'denied' | 'settings_opened'> => {
+    const settings = await notifee.getNotificationSettings();
+    if (settings.authorizationStatus === AuthorizationStatus.AUTHORIZED) {
+        return "granted"
+    }
 
-        else if (settings.authorizationStatus === AuthorizationStatus.DENIED) {
-            // You may need to guide the user to settings to re-enable permissions
-            return new Promise((resolve) => (
-                Alert.alert(
-                    'Notifications Disabled',
-                    'To recieve alarm notifications, please enable notifications permission in the app settings.',
-                    [{
-                        text: 'Open Settings', onPress: async () => {
-                            await openAppSettings()
-                            resolve("settings_opened")
-                        }
-                    }, { text: "Cancel", style: "cancel", onPress: () => resolve("never_ask_again") }]
-                )
-            ))
-        } else {
-            // Request permission if it was not determined or provisional
-            const permission = await notifee.requestPermission();
-            return permission.authorizationStatus === AuthorizationStatus.AUTHORIZED ? "granted" : "denied"
-        }
-    } catch (e: any) {
-        console.log("ERR", e.message)
+    else if (settings.authorizationStatus === AuthorizationStatus.DENIED) {
+        // You may need to guide the user to settings to re-enable permissions
+        return new Promise((resolve) => (
+            Alert.alert(
+                'Notifications Disabled',
+                'To recieve alarm notifications, please enable notifications permission in the app settings.',
+                [{
+                    text: 'Open Settings', onPress: async () => {
+                        await openAppSettings()
+                        resolve("settings_opened")
+                    }
+                }, { text: "Cancel", style: "cancel", onPress: () => resolve("never_ask_again") }]
+            )
+        ))
+    } else {
+        // Request permission if it was not determined or provisional
+        const permission = await notifee.requestPermission();
+        return permission.authorizationStatus === AuthorizationStatus.AUTHORIZED ? "granted" : "denied"
     }
 }
 
-export const askContactsPermission = async () => {
+export const askContactsPermission = async (): Promise<'granted' | 'settings_opened' | 'never_ask_again' | 'denied'> => {
     const hasPermission = await check(PERMISSIONS.ANDROID.READ_CONTACTS)
 
     if (hasPermission === RESULTS.GRANTED) {
@@ -89,8 +85,11 @@ export const askContactsPermission = async () => {
                 )
             ))
 
+        } else {
+            return reqRes === RESULTS.GRANTED ? "granted" : "denied"
         }
     }
+    return "never_ask_again";
 }
 
 export const checkForBatteryOptimization = async () => {
@@ -319,14 +318,14 @@ export const requestLocationPermission = async () => {
     }
 }
 
-export const getPositionAsync = async () => {
+export const getPositionAsync = async (): Promise<GeoPosition> => {
     return new Promise((resolve, reject) => {
         Geolocation.getCurrentPosition(
-            (position) => {
+            (position: GeoPosition) => {
                 console.log("POSITION ==>", position)
                 resolve(position);
             },
-            (error) => {
+            (error: GeoError) => {
                 console.log("ERRRRR", error)
                 reject(error);
             },

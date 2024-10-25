@@ -102,9 +102,9 @@ const Contacts = ({navigation}: NativeStackScreenProps<
       contact =>
         contact.type === 'withAccount' &&
         (contact.displayName
-          .toLowerCase()
+          ?.toLowerCase()
           .includes(lowerCaseSearchTerm) ||
-          contact.phoneNumber.includes(lowerCaseSearchTerm)),
+          contact.phoneNumber?.includes(lowerCaseSearchTerm)),
     );
 
     // Filter the 'withoutAccount' section
@@ -186,15 +186,13 @@ const Contacts = ({navigation}: NativeStackScreenProps<
       // Skip headers
       if (contact.type === 'header') return;
 
-      if (selectedContacts[contact.phoneNumber]) {
-        console.log("contact as ContactWithAccount).user.uid", contact)
+      if (contact.phoneNumber && selectedContacts[contact.phoneNumber]) {
         if ((contact as ContactWithAccount)?.user?.uid) {
-        console.log("IFFFF 2")
           // Add contacts with UID directly
-          selectedContactsData.push((contact as ContactWithAccount).user.uid);
+          selectedContactsData.push(((contact as ContactWithAccount).user?.uid) as string);
         } else {
           // Collect contacts without UID for later processing
-          contactsWithoutUID.push(contact);
+          contactsWithoutUID.push(contact as Contact);
         }
       }
     });
