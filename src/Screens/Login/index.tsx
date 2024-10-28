@@ -17,16 +17,18 @@ import TextInput from '../../Components/TextInput';
 import Button from '../../Components/Button';
 import {RootStackParamList} from '../../Types/navigationTypes';
 import {ScreenNameConstants} from '../../Constants/navigationConstants';
-import { User } from '../../Types/dataType';
+import {User} from '../../Types/dataType';
 import styles from './style';
 
 type UserCreds = {
   email: string;
-  password: string
-}
+  password: string;
+};
 type Keys = keyof UserCreds;
 
-const Login = ({navigation}: NativeStackScreenProps<
+const Login = ({
+  navigation,
+}: NativeStackScreenProps<
   RootStackParamList,
   typeof ScreenNameConstants.LOGIN
 >) => {
@@ -42,7 +44,7 @@ const Login = ({navigation}: NativeStackScreenProps<
 
   const dispatch = useDispatch();
 
-  const handleTextChange = (text:string, key:Keys) => {
+  const handleTextChange = (text: string, key: Keys) => {
     const data = {...userCreds};
     const error = {...errors};
     data[key] = text;
@@ -81,11 +83,11 @@ const Login = ({navigation}: NativeStackScreenProps<
         .collection('users')
         .doc(authUser.user.uid)
         .get();
-        console.log("first", userDataSnapshot.data())
+      console.log('first', userDataSnapshot.data());
       const payload = {
-        user: {...userDataSnapshot.data() as User, uid: userDataSnapshot.id}
-      }
-      console.log("PAYLOAD", payload.user)
+        user: {...(userDataSnapshot.data() as User), uid: userDataSnapshot.id},
+      };
+      console.log('PAYLOAD', payload.user);
       dispatch(setUser(payload));
       registerDeviceForFCM(authUser.user.uid);
     } catch (e) {
@@ -98,34 +100,44 @@ const Login = ({navigation}: NativeStackScreenProps<
   return (
     <View style={styles.container}>
       <View style={styles.contentBox}>
-        <Text style={styles.title}>Sign In</Text>
-        <View style={styles.inputBox}>
-          <TextInput
-            placeholder={'Enter Email'}
-            onChangeText={text => handleTextChange(text, 'email')}
-            value={userCreds.email}
-            error={errors.email}
-          />
-        </View>
-        <View style={styles.inputBox}>
-          <TextInput
-            placeholder={'Enter Password'}
-            onChangeText={text => handleTextChange(text, 'password')}
-            value={userCreds.password}
-            secureTextEntry
-            error={errors.password}
-          />
+        <Text style={styles.title}>Welcome Back</Text>
+        <Text style={styles.greetingText}>We’re excited to see you again!</Text>
+        <View style={styles.inputContainer}>
+          <Text style={styles.inputTitle}>Account Information</Text>
+          <View>
+            <TextInput
+              placeholder={'Enter Email'}
+              onChangeText={text => handleTextChange(text, 'email')}
+              value={userCreds.email}
+              error={errors.email}
+            />
+          </View>
+          <View style={styles.mt20}>
+            <TextInput
+              placeholder={'Enter Password'}
+              onChangeText={text => handleTextChange(text, 'password')}
+              value={userCreds.password}
+              secureTextEntry
+              error={errors.password}
+              showEyeIcon
+            />
+          </View>
+          <View style={styles.linksBox}>
+            <TouchableOpacity>
+              <Text style={styles.forgotText}>Forgot Password</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate(ScreenNameConstants.SIGNUP)}>
+              <Text style={styles.signupText}>New User? Signup</Text>
+            </TouchableOpacity>
+          </View>
         </View>
         <View style={styles.btnBox}>
           <Button
-            text="Signin"
+            text="Log In"
             onPress={handleSignin}
             disabled={loading}
             loading={loading}
           />
-          <TouchableOpacity onPress={() => navigation.navigate(ScreenNameConstants.SIGNUP)}>
-            <Text style={styles.link}>SignUp</Text>
-          </TouchableOpacity>
         </View>
       </View>
     </View>

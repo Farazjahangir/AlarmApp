@@ -26,6 +26,7 @@ const AuthStack = () => {
           name={item.name}
           component={item.component}
           key={Date.now()}
+          options={item.options}
         />
       ))}
     </Stack.Navigator>
@@ -34,12 +35,13 @@ const AuthStack = () => {
 
 const AppStack = () => {
   return (
-    <Stack.Navigator screenOptions={{header: props => <Header {...props} />}}>
+    <Stack.Navigator>
       {appNavigationList.map(item => (
         <Stack.Screen
           name={item.name}
           component={item.component}
           key={Date.now()}
+          options={item.options}
         />
       ))}
     </Stack.Navigator>

@@ -6,19 +6,48 @@ interface ButtonProps {
   onPress?: TouchableOpacityProps["onPress"],
   containerStyle?: ViewStyle;
   loading?: boolean;
-  disabled?: boolean
+  disabled?: boolean;
+  size?: 'small' | 'medium' | 'large'
 }
 
-const Button = ({text, onPress, containerStyle, loading, disabled}: ButtonProps) => {
+const Button = ({text, onPress, containerStyle, loading, disabled, size}: ButtonProps) => {
+
+  const btnContainerStyles = () => {
+    let sizeStyle = styles.largeBtn
+
+    if (size === 'medium') {
+      sizeStyle = styles.medumBtn
+    }
+
+    if (size === 'small') {
+      sizeStyle = styles.smallBtn
+    }
+    return [styles.container, sizeStyle, containerStyle];
+  }
+
+
+  const textStyles = () => {
+    let sizeStyle = styles.textLarge
+
+    if (size === 'medium') {
+      sizeStyle = styles.textMedium
+    }
+
+    if (size === 'small') {
+      sizeStyle = styles.textSmall
+    }
+    return [styles.text, sizeStyle];
+  }
+
   return (
     <TouchableOpacity
-      style={[styles.container, containerStyle]}
+      style={btnContainerStyles()}
       onPress={onPress}
       disabled={disabled || loading}>
       {loading ? (
         <ActivityIndicator />
       ) : (
-        <Text style={styles.text}>{text}</Text>
+        <Text style={textStyles()}>{text}</Text>
       )}
     </TouchableOpacity>
   );
@@ -27,6 +56,7 @@ const Button = ({text, onPress, containerStyle, loading, disabled}: ButtonProps)
 Button.defaultProps = {
   loading: false,
   disabled: false,
+  size: 'large'
 };
 
 export default Button;

@@ -42,7 +42,7 @@ const Header = ({route, navigation}: HeaderProps) => {
             <Image source={backIcon} style={styles.backIcon} />
           </TouchableOpacity>
         )}
-        <Text style={styles.screenName}>{route.name}</Text>
+        <Text style={styles.screenName}>{route.name} hello</Text>
       </View>
       <Button text="Logout" onPress={onLogout} />
     </View>

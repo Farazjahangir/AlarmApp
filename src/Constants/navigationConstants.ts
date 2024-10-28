@@ -7,36 +7,45 @@ import Contacts from "../Screens/Contacts";
 import AlarmScreen from "../Screens/AlarmScreen";
 
 export enum ScreenNameConstants {
- LOGIN = 'Login',
- SIGNUP = 'Sign Up',
- HOME = 'Home',
- CONTACTS = 'Contacts',
- ALARM_SCREEN = 'Alarm Screen'
+    LOGIN = 'Login',
+    SIGNUP = 'Sign Up',
+    HOME = 'Home',
+    CONTACTS = 'Contacts',
+    ALARM_SCREEN = 'Alarm Screen'
 }
+
+const defaultNavOptions = {
+    headerShown: false,
+};
 
 export const authNavigationList: NavigationObj[] = [
     {
         name: ScreenNameConstants.LOGIN,
-        component: Login
+        component: Login,
+        options: defaultNavOptions,
     },
-    {
-        name: ScreenNameConstants.SIGNUP,
-        component: Signup
-    }
+{
+    name: ScreenNameConstants.SIGNUP,
+        component: Signup,
+        options: defaultNavOptions,
+}
 ]
 
 export const appNavigationList: NavigationObj[] = [
     {
         name: ScreenNameConstants.HOME,
-        component: Home
+        component: Home,
+        options: defaultNavOptions,
     },
     {
         name: ScreenNameConstants.CONTACTS,
-        component: Contacts
+        component: Contacts,
+        options: defaultNavOptions,
     },
     {
         name: ScreenNameConstants.ALARM_SCREEN,
-        component: AlarmScreen
+        component: AlarmScreen,
+        options: defaultNavOptions,
     }
 ]
 

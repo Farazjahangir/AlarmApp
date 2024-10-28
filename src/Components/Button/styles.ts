@@ -4,16 +4,34 @@ import COLORS from '../../Constants/colors';
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: COLORS.primeOrange,
+        backgroundColor: COLORS.primePurple,
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 5,
         marginTop: 10,
-        padding: 5,
-        minWidth: 80
+        minWidth: 80,
+        padding: 5
     },
     text: {
-        color: COLORS.white
+        color: COLORS.white,
+    },
+    smallBtn: {
+        height: 28,
+    },
+    medumBtn: {
+        height: 35
+    },
+    largeBtn: {
+        height: 40
+    },
+    textLarge: {
+        fontSize: RFPercentage(2.8)
+    },
+    textMedium: {
+        fontSize: RFPercentage(2.3)
+    },
+    textSmall: {
+        fontSize: RFPercentage(2)
     }
 });
 
