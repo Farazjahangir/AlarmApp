@@ -4,11 +4,9 @@ import { request, PERMISSIONS, check, RESULTS } from 'react-native-permissions';
 import messaging from '@react-native-firebase/messaging';
 import RNContacts from 'react-native-contacts';
 import firestore from '@react-native-firebase/firestore';
-import { parsePhoneNumber, AsYouType } from 'libphonenumber-js';
-import Geolocation, { GeoPosition, GeoError } from 'react-native-geolocation-service';
+import { parsePhoneNumber } from 'libphonenumber-js';
+import Geolocation from 'react-native-geolocation-service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Contact as ContactLibType } from 'react-native-contacts/type';
-import { Contact, ContactWithAccount, User } from '../Types/dataType';
 
 export const checkNotificationPermission = async () => {
     try {
@@ -20,7 +18,7 @@ export const checkNotificationPermission = async () => {
 
         return denied
     } catch (e) {
-        throw e
+        return e
     }
 }
 
@@ -32,34 +30,36 @@ export const openAppSettings = async () => {
     }
 }
 
-export const askNotificationPermission = async (): Promise<'granted' | 'never_ask_again' | 'denied' | 'settings_opened'> => {
-    const settings = await notifee.getNotificationSettings();
-    if (settings.authorizationStatus === AuthorizationStatus.AUTHORIZED) {
-        return "granted"
-    }
-
-    else if (settings.authorizationStatus === AuthorizationStatus.DENIED) {
-        // You may need to guide the user to settings to re-enable permissions
-        return new Promise((resolve) => (
-            Alert.alert(
-                'Notifications Disabled',
-                'To recieve alarm notifications, please enable notifications permission in the app settings.',
-                [{
-                    text: 'Open Settings', onPress: async () => {
-                        await openAppSettings()
-                        resolve("settings_opened")
-                    }
-                }, { text: "Cancel", style: "cancel", onPress: () => resolve("never_ask_again") }]
-            )
-        ))
-    } else {
-        // Request permission if it was not determined or provisional
+export const askNotificationPermission = async () => {
+    try {
         const permission = await notifee.requestPermission();
-        return permission.authorizationStatus === AuthorizationStatus.AUTHORIZED ? "granted" : "denied"
+        const settings = await notifee.getNotificationSettings();
+        console.log("settings. ====>", settings.authorizationStatus)
+        if (settings.authorizationStatus === AuthorizationStatus.AUTHORIZED) {
+            return "granted"
+        }
+
+        else if (settings.authorizationStatus === AuthorizationStatus.DENIED) {
+            // You may need to guide the user to settings to re-enable permissions
+            return new Promise((resolve) => (
+                Alert.alert(
+                    'Notifications Disabled',
+                    'To recieve alarm notifications, please enable notifications permission in the app settings.',
+                    [{
+                        text: 'Open Settings', onPress: async () => {
+                            await openAppSettings()
+                            resolve("settings_opened")
+                        }
+                    }, { text: "Cancel", style: "cancel", onPress: () => resolve("never_ask_again") }]
+                )
+            ))
+        }
+    } catch (e) {
+        console.log("ERR", e.message)
     }
 }
 
-export const askContactsPermission = async (): Promise<'granted' | 'settings_opened' | 'never_ask_again' | 'denied'> => {
+export const askContactsPermission = async () => {
     const hasPermission = await check(PERMISSIONS.ANDROID.READ_CONTACTS)
 
     if (hasPermission === RESULTS.GRANTED) {
@@ -85,11 +85,8 @@ export const askContactsPermission = async (): Promise<'granted' | 'settings_ope
                 )
             ))
 
-        } else {
-            return reqRes === RESULTS.GRANTED ? "granted" : "denied"
         }
     }
-    return "never_ask_again";
 }
 
 export const checkForBatteryOptimization = async () => {
@@ -121,19 +118,19 @@ export const fetchDeviceToken = async () => {
         await messaging().registerDeviceForRemoteMessages();
         const token = await messaging().getToken();
         return token
-    } catch (e: any) {
+    } catch (e) {
         console.log("ERR fetching token", e.message)
     }
 };
 
-export const normalizePhoneNumber = (number: string) => {
+export const normalizePhoneNumber = number => {
     if (!number) return ''; // Check if number exists
     return number.replace(/\s+/g, ''); // Remove spaces
 };
 
-export const normalizePhoneNumberOnLocalFormat = (phoneNumber: string) => {
+export const normalizePhoneNumberOnLocalFormat = (phoneNumber) => {
     // Remove spaces and other characters, keep + at the start if it exists
-    let cleanedNumber: string = phoneNumber;
+    let cleanedNumber = phoneNumber;
 
     if (cleanedNumber.startsWith('+')) {
         const num = parsePhoneNumber(cleanedNumber);
@@ -150,8 +147,8 @@ export const normalizePhoneNumberOnLocalFormat = (phoneNumber: string) => {
     return cleanedNumber;
 };
 
-export const transformContacts = (contacts: ContactLibType[]) => {
-    const transformedContacts: Contact[] = [];
+export const transformContacts = contacts => {
+    const transformedContacts = [];
     contacts.forEach(contact => {
         if (
             contact.phoneNumbers &&
@@ -166,11 +163,9 @@ export const transformContacts = (contacts: ContactLibType[]) => {
                 ),
             );
             distinctNumbers.forEach(number => {
-                const newContact: Contact = {
-                    ...contact,
-                    phoneNumber: number,
-                    localFormat: normalizePhoneNumberOnLocalFormat(number)
-                };
+                const newContact = { ...contact };
+                newContact.phoneNumber = number;
+                newContact.localFormat = normalizePhoneNumberOnLocalFormat(number)
                 transformedContacts.push(newContact);
             });
         }
@@ -185,16 +180,13 @@ export const fetchContacts = async () => {
     return transformedData
 }
 
-export const checkContactsWithFirestore = async (data: Contact[], authUser: User | null): Promise<{
-    contactsWithAccount: ContactWithAccount[];
-    contactsWithoutAccount: ContactLibType[];
-}> => {
+export const checkContactsWithFirestore = async (data, authUser) => {
     try {
         const phoneNumbers = data.map(contact => (contact.localFormat));
         const batchSize = 30;
-        let contactsWithAccount: ContactWithAccount[] = [];
-        let contactsWithoutAccount: ContactLibType[] = [];
-        let firestoreNumbersSet = new Set<User>();
+        let contactsWithAccount = [];
+        let contactsWithoutAccount = [];
+        let firestoreNumbersSet = new Set();
 
         for (let i = 0; i < phoneNumbers.length; i += batchSize) {
             const batch = phoneNumbers.slice(i, i + batchSize);
@@ -207,7 +199,7 @@ export const checkContactsWithFirestore = async (data: Contact[], authUser: User
                 .get();
 
             usersSnapshot.forEach(doc => {
-                firestoreNumbersSet.add({ ...doc.data() as User, uid: doc.id });
+                firestoreNumbersSet.add({ ...doc.data(), uid: doc.id });
             });
         }
 
@@ -219,19 +211,15 @@ export const checkContactsWithFirestore = async (data: Contact[], authUser: User
                 // Assuming phoneNumber is formatted consistently between Firestore and transformedData
                 if (
                     firestoreContact.number === phoneNumber &&
-                    phoneNumber !== authUser?.number
+                    phoneNumber !== authUser.number
                 ) {
-                    const firebaseContactWithLocalData: ContactWithAccount = {
-                        ...contact,
-                        user: firestoreContact
-                    }
-                    // firestoreContact.localData = contact
+                    firestoreContact.localData = contact
                     // If found in Firestore, push Firestore data to contactsWithAccount
-                    contactsWithAccount.push(firebaseContactWithLocalData);
+                    contactsWithAccount.push(firestoreContact);
                     foundInFirestore = true;
                 }
             });
-            if (!foundInFirestore && phoneNumber !== authUser?.number) {
+            if (!foundInFirestore && phoneNumber !== authUser.number) {
                 contactsWithoutAccount.push(contact);
             }
         }
@@ -241,14 +229,10 @@ export const checkContactsWithFirestore = async (data: Contact[], authUser: User
         }
     } catch (e) {
         console.log("checkContactsWithFirestore ERR ==>", e?.message || "Some Error")
-        return {
-            contactsWithAccount: [],
-            contactsWithoutAccount: []
-        };
     }
 }
 
-export const registerDeviceForFCM = async (uid: string) => {
+export const registerDeviceForFCM = async (uid) => {
     try {
         const token = await fetchDeviceToken();
         const userDocRef = firestore().collection('users').doc(uid);
@@ -260,14 +244,11 @@ export const registerDeviceForFCM = async (uid: string) => {
     }
 };
 
-export const removeSpaces = (str?: string) => {
-    if (str) {
-        return str.replace(/\s+/g, '');
-    }
-    return ""
+export const removeSpaces = (str) => {
+    return str.replace(/\s+/g, '');
 };
 
-export const cleanString = (str: string) => {
+export const cleanString = (str) => {
     // Check if the string starts with a '+'
     const hasPlus = str.startsWith('+');
 
@@ -278,7 +259,7 @@ export const cleanString = (str: string) => {
     return hasPlus ? `+${cleaned}` : cleaned;
 };
 
-export const validateEmail = (email: string) => {
+export const validateEmail = (email) => {
     // Regular expression for basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -318,23 +299,21 @@ export const requestLocationPermission = async () => {
     }
 }
 
-export const getPositionAsync = async (): Promise<GeoPosition> => {
+export const getPositionAsync = async () => {
     return new Promise((resolve, reject) => {
         Geolocation.getCurrentPosition(
-            (position: GeoPosition) => {
-                console.log("POSITION ==>", position)
+            (position) => {
                 resolve(position);
             },
-            (error: GeoError) => {
-                console.log("ERRRRR", error)
+            (error) => {
                 reject(error);
             },
-            { enableHighAccuracy: true, timeout: 30000, maximumAge: 10000 }
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
         );
     });
 }
 
-export const storeDataInAsync = async (value: string | object, key: string) => {
+export const storeDataInAsync = async (value, key) => {
     try {
         if (typeof value === 'string') {
             await AsyncStorage.setItem(key, value);
@@ -349,7 +328,7 @@ export const storeDataInAsync = async (value: string | object, key: string) => {
     }
 };
 
-export const getDataFromAsync = async (key: string) => {
+export const getDataFromAsync = async (key) => {
     try {
         const value = await AsyncStorage.getItem(key);
         if (value !== null) {
@@ -367,6 +346,6 @@ export const getDataFromAsync = async (key: string) => {
     }
 };
 
-export const removeValueFromAsync = (key: string) => (
+export const removeValueFromAsync = (key) => (
     AsyncStorage.removeItem(key)
 )
