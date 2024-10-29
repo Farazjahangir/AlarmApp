@@ -7,26 +7,53 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: COLORS.white
     },
     contentBox: {
-        width: 300
+        width: '90%',
+        maxWidth: 400
     },
     title: {
         color: COLORS.black,
-        fontSize: RFPercentage(4),
+        fontSize: RFPercentage(4.5),
         textAlign: 'center'
     },
-    inputBox: {
+    greetingText: {
+        fontSize: RFPercentage(2.2),
+        textAlign: 'center',
+        marginTop: 5,
+        color: COLORS.textGrey
+    },
+    inputContainer: {
+        marginTop: 30
+    },
+    inputTitle: {
+        color: COLORS.black,
+        fontSize: RFPercentage(2.5),
+        marginBottom: 10,
+        fontWeight: 'bold'
+    },
+    mt20: {
         marginTop: 20
     },
     btnBox: {
         width: '100%',
-        alignItems: 'flex-end'
+        marginTop: 40
     },
-    linkText: {
-        color: COLORS.link, 
-        fontSize: RFPercentage(2.6), 
-        marginTop: 10
+    linksBox: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 8
+    },
+    forgotText: {
+        color: COLORS.primePurple,
+        fontWeight: 'bold',
+        fontSize: RFPercentage(2.2)
+    },
+    signupText: {
+        color: COLORS.primePurple,
+        fontWeight: 'bold',
+        fontSize: RFPercentage(2.2)
     }
 });
 

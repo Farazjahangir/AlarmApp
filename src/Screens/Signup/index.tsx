@@ -9,7 +9,7 @@ import {useState, useRef} from 'react';
 import auth from '@react-native-firebase/auth';
 import firestore, {Filter} from '@react-native-firebase/firestore';
 import PhoneInput from '../../Components/PhoneInput';
-import parsePhoneNumber, { CountryCode } from 'libphonenumber-js';
+import parsePhoneNumber, {CountryCode} from 'libphonenumber-js';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import RNPhoneInput from 'react-native-phone-number-input';
 import axios from 'axios';
@@ -24,16 +24,17 @@ import {ScreenNameConstants} from '../../Constants/navigationConstants';
 import styles from './style';
 
 type User = {
-  email: string,
-  password: string,
-  name: string,
-  number: string,
-}
+  email: string;
+  password: string;
+  name: string;
+  number: string;
+};
 
 type Keys = keyof User;
 
-
-const Signup = ({navigation}: NativeStackScreenProps<RootStackParamList, ScreenNameConstants.SIGNUP>) => {
+const Signup = ({
+  navigation,
+}: NativeStackScreenProps<RootStackParamList, ScreenNameConstants.SIGNUP>) => {
   const [user, setUser] = useState<User>({
     email: '',
     password: '',
@@ -63,7 +64,8 @@ const Signup = ({navigation}: NativeStackScreenProps<RootStackParamList, ScreenN
 
   const checkUser = async () => {
     try {
-      const countryCode = phoneInputRef.current?.getCountryCode() as CountryCode;
+      const countryCode =
+        phoneInputRef.current?.getCountryCode() as CountryCode;
       const num = parsePhoneNumber(user.number, countryCode);
       const internationalFormat = num?.formatInternational();
       const nationalFormat = num?.formatNational();
@@ -179,53 +181,65 @@ const Signup = ({navigation}: NativeStackScreenProps<RootStackParamList, ScreenN
       setLoading(false);
     }
   };
+
   return (
     <View style={styles.container}>
       <View style={styles.contentBox}>
-        <Text style={styles.title}>Sign Up</Text>
-        <View style={styles.inputBox}>
-          <TextInput
-            placeholder={'Enter Name'}
-            onChangeText={text => handleTextChange(text, 'name')}
-            value={user.name}
-            error={errors.name}
-          />
-        </View>
-        <View style={styles.inputBox}>
-          <PhoneInput
-            ref={phoneInputRef}
-            onChangeText={text => handleTextChange(text, 'number')}
-            value={user.number}
-            error={errors.number}
-          />
-        </View>
-        <View style={styles.inputBox}>
-          <TextInput
-            placeholder={'Enter Email'}
-            onChangeText={text => handleTextChange(text, 'email')}
-            value={user.email}
-            error={errors.email}
-          />
-        </View>
-        <View style={styles.inputBox}>
-          <TextInput
-            placeholder={'Enter Password'}
-            onChangeText={text => handleTextChange(text, 'password')}
-            value={user.password}
-            secureTextEntry
-            error={errors.password}
-          />
+        <Text style={styles.title}>Welcome</Text>
+        <Text style={styles.greetingText}>Create your account now!</Text>
+        <View style={styles.inputContainer}>
+          <Text style={styles.inputTitle}>Account Information</Text>
+          <View>
+            <TextInput
+              placeholder={'Enter Name'}
+              onChangeText={text => handleTextChange(text, 'name')}
+              value={user.name}
+              error={errors.name}
+            />
+          </View>
+          <View style={styles.mt20}>
+            <TextInput
+              placeholder={'Enter Email'}
+              onChangeText={text => handleTextChange(text, 'email')}
+              value={user.email}
+              error={errors.email}
+            />
+          </View>
+          <View style={styles.mt20}>
+            <TextInput
+              placeholder={'Enter Password'}
+              onChangeText={text => handleTextChange(text, 'password')}
+              value={user.password}
+              secureTextEntry
+              error={errors.password}
+              showEyeIcon
+            />
+          </View>
+          <View style={styles.mt20}>
+            <PhoneInput
+              ref={phoneInputRef}
+              onChangeText={text => handleTextChange(text, 'number')}
+              value={user.number}
+              error={errors.number}
+            />
+          </View>
+          <View style={styles.linksBox}>
+            <TouchableOpacity>
+              <Text style={styles.forgotText}>Already have a account</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => navigation.navigate(ScreenNameConstants.LOGIN)}>
+              <Text style={styles.signupText}>Log In now</Text>
+            </TouchableOpacity>
+          </View>
         </View>
         <View style={styles.btnBox}>
           <Button
-            text={'Signup'}
-            disabled={loading}
+            text="Signup"
             onPress={handleSignup}
+            disabled={loading}
             loading={loading}
           />
-          <TouchableOpacity onPress={() => navigation.navigate(ScreenNameConstants.LOGIN)}>
-            <Text style={styles.linkText}>SignIn</Text>
-          </TouchableOpacity>
         </View>
       </View>
     </View>
