@@ -28,6 +28,11 @@ const styles = StyleSheet.create({
     eyeIcon: {
         width: '100%',
         height: '100%'
+    },
+    label: {
+        color: COLORS.black,
+        marginBottom: 5,
+        fontSize: RFPercentage(2.2)
     }
 });
 

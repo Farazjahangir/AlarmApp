@@ -1,5 +1,5 @@
 import {useState, useEffect, useRef} from 'react';
-import {Text, View, Image, AppState} from 'react-native';
+import {Text, View, Image, AppState, ScrollView} from 'react-native';
 
 import Switch from '../../Components/Switch';
 import {
@@ -8,6 +8,8 @@ import {
   requestLocationPermission,
   checkForBatteryOptimization,
 } from '../../Utils';
+import TextInput from '../../Components/TextInput';
+import Button from '../../Components/Button';
 import styles from './style';
 
 const PERMISSION_LIST = {
@@ -201,27 +203,45 @@ const CompleteProfile = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={{color: 'black'}}>Complete Profile</Text>
-      <Switch
-        label="Allow Notification"
-        containerStyle={styles.mt10}
-        value={hasPermission.notification}
-      />
-      <Switch
-        label="Can Read Contacts"
-        containerStyle={styles.mt10}
-        value={hasPermission.contacts}
-      />
-      <Switch
-        label="Location"
-        containerStyle={styles.mt10}
-        value={hasPermission.location}
-      />
-      <Switch
-        label="Battery Optimization"
-        containerStyle={styles.mt10}
-        value={hasPermission.batteryOptDisabled}
-      />
+      <ScrollView
+        contentContainerStyle={styles.scollViewContentBox}
+        showsVerticalScrollIndicator={false}>
+        <View>
+          <Text style={styles.screenTitle}>Complete Your Profile</Text>
+          <Text style={styles.title}>Your Email</Text>
+          <Text style={styles.value}>Email</Text>
+          <Text style={styles.title}>Your Number</Text>
+          <Text style={styles.value}>03442778759</Text>
+          <View style={styles.inputBox}>
+            <TextInput containerStyle={styles.mt10} label="Name" />
+            <TextInput containerStyle={styles.mt10} label="Address" />
+          </View>
+          <View style={styles.permissionBox}>
+            <Text style={styles.permissionText}>Permissions</Text>
+            <Switch
+              label="Allow notification"
+              containerStyle={styles.mt10}
+              value={hasPermission.notification}
+            />
+            <Switch
+              label="Can read contacts"
+              containerStyle={styles.mt10}
+              value={hasPermission.contacts}
+            />
+            <Switch
+              label="Enable live location"
+              containerStyle={styles.mt10}
+              value={hasPermission.location}
+            />
+            <Switch
+              label="Disable battery optimization"
+              containerStyle={styles.mt10}
+              value={hasPermission.batteryOptDisabled}
+            />
+          </View>
+          <Button text="Next" containerStyle={styles.btnBox} />
+        </View>
+      </ScrollView>
     </View>
   );
 };

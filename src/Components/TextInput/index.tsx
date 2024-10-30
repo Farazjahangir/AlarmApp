@@ -6,6 +6,8 @@ import {
   TextInputProps as RNTextInputProps,
   Image,
   TouchableOpacity,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 
 import EyeIcon from '../../Assets/icons/eye.png';
@@ -20,6 +22,8 @@ interface TextInputProps {
   secureTextEntry?: RNTextInputProps['secureTextEntry'];
   error?: string;
   showEyeIcon?: boolean;
+  containerStyle?: ViewStyle;
+  label?: string
 }
 
 const TextInput = ({
@@ -29,6 +33,8 @@ const TextInput = ({
   secureTextEntry,
   error,
   showEyeIcon,
+  containerStyle,
+  label
 }: TextInputProps) => {
   const [isSecure, setIsSecure] = useState(secureTextEntry);
 
@@ -37,7 +43,8 @@ const TextInput = ({
   };
 
   return (
-    <View>
+    <View style={containerStyle}>
+      {label && <Text style={styles.label}>{label}</Text>}
       <View style={styles.inputBox}>
         <RNTextInput
           style={styles.input}
@@ -66,6 +73,7 @@ const TextInput = ({
 TextInput.defaultProps = {
   secureTextEntry: false,
   showEyeIcon: false,
+  label: ''
 };
 
 export default TextInput;
