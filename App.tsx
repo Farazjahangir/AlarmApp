@@ -91,7 +91,6 @@ function App(): React.JSX.Element {
   };
 
   const handleAppStateChange = async (nextAppState: string) => {
-    console.log("handleAppStateChange ==========>")
     if (nextAppState === 'active') {
       // appStateRef.current = true;
       checkAsyncForNotif();
@@ -102,7 +101,7 @@ function App(): React.JSX.Element {
   };
 
   useEffect(() => {
-    takePermissions();
+    // takePermissions();
     listenForForegroundMessage();
     checkAsyncForNotif();
     const appStateListener = AppState.addEventListener(

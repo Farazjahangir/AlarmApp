@@ -10,6 +10,9 @@ const COLORS = {
     primePurple: '#444CE7',
     inputBorder: '#D0D5DD',
     white: '#ffffff',
+    lightGrey: '#444CE70F',
+    switchActiveColor: '#067647',
+    switchInactiveColor: '#FAE5E2'
 };
 
 export default COLORS;

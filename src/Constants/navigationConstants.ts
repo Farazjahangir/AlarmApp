@@ -5,13 +5,15 @@ import Signup from "../Screens/Signup";
 import Home from "../Screens/Home";
 import Contacts from "../Screens/Contacts";
 import AlarmScreen from "../Screens/AlarmScreen";
+import CompleteProfile from "../Screens/CompleteProfile";
 
 export enum ScreenNameConstants {
     LOGIN = 'Login',
     SIGNUP = 'Sign Up',
     HOME = 'Home',
     CONTACTS = 'Contacts',
-    ALARM_SCREEN = 'Alarm Screen'
+    ALARM_SCREEN = 'Alarm Screen',
+    COMPLETE_PROFILE = 'Complete Profile'
 }
 
 const defaultNavOptions = {
@@ -19,6 +21,11 @@ const defaultNavOptions = {
 };
 
 export const authNavigationList: NavigationObj[] = [
+    {
+        name: ScreenNameConstants.COMPLETE_PROFILE,
+        component: CompleteProfile,
+        options: defaultNavOptions,
+    },
     {
         name: ScreenNameConstants.LOGIN,
         component: Login,
@@ -46,6 +53,6 @@ export const appNavigationList: NavigationObj[] = [
         name: ScreenNameConstants.ALARM_SCREEN,
         component: AlarmScreen,
         options: defaultNavOptions,
-    }
+    },
 ]
 

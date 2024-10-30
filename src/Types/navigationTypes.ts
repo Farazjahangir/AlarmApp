@@ -8,7 +8,8 @@ const {
     SIGNUP,
     HOME,
     ALARM_SCREEN,
-    CONTACTS
+    CONTACTS,
+    COMPLETE_PROFILE
 } = ScreenNameConstants
 
 export type RootStackParamList = {
@@ -19,7 +20,8 @@ export type RootStackParamList = {
     [ALARM_SCREEN]: {
         latitude: number;
         longitude: number;
-    }
+    },
+    [COMPLETE_PROFILE]: undefined
 };
 
 export type NavigationObj = {

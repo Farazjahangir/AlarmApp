@@ -78,8 +78,8 @@ const StackNavigation = () => {
 
   useEffect(() => {
     if (user) {
-      getContacts();
-      checkBatteryOptimization();
+      // getContacts();
+      // checkBatteryOptimization();
     }
   }, [user]);
 

@@ -85,6 +85,8 @@ export const askContactsPermission = async () => {
                 )
             ))
 
+        } else {
+            return reqRes
         }
     }
 }
@@ -92,25 +94,24 @@ export const askContactsPermission = async () => {
 export const checkForBatteryOptimization = async () => {
     const isOptimied = await notifee.isBatteryOptimizationEnabled();
     if (isOptimied) {
-        Alert.alert(
-            'Restrictions Detected',
-            'To ensure notifications are delivered in backgroud, please disable battery optimization for the app.',
-            [
-                // 3. launch intent to navigate the user to the appropriate screen
-                {
-                    text: 'OK, open settings',
-                    onPress: async () =>
-                        await notifee.openBatteryOptimizationSettings(),
-                },
-                {
-                    text: 'Cancel',
-                    onPress: () => console.log('Cancel Pressed'),
-                    style: 'cancel',
-                },
-            ],
-            { cancelable: false },
-        );
+        return new Promise((resolve) => (
+            Alert.alert(
+                "Restrictions Detected",
+                "To ensure notifications are delivered in backgroud, please disable battery optimization for the app.",
+                [
+                    {
+                        text: "Go to Settings", onPress: async () => {
+                            // Open app settings
+                            await notifee.openBatteryOptimizationSettings()
+                            resolve("settings_opened")
+                        }
+                    },
+                    { text: "Cancel", style: "cancel", onPress: () => resolve("never_ask_again") }
+                ]
+            )
+        ))
     }
+    return isOptimied ? 'denied' : 'granted'
 };
 
 export const fetchDeviceToken = async () => {
@@ -278,20 +279,26 @@ export const requestLocationPermission = async () => {
         );
 
         if (granted === RESULTS.GRANTED) {
-            return true
+            return 'granted'
         }
 
         else {
-            Alert.alert(
-                'Permission Required',
-                'Location permission is denied permanently. Please enable it from settings.',
-                [
-                    { text: 'Cancel', style: 'cancel' },
-                    { text: 'Open Settings', onPress: () => openAppSettings() },
-                ],
-                { cancelable: true },
-            );
-            return false
+            return new Promise((resolve) => (
+                Alert.alert(
+                    "Permission Required",
+                    "Location permission is denied permanently. Please enable it from settings.",
+                    [
+                        {
+                            text: "Go to Settings", onPress: async () => {
+                                // Open app settings
+                                await openAppSettings()
+                                resolve("settings_opened")
+                            }
+                        },
+                        { text: "Cancel", style: "cancel", onPress: () => resolve("never_ask_again") },
+                    ]
+                )
+            ))
         }
 
     } catch (e) {
