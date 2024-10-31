@@ -1,5 +1,6 @@
 import {useState, useEffect, useRef} from 'react';
-import {Text, View, Image, AppState, ScrollView, Alert} from 'react-native';
+import {Text, View, Image, AppState, ScrollView, Alert, AppStateStatus} from 'react-native';
+import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 
 import Switch from '../../Components/Switch';
 import {
@@ -15,8 +16,9 @@ import {completeProfileFormSchema, validate} from '../../Utils/yup';
 import {useUpdateUserProfile} from '../../Hooks/reactQuery/useUpdateUserProfile';
 import { useAppDispatch } from '../../Hooks/useAppDispatch';
 import { setUser } from '../../Redux/user/userSlice';
+import {RootStackParamList} from '../../Types/navigationTypes';
+import {ScreenNameConstants} from '../../Constants/navigationConstants';
 import styles from './style';
-import { ScreenNameConstants } from '../../Constants/navigationConstants';
 
 const PERMISSION_LIST = {
   notification: false,
@@ -30,7 +32,10 @@ type Data = {
   address: string;
 };
 
-const CompleteProfile = ({ navigation }) => {
+const CompleteProfile = ({ navigation }: NativeStackScreenProps<
+  RootStackParamList,
+  ScreenNameConstants.COMPLETE_PROFILE
+>) => {
   const user = useAppSelector(state => state.user.data.user);
 
   const [hasPermission, setHasPermission] = useState(PERMISSION_LIST);
@@ -131,7 +136,7 @@ const CompleteProfile = ({ navigation }) => {
   //   };
   // }, []);
 
-  const requestPermission = async permissionName => {
+  const requestPermission = async (permissionName: string) => {
     let permissionStatus = null;
 
     if (permissionName === 'notification') {
@@ -157,7 +162,7 @@ const CompleteProfile = ({ navigation }) => {
     return permissionStatus === 'granted';
   };
 
-  const requestPermissions = async permissionsList => {
+  const requestPermissions = async (permissionsList:Array<keyof typeof hasPermission>) => {
     try {
       isPermissionChecked.current = true;
       isSettingsOpened.current = false;
@@ -183,7 +188,7 @@ const CompleteProfile = ({ navigation }) => {
   };
 
   // Handle app state changes to recheck permissions if needed
-  const handleAppStateChange = async currentAppState => {
+  const handleAppStateChange = async (currentAppState: AppStateStatus) => {
     const prevAppStateStatus = prevAppState.current;
     prevAppState.current = currentAppState;
 
@@ -199,7 +204,7 @@ const CompleteProfile = ({ navigation }) => {
       ).then(results => results.every(res => res));
 
       if (!allGranted) {
-        requestPermissions(Object.keys(hasPermissionRef.current));
+        requestPermissions(Object.keys(hasPermissionRef.current) as Array<keyof typeof hasPermissionRef.current>);
       }
       return;
     }
@@ -210,7 +215,7 @@ const CompleteProfile = ({ navigation }) => {
       prevAppStateStatus === 'background' &&
       currentAppState === 'active'
     ) {
-      requestPermissions(Object.keys(hasPermissionRef.current));
+      requestPermissions(Object.keys(hasPermissionRef.current) as Array<keyof typeof hasPermissionRef.current>);
     }
   };
   // };
@@ -231,7 +236,7 @@ const CompleteProfile = ({ navigation }) => {
       !hasPermission.location ||
       !hasPermission.notification
     ) {
-      await requestPermissions(Object.keys(PERMISSION_LIST));
+      await requestPermissions(Object.keys(PERMISSION_LIST) as Array<keyof typeof hasPermissionRef.current>);
       return false;
     }
     return true;
@@ -262,7 +267,7 @@ const CompleteProfile = ({ navigation }) => {
   };
 
   useEffect(() => {
-    requestPermissions(Object.keys(PERMISSION_LIST)); // Initial permission list
+    requestPermissions(Object.keys(PERMISSION_LIST) as Array<keyof typeof hasPermissionRef.current>); // Initial permission list
     const appStateListener = AppState.addEventListener(
       'change',
       handleAppStateChange,
