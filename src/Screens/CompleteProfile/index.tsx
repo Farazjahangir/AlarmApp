@@ -12,7 +12,11 @@ import TextInput from '../../Components/TextInput';
 import Button from '../../Components/Button';
 import {useAppSelector} from '../../Hooks/useAppSelector';
 import {completeProfileFormSchema, validate} from '../../Utils/yup';
+import {useUpdateUserProfile} from '../../Hooks/reactQuery/useUpdateUserProfile';
+import { useAppDispatch } from '../../Hooks/useAppDispatch';
+import { setUser } from '../../Redux/user/userSlice';
 import styles from './style';
+import { ScreenNameConstants } from '../../Constants/navigationConstants';
 
 const PERMISSION_LIST = {
   notification: false,
@@ -26,7 +30,7 @@ type Data = {
   address: string;
 };
 
-const CompleteProfile = () => {
+const CompleteProfile = ({ navigation }) => {
   const user = useAppSelector(state => state.user.data.user);
 
   const [hasPermission, setHasPermission] = useState(PERMISSION_LIST);
@@ -44,6 +48,8 @@ const CompleteProfile = () => {
   const isPermissionChecked = useRef(false);
   const isSettingsOpened = useRef(false);
   const hasPermissionRef = useRef({});
+  const updateProfileMut = useUpdateUserProfile();
+  const dispatch = useAppDispatch()
 
   // const checkIsAllGranted = async () => {
   //   const notificationRes = await askNotificationPermission();
@@ -238,8 +244,18 @@ const CompleteProfile = () => {
         setValidationError(errors as Data);
         return;
       }
-      if (!hasAllPermissions()) return;
-      Alert.alert('Success')
+      if (!(await hasAllPermissions())) return;
+      const payload = {
+        data: {
+          name: data.name,
+          address: data.address,
+          isProfileComplete: true,
+        },
+        uid: user?.uid as string,
+      };
+      const res = await updateProfileMut.mutateAsync(payload);
+      dispatch(setUser({user: res}))
+      navigation.navigate(ScreenNameConstants.HOME)
     } catch (e) {
       console.log('ERRR', e?.message || 'Error');
     }
@@ -308,6 +324,7 @@ const CompleteProfile = () => {
             text="Next"
             containerStyle={styles.btnBox}
             onPress={handleCompleteProfile}
+            loading={updateProfileMut.isPending}
           />
         </View>
       </ScrollView>

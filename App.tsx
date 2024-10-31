@@ -4,6 +4,8 @@ import messaging from '@react-native-firebase/messaging';
 import {PermissionsAndroid} from 'react-native';
 import BackgroundTimer from 'react-native-background-timer';
 import Sound from 'react-native-sound';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+
 import a from './assets/alarm.mp3';
 import notifee, {EventType} from '@notifee/react-native';
 import AlarmScreen from './src/Screens/AlarmScreen';
@@ -30,6 +32,7 @@ function App(): React.JSX.Element {
   const [alarmRinging, setAlarmRinging] = useState(false);
 
   const appStateRef = useRef(false);
+  const queryClient = new QueryClient();
 
   const listenForForegroundMessage = async () => {
     messaging().onMessage(async remoteMessage => {
@@ -57,7 +60,7 @@ function App(): React.JSX.Element {
       let latitude: number;
       let longitude: number;
 
-      console.log("notifData ====>", notifData)
+      console.log('notifData ====>', notifData);
 
       if (notifData) {
         latitude = notifData.latitude;
@@ -65,12 +68,12 @@ function App(): React.JSX.Element {
         // await removeValueFromAsync('notif');
       }
       if (AlarmManager.isAlarmRinging) {
-          setTimeout(() => {
-            navigate(ScreenNameConstants.ALARM_SCREEN, {
-              latitude,
-              longitude,
-            });
-          }, 500);
+        setTimeout(() => {
+          navigate(ScreenNameConstants.ALARM_SCREEN, {
+            latitude,
+            longitude,
+          });
+        }, 500);
       }
     } catch (e) {
       console.log('checkAsyncForNotif ERR ==>', e.message);
@@ -86,7 +89,7 @@ function App(): React.JSX.Element {
       }
       await checkForBatteryOptimization();
     } catch (e) {
-      console.log("takePermissions ==>", e.message)
+      console.log('takePermissions ==>', e.message);
     }
   };
 
@@ -123,7 +126,9 @@ function App(): React.JSX.Element {
       )} */}
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
-          <Navigation />
+          <QueryClientProvider client={queryClient}>
+            <Navigation />
+          </QueryClientProvider>
         </PersistGate>
       </Provider>
     </SafeAreaView>
