@@ -12,7 +12,8 @@ const COLORS = {
     white: '#ffffff',
     lightGrey: '#444CE70F',
     switchActiveColor: '#067647',
-    switchInactiveColor: '#FAE5E2'
+    switchInactiveColor: '#FAE5E2',
+    TabNavGreyColor: '#98A2B3'
 };
 
 export default COLORS;

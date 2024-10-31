@@ -1,4 +1,4 @@
-import { NavigationObj } from "../Types/navigationTypes";
+import { BottomNavigationObj, NavigationObj } from "../Types/navigationTypes";
 
 import Login from "../Screens/Login";
 import Signup from "../Screens/Signup";
@@ -6,6 +6,7 @@ import Home from "../Screens/Home";
 import Contacts from "../Screens/Contacts";
 import AlarmScreen from "../Screens/AlarmScreen";
 import CompleteProfile from "../Screens/CompleteProfile";
+import TabNavigation from "../Navigation/tabNavigation";
 
 export enum ScreenNameConstants {
     LOGIN = 'Login',
@@ -13,7 +14,8 @@ export enum ScreenNameConstants {
     HOME = 'Home',
     CONTACTS = 'Contacts',
     ALARM_SCREEN = 'Alarm Screen',
-    COMPLETE_PROFILE = 'Complete Profile'
+    COMPLETE_PROFILE = 'Complete Profile',
+    TAB_NAV= 'tabNav'
 }
 
 const defaultNavOptions = {
@@ -35,13 +37,8 @@ export const authNavigationList: NavigationObj[] = [
 
 export const appNavigationList: NavigationObj[] = [
     {
-        name: ScreenNameConstants.HOME,
-        component: Home,
-        options: defaultNavOptions,
-    },
-    {
-        name: ScreenNameConstants.CONTACTS,
-        component: Contacts,
+        name: ScreenNameConstants.TAB_NAV,
+        component: TabNavigation,
         options: defaultNavOptions,
     },
     {
@@ -56,3 +53,15 @@ export const appNavigationList: NavigationObj[] = [
     },
 ]
 
+export const tabNavigationList: BottomNavigationObj[] = [
+    {
+        name: ScreenNameConstants.HOME,
+        component: Home,
+        options: defaultNavOptions,
+    },
+    {
+        name: ScreenNameConstants.CONTACTS,
+        component: Contacts,
+        options: defaultNavOptions,
+    },
+];  

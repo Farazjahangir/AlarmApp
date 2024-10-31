@@ -1,5 +1,6 @@
 import { NativeStackNavigationOptions } from "@react-navigation/native-stack";
 import { ComponentType } from "react";
+import {BottomTabNavigationOptions} from '@react-navigation/bottom-tabs';
 
 import { ScreenNameConstants } from "../Constants/navigationConstants";
 
@@ -9,7 +10,8 @@ const {
     HOME,
     ALARM_SCREEN,
     CONTACTS,
-    COMPLETE_PROFILE
+    COMPLETE_PROFILE,
+    TAB_NAV
 } = ScreenNameConstants
 
 export type RootStackParamList = {
@@ -21,7 +23,8 @@ export type RootStackParamList = {
         latitude: number;
         longitude: number;
     },
-    [COMPLETE_PROFILE]: undefined
+    [COMPLETE_PROFILE]: undefined;
+    [TAB_NAV]: undefined
 };
 
 export type NavigationObj = {
@@ -29,4 +32,8 @@ export type NavigationObj = {
     options?: NativeStackNavigationOptions;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     component: ComponentType<any>;
-  };
+};
+
+export interface BottomNavigationObj extends Omit<NavigationObj, 'options'> {
+    options?: BottomTabNavigationOptions;
+}
