@@ -1,6 +1,5 @@
 import {useEffect} from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {useSelector, useDispatch} from 'react-redux';
 
 import {
   fetchContacts,
@@ -14,7 +13,10 @@ import {RootStackParamList} from '../Types/navigationTypes';
 import {
   appNavigationList,
   authNavigationList,
+  ScreenNameConstants,
 } from '../Constants/navigationConstants';
+import { useAppDispatch } from '../Hooks/useAppDispatch';
+import { useAppSelector } from '../Hooks/useAppSelector';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -34,8 +36,10 @@ const AuthStack = () => {
 };
 
 const AppStack = () => {
+  const isUserProfileComplete = useAppSelector(state => state.user.data.user?.isProfileComplete);
+  const initialRoute = isUserProfileComplete ? ScreenNameConstants.HOME : ScreenNameConstants.COMPLETE_PROFILE
   return (
-    <Stack.Navigator>
+    <Stack.Navigator initialRouteName={initialRoute}>
       {appNavigationList.map(item => (
         <Stack.Screen
           name={item.name}
@@ -49,8 +53,8 @@ const AppStack = () => {
 };
 
 const StackNavigation = () => {
-  const user = useSelector(state => state.user.data.user);
-  const disptach = useDispatch();
+  const user = useAppSelector(state => state.user.data.user);
+  const disptach = useAppDispatch();
 
   const getContacts = async () => {
     try {
@@ -61,8 +65,8 @@ const StackNavigation = () => {
       const firestoreRes = await checkContactsWithFirestore(contacts, user);
       disptach(
         setContacts({
-          contactsWithAccount: firestoreRes?.contactsWithAccount,
-          contactsWithoutAccount: firestoreRes?.contactsWithoutAccount,
+          contactsWithAccount: firestoreRes?.contactsWithAccount || [],
+          contactsWithoutAccount: firestoreRes?.contactsWithoutAccount || [],
         }),
       );
     } catch (e) {

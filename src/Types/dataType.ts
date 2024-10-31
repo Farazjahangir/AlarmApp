@@ -7,7 +7,9 @@ export type User = {
     name: string;
     number: string;
     uid: string
-    countryCode?: string
+    countryCode?: string;
+    isProfileComplete?: boolean;
+    address?: boolean
 }
 
 export interface Contact extends ContactLibType {

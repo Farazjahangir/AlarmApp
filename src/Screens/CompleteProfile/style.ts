@@ -7,7 +7,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: COLORS.white,
-        paddingHorizontal: wp('8%'),
+        paddingHorizontal: wp('6%'),
     },
     scollViewContentBox: {
         flexGrow: 1, 

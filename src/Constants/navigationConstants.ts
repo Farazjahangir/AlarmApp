@@ -22,20 +22,15 @@ const defaultNavOptions = {
 
 export const authNavigationList: NavigationObj[] = [
     {
-        name: ScreenNameConstants.COMPLETE_PROFILE,
-        component: CompleteProfile,
-        options: defaultNavOptions,
-    },
-    {
         name: ScreenNameConstants.LOGIN,
         component: Login,
         options: defaultNavOptions,
     },
-{
-    name: ScreenNameConstants.SIGNUP,
+    {
+        name: ScreenNameConstants.SIGNUP,
         component: Signup,
         options: defaultNavOptions,
-}
+    }
 ]
 
 export const appNavigationList: NavigationObj[] = [
@@ -52,6 +47,11 @@ export const appNavigationList: NavigationObj[] = [
     {
         name: ScreenNameConstants.ALARM_SCREEN,
         component: AlarmScreen,
+        options: defaultNavOptions,
+    },
+    {
+        name: ScreenNameConstants.COMPLETE_PROFILE,
+        component: CompleteProfile,
         options: defaultNavOptions,
     },
 ]

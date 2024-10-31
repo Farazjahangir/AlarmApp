@@ -1,5 +1,5 @@
 import {useState, useEffect, useRef} from 'react';
-import {Text, View, Image, AppState, ScrollView} from 'react-native';
+import {Text, View, Image, AppState, ScrollView, Alert} from 'react-native';
 
 import Switch from '../../Components/Switch';
 import {
@@ -10,6 +10,8 @@ import {
 } from '../../Utils';
 import TextInput from '../../Components/TextInput';
 import Button from '../../Components/Button';
+import {useAppSelector} from '../../Hooks/useAppSelector';
+import {completeProfileFormSchema, validate} from '../../Utils/yup';
 import styles from './style';
 
 const PERMISSION_LIST = {
@@ -19,8 +21,23 @@ const PERMISSION_LIST = {
   batteryOptDisabled: false,
 };
 
+type Data = {
+  name: string;
+  address: string;
+};
+
 const CompleteProfile = () => {
+  const user = useAppSelector(state => state.user.data.user);
+
   const [hasPermission, setHasPermission] = useState(PERMISSION_LIST);
+  const [data, setData] = useState<Data>({
+    name: user?.name || '',
+    address: '',
+  });
+  const [validationError, setValidationError] = useState<Data>({
+    name: '',
+    address: '',
+  });
   //   const [prevState, setPrevState] = useState(null);
   const prevAppState = useRef(AppState.currentState);
   // const permissionChecked = useRef(false);
@@ -192,6 +209,42 @@ const CompleteProfile = () => {
   };
   // };
 
+  const handleTextChange = (value: string, key: keyof Data) => {
+    const payload = {...data};
+    const error = {...validationError};
+    payload[key] = value;
+    error[key] = '';
+    setData(payload);
+    setValidationError(error);
+  };
+
+  const hasAllPermissions = async () => {
+    if (
+      !hasPermission.batteryOptDisabled ||
+      !hasPermission.contacts ||
+      !hasPermission.location ||
+      !hasPermission.notification
+    ) {
+      await requestPermissions(Object.keys(PERMISSION_LIST));
+      return false;
+    }
+    return true;
+  };
+
+  const handleCompleteProfile = async () => {
+    try {
+      const errors = await validate(completeProfileFormSchema, data);
+      if (Object.keys(errors).length) {
+        setValidationError(errors as Data);
+        return;
+      }
+      if (!hasAllPermissions()) return;
+      Alert.alert('Success')
+    } catch (e) {
+      console.log('ERRR', e?.message || 'Error');
+    }
+  };
+
   useEffect(() => {
     requestPermissions(Object.keys(PERMISSION_LIST)); // Initial permission list
     const appStateListener = AppState.addEventListener(
@@ -209,12 +262,24 @@ const CompleteProfile = () => {
         <View>
           <Text style={styles.screenTitle}>Complete Your Profile</Text>
           <Text style={styles.title}>Your Email</Text>
-          <Text style={styles.value}>Email</Text>
+          <Text style={styles.value}>{user?.email}</Text>
           <Text style={styles.title}>Your Number</Text>
-          <Text style={styles.value}>03442778759</Text>
+          <Text style={styles.value}>{user?.number}</Text>
           <View style={styles.inputBox}>
-            <TextInput containerStyle={styles.mt10} label="Name" />
-            <TextInput containerStyle={styles.mt10} label="Address" />
+            <TextInput
+              containerStyle={styles.mt10}
+              label="Name"
+              onChangeText={text => handleTextChange(text, 'name')}
+              value={data.name}
+              error={validationError.name}
+            />
+            <TextInput
+              containerStyle={styles.mt10}
+              label="Address"
+              onChangeText={text => handleTextChange(text, 'address')}
+              value={data.address}
+              error={validationError.address}
+            />
           </View>
           <View style={styles.permissionBox}>
             <Text style={styles.permissionText}>Permissions</Text>
@@ -239,7 +304,11 @@ const CompleteProfile = () => {
               value={hasPermission.batteryOptDisabled}
             />
           </View>
-          <Button text="Next" containerStyle={styles.btnBox} />
+          <Button
+            text="Next"
+            containerStyle={styles.btnBox}
+            onPress={handleCompleteProfile}
+          />
         </View>
       </ScrollView>
     </View>

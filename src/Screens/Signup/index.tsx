@@ -106,6 +106,7 @@ const Signup = ({
         number: user.number,
         isActive: true,
         countryCode: phoneInputRef.current?.getCountryCode(),
+        isProfileComplete: false
       });
     } catch (e) {
       throw new Error(e);
