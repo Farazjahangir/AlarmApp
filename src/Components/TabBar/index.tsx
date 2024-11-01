@@ -6,6 +6,7 @@ import styles from './style';
 import {ScreenNameConstants} from '../../Constants/navigationConstants';
 
 const TabBar = ({state}: BottomTabBarProps) => {
+  console.log("state ======>", state)
   return (
     <View style={styles.container}>
       <View style={styles.contentBox}>

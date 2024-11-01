@@ -7,7 +7,7 @@ import { Group } from "..";
 import styles from "./style"
 
 interface MemberListProps {
-    data: Group;
+    data: Group | null;
     onClose: TouchableOpacityProps['onPress'];
     isVisible: boolean
 }

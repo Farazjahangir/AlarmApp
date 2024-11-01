@@ -15,7 +15,8 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: 16,
         color: COLORS.black,
-        height: 40
+        height: 40,
+        paddingHorizontal: 12
     },
     error: {
         color: COLORS.error,
@@ -33,6 +34,10 @@ const styles = StyleSheet.create({
         color: COLORS.black,
         marginBottom: 5,
         fontSize: RFPercentage(2.2)
+    },
+    leftIcon: {
+        width: 17,
+        height: 17,
     }
 });
 
