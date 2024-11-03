@@ -145,13 +145,13 @@ const Home = ({
 
   const routes = [
     {
-      key: 'first',
+      key: 'allGroups',
       title: 'All',
       component: AllGroups,
       props: {ringAlarm, groups, loadUserGroups, loading},
     },
     {
-      key: 'second',
+      key: 'publicGroups',
       title: 'Public',
       component: PublicGroups,
       props: {ringAlarm},

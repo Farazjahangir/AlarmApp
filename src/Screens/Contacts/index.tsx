@@ -320,6 +320,7 @@ const Contacts = ({navigation}: NativeStackScreenProps<
       // await new Promise(resolve => setTimeout(resolve, 500));
 
       const contacts = await fetchContacts();
+      console.log("contacts ===>", contacts)
       const firestoreRes = await checkContactsWithFirestore(contacts, user);
       dispatch(
         setContacts({

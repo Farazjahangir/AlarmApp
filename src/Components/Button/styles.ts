@@ -4,13 +4,12 @@ import COLORS from '../../Constants/colors';
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: COLORS.primePurple,
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 5,
         marginTop: 10,
         minWidth: 80,
-        padding: 5
+        padding: 5,
     },
     text: {
         color: COLORS.white,
@@ -32,6 +31,12 @@ const styles = StyleSheet.create({
     },
     textSmall: {
         fontSize: RFPercentage(2)
+    },
+    bgColorDefault: {
+        backgroundColor: COLORS.primePurple,
+    },
+    bgColorPanic: {
+        backgroundColor: COLORS.primeRed
     }
 });
 

@@ -63,6 +63,7 @@ const StackNavigation = () => {
       disptach(setContactLoading(true));
       const contacts = await fetchContacts();
       const firestoreRes = await checkContactsWithFirestore(contacts, user);
+      console.log("firestoreRes?.contactsWithAccount ========>", firestoreRes?.contactsWithAccount)
       disptach(
         setContacts({
           contactsWithAccount: firestoreRes?.contactsWithAccount || [],
@@ -82,7 +83,7 @@ const StackNavigation = () => {
 
   useEffect(() => {
     if (user) {
-      // getContacts();
+      getContacts();
       // checkBatteryOptimization();
     }
   }, [user]);

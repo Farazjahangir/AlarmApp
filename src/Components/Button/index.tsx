@@ -1,43 +1,61 @@
-import {TouchableOpacity, Text, ActivityIndicator, TouchableOpacityProps, ViewStyle} from 'react-native';
+import {
+  TouchableOpacity,
+  Text,
+  ActivityIndicator,
+  TouchableOpacityProps,
+  ViewStyle,
+} from 'react-native';
 import styles from './styles';
 
 interface ButtonProps {
   text: string;
-  onPress?: TouchableOpacityProps["onPress"],
+  onPress?: TouchableOpacityProps['onPress'];
   containerStyle?: ViewStyle;
   loading?: boolean;
   disabled?: boolean;
-  size?: 'small' | 'medium' | 'large'
+  size?: 'small' | 'medium' | 'large';
+  theme?: 'default' | 'panic';
 }
 
-const Button = ({text, onPress, containerStyle, loading, disabled, size}: ButtonProps) => {
-
+const Button = ({
+  text,
+  onPress,
+  containerStyle,
+  loading,
+  disabled,
+  size,
+  theme,
+}: ButtonProps) => {
   const btnContainerStyles = () => {
-    let sizeStyle = styles.largeBtn
+    let sizeStyle = styles.largeBtn;
+    let bgTheme = styles.bgColorDefault;
 
     if (size === 'medium') {
-      sizeStyle = styles.medumBtn
+      sizeStyle = styles.medumBtn;
     }
 
     if (size === 'small') {
-      sizeStyle = styles.smallBtn
+      sizeStyle = styles.smallBtn;
     }
-    return [styles.container, sizeStyle, containerStyle];
-  }
 
+    if (theme === 'panic') {
+      bgTheme = styles.bgColorPanic;
+    }
+    return [styles.container, bgTheme, sizeStyle, containerStyle];
+  };
 
   const textStyles = () => {
-    let sizeStyle = styles.textLarge
+    let sizeStyle = styles.textLarge;
 
     if (size === 'medium') {
-      sizeStyle = styles.textMedium
+      sizeStyle = styles.textMedium;
     }
 
     if (size === 'small') {
-      sizeStyle = styles.textSmall
+      sizeStyle = styles.textSmall;
     }
     return [styles.text, sizeStyle];
-  }
+  };
 
   return (
     <TouchableOpacity
@@ -56,7 +74,8 @@ const Button = ({text, onPress, containerStyle, loading, disabled, size}: Button
 Button.defaultProps = {
   loading: false,
   disabled: false,
-  size: 'large'
+  size: 'large',
+  theme: 'default',
 };
 
 export default Button;

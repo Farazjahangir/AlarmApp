@@ -6,10 +6,10 @@ import COLORS from '../../../Constants/colors';
 const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
-        backgroundColor: COLORS.white,
         padding: 10,
         borderRadius: 5,
         alignItems: 'center',
+        backgroundColor: COLORS.white
     },
     leftContainer: {
         flex: 1
@@ -19,8 +19,14 @@ const styles = StyleSheet.create({
         fontSize: RFPercentage(3)
     },
     count: {
-        color: COLORS.black, 
+        color: COLORS.grey, 
         fontSize: RFPercentage(1.9)
+    },
+    picture: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        marginRight: 10
     }
 });
 

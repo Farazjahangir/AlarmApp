@@ -1,6 +1,5 @@
 const COLORS = {
     primeOrange: '#ff4d4d',
-    grey: '#7f8c8d',
     link: '#1e90ff',
     error: '#FF0000',
     
@@ -13,7 +12,9 @@ const COLORS = {
     lightGrey: '#444CE70F',
     switchActiveColor: '#067647',
     switchInactiveColor: '#FAE5E2',
-    TabNavGreyColor: '#98A2B3'
+    TabNavGreyColor: '#98A2B3',
+    primeRed: '#DD1D1D',
+    grey: '#7f8c8d',
 };
 
 export default COLORS;

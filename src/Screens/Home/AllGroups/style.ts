@@ -11,7 +11,7 @@ const styles = StyleSheet.create({
         fontSize: RFPercentage(3)
     },
     grpListBox: {
-        marginTop: 15
+        marginTop: 8
     },
 })
 
