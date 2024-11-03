@@ -40,13 +40,13 @@ const AppStack = () => {
   const isUserProfileComplete = useAppSelector(state => state.user.data.user?.isProfileComplete);
   const initialRoute = isUserProfileComplete ? ScreenNameConstants.HOME : ScreenNameConstants.COMPLETE_PROFILE
   return (
-    <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ header : props => <Header {...props} /> }}>
+    <Stack.Navigator initialRouteName={initialRoute}>
       {appNavigationList.map(item => (
         <Stack.Screen
           name={item.name}
           component={item.component}
           key={Date.now()}
-          // options={item.options}
+          options={item.options}
         />
       ))}
     </Stack.Navigator>
