@@ -17,6 +17,7 @@ import {
 } from '../Constants/navigationConstants';
 import { useAppDispatch } from '../Hooks/useAppDispatch';
 import { useAppSelector } from '../Hooks/useAppSelector';
+import { ContactWithAccount } from '../Types/dataType';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -39,13 +40,13 @@ const AppStack = () => {
   const isUserProfileComplete = useAppSelector(state => state.user.data.user?.isProfileComplete);
   const initialRoute = isUserProfileComplete ? ScreenNameConstants.HOME : ScreenNameConstants.COMPLETE_PROFILE
   return (
-    <Stack.Navigator initialRouteName={initialRoute}>
+    <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ header : props => <Header {...props} /> }}>
       {appNavigationList.map(item => (
         <Stack.Screen
           name={item.name}
           component={item.component}
           key={Date.now()}
-          options={item.options}
+          // options={item.options}
         />
       ))}
     </Stack.Navigator>
@@ -63,10 +64,9 @@ const StackNavigation = () => {
       disptach(setContactLoading(true));
       const contacts = await fetchContacts();
       const firestoreRes = await checkContactsWithFirestore(contacts, user);
-      console.log("firestoreRes?.contactsWithAccount ========>", firestoreRes?.contactsWithAccount)
       disptach(
         setContacts({
-          contactsWithAccount: firestoreRes?.contactsWithAccount || [],
+          contactsWithAccount: (firestoreRes?.contactsWithAccount as ContactWithAccount[]) || [],
           contactsWithoutAccount: firestoreRes?.contactsWithoutAccount || [],
         }),
       );

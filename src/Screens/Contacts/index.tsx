@@ -137,7 +137,6 @@ const Contacts = ({navigation}: NativeStackScreenProps<
 
   // console.log("DATA ===>", data)
   const mergeData = () => {
-    // console.log("contatcs.contactsWithAccount ====>", contatcs.contactsWithAccount)
     const combinedContacts: CombinedContact[] = []
 
     if (contatcs.contactsWithAccount.length) {
@@ -320,7 +319,6 @@ const Contacts = ({navigation}: NativeStackScreenProps<
       // await new Promise(resolve => setTimeout(resolve, 500));
 
       const contacts = await fetchContacts();
-      console.log("contacts ===>", contacts)
       const firestoreRes = await checkContactsWithFirestore(contacts, user);
       dispatch(
         setContacts({

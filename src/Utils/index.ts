@@ -214,9 +214,11 @@ export const checkContactsWithFirestore = async (data, authUser) => {
                     firestoreContact.number === phoneNumber &&
                     phoneNumber !== authUser.number
                 ) {
-                    firestoreContact.localData = contact
+                    const data = contact
+                    contact.user = firestoreContact
+                    // firestoreContact.localData = contact
                     // If found in Firestore, push Firestore data to contactsWithAccount
-                    contactsWithAccount.push(firestoreContact);
+                    contactsWithAccount.push(data);
                     foundInFirestore = true;
                 }
             });
