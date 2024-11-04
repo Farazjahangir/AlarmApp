@@ -16,6 +16,8 @@ import searchIcon from '../../Assets/icons/search.png';
 import TabView from '../../Components/TabView';
 import AllGroups from './AllGroups';
 import PublicGroups from './PublicGroups';
+import FloatingButton from '../../Components/FloatingButton';
+import createGroupIcon from '../../Assets/icons/createGroup.png';
 import styles from './style';
 
 export type Group = {
@@ -161,6 +163,7 @@ const Home = ({
   return (
     <>
       <View style={styles.container}>
+        <FloatingButton icon={createGroupIcon} />
         <View style={styles.contentBox}>
           <Text style={styles.title}>Groups</Text>
           <TextInput
