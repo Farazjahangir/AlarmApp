@@ -5,6 +5,8 @@ import {PermissionsAndroid} from 'react-native';
 import BackgroundTimer from 'react-native-background-timer';
 import Sound from 'react-native-sound';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import {BottomSheetModalProvider} from '@gorhom/bottom-sheet';
 
 import a from './assets/alarm.mp3';
 import notifee, {EventType} from '@notifee/react-native';
@@ -127,7 +129,11 @@ function App(): React.JSX.Element {
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
           <QueryClientProvider client={queryClient}>
-            <Navigation />
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <BottomSheetModalProvider>
+                <Navigation />
+              </BottomSheetModalProvider>
+            </GestureHandlerRootView>
           </QueryClientProvider>
         </PersistGate>
       </Provider>

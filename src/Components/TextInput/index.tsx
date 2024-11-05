@@ -57,7 +57,7 @@ const TextInput = ({
           placeholder={placeholder}
           value={value}
           onChangeText={onChangeText}
-          placeholderTextColor={COLORS.inputBorder}
+          placeholderTextColor={COLORS.inputPlaceholder}
           secureTextEntry={isSecure}
         />
         {showEyeIcon && (

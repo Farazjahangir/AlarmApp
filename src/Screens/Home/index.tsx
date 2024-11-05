@@ -1,9 +1,11 @@
-import {useState, useCallback} from 'react';
+import {useState, useCallback, useRef} from 'react';
 import {Text, View, Alert} from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import axios from 'axios';
 import {useFocusEffect} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import {BottomSheetModal} from '@gorhom/bottom-sheet';
 
 import {BASE_URL} from '../../Constants';
 import {requestLocationPermission, getPositionAsync} from '../../Utils';
@@ -18,6 +20,8 @@ import AllGroups from './AllGroups';
 import PublicGroups from './PublicGroups';
 import FloatingButton from '../../Components/FloatingButton';
 import createGroupIcon from '../../Assets/icons/createGroup.png';
+import BottomSheet from '../../Components/BottomSheet';
+import ContactList from './ContactList';
 import styles from './style';
 
 export type Group = {
@@ -35,9 +39,11 @@ const Home = ({
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [openMembersModal, setOpenMembersModal] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [ContactListModalIndex, setContactListModalIndex] = useState(0);
 
   const user = useAppSelector(state => state.user.data.user);
   const contatcs = useAppSelector(state => state.contacts.data);
+  const contactSheetModalRef = useRef<BottomSheetModal>(null);
 
   const navigateToContacts = () => {
     navigation.navigate(ScreenNameConstants.CONTACTS);
@@ -139,6 +145,14 @@ const Home = ({
     }
   };
 
+  const openContactList = () => {
+    contactSheetModalRef.current?.present();
+  };
+
+  const onCloseContactListModal = () => {
+    contactSheetModalRef.current?.dismiss()
+  }
+
   useFocusEffect(
     useCallback(() => {
       loadUserGroups();
@@ -162,8 +176,12 @@ const Home = ({
 
   return (
     <>
+      <ContactList ref={contactSheetModalRef} onCloseModal={onCloseContactListModal} />
       <View style={styles.container}>
-        <FloatingButton icon={createGroupIcon} />
+        {/* <BottomSheet isVisible>
+          <Text style={{ color: 'black' }}>Hello</Text>
+        </BottomSheet> */}
+        <FloatingButton icon={createGroupIcon} onPress={openContactList} />
         <View style={styles.contentBox}>
           <Text style={styles.title}>Groups</Text>
           <TextInput

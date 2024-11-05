@@ -15,6 +15,8 @@ const COLORS = {
     TabNavGreyColor: '#98A2B3',
     primeRed: '#DD1D1D',
     grey: '#7f8c8d',
+    input: '#F2F4F7',
+    inputPlaceholder: '#667085'
 };
 
 export default COLORS;

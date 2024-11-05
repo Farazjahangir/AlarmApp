@@ -150,6 +150,7 @@ export const normalizePhoneNumberOnLocalFormat = (phoneNumber) => {
 
 export const transformContacts = contacts => {
     const transformedContacts = [];
+    const seenNumbers = new Set();
     contacts.forEach(contact => {
         if (
             contact.phoneNumbers &&
@@ -164,14 +165,16 @@ export const transformContacts = contacts => {
                 ),
             );
             distinctNumbers.forEach(number => {
-                const newContact = { ...contact };
-                newContact.phoneNumber = number;
-                newContact.localFormat = normalizePhoneNumberOnLocalFormat(number)
-                transformedContacts.push(newContact);
+                if (!seenNumbers.has(number)) {
+                    const newContact = { ...contact };
+                    newContact.phoneNumber = number;
+                    newContact.localFormat = normalizePhoneNumberOnLocalFormat(number)
+                    transformedContacts.push(newContact);
+                    seenNumbers.add(number);
+                }
             });
         }
     });
-
     return transformedContacts;
 };
 

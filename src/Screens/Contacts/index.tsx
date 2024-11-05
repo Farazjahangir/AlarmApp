@@ -28,9 +28,9 @@ import {
 } from '../../Redux/contacts/contactSlice';
 import {RootStackParamList} from '../../Types/navigationTypes';
 import {ScreenNameConstants} from '../../Constants/navigationConstants';
-import { useAppSelector } from '../../Hooks/useAppSelector';
-import { useAppDispatch } from '../../Hooks/useAppDispatch';
-import { Contact, ContactWithAccount } from '../../Types/dataType';
+import {useAppSelector} from '../../Hooks/useAppSelector';
+import {useAppDispatch} from '../../Hooks/useAppDispatch';
+import {Contact, ContactWithAccount} from '../../Types/dataType';
 import styles from './style';
 
 interface SelectedContacts {
@@ -42,18 +42,22 @@ interface Header {
   title: string;
 }
 
-export type CombinedContact = 
-    | (ContactWithAccount & { type: 'withAccount' })
-    | (Contact & { type: 'withoutAccount' })
-    | Header;
+export type CombinedContact =
+  | (ContactWithAccount & {type: 'withAccount'})
+  | (Contact & {type: 'withoutAccount'})
+  | Header;
 
-const Contacts = ({navigation}: NativeStackScreenProps<
+const Contacts = ({
+  navigation,
+}: NativeStackScreenProps<
   RootStackParamList,
   ScreenNameConstants.CONTACTS
 >) => {
   const [data, setData] = useState<CombinedContact[]>([]);
   //   const [selectedContacts, setSelectedContacts] = useState(new Set());
-  const [selectedContacts, setSelectedContacts] = useState<SelectedContacts>({});
+  const [selectedContacts, setSelectedContacts] = useState<SelectedContacts>(
+    {},
+  );
   const [searchTerm, setSearchTerm] = useState('');
   const [grpName, setGrpName] = useState('');
   const [filteredData, setFilteredData] = useState<CombinedContact[]>([]);
@@ -79,7 +83,7 @@ const Contacts = ({navigation}: NativeStackScreenProps<
     setSelectedContacts(selected);
   };
 
-  const renderList = ({ item }: { item: CombinedContact }) => {
+  const renderList = ({item}: {item: CombinedContact}) => {
     return (
       <ContactList
         item={item}
@@ -87,32 +91,36 @@ const Contacts = ({navigation}: NativeStackScreenProps<
         // handleSelectContact={() =>
         //   handleSelectContact((item as ContactWithAccount)?.user.number || (item as Contact).phoneNumber)
         // }
-         handleSelectContact={() =>
+        handleSelectContact={() =>
           handleSelectContact((item as Contact).phoneNumber)
         }
       />
-    )
+    );
   };
 
   const handleSearch = (text: string) => {
     setSearchTerm(text);
     const lowerCaseSearchTerm = text.toLowerCase();
     // Filter the 'withAccount' section
-    const withAccountContacts = data.filter(
-      contact =>
+    const withAccountContacts = data.filter(contact => {
+      // console.log("withAccountContacts ===>", contact.displayName)
+      return (
         contact.type === 'withAccount' &&
-        (contact.displayName
-          ?.toLowerCase()
-          .includes(lowerCaseSearchTerm) ||
-          contact.phoneNumber?.includes(lowerCaseSearchTerm)),
-    );
+        (contact.displayName?.toLowerCase().includes(lowerCaseSearchTerm) ||
+          contact.phoneNumber?.includes(lowerCaseSearchTerm))
+      );
+    });
 
     // Filter the 'withoutAccount' section
     const withoutAccountContacts = data.filter(
-      contact =>
-        contact.type === 'withoutAccount' &&
+      contact => {
+      // console.log("withoutAccountContacts ===>", contact.displayName)
+        return (
+          contact.type === 'withoutAccount' &&
         (contact.displayName.toLowerCase().includes(lowerCaseSearchTerm) ||
-          contact.phoneNumber.includes(lowerCaseSearchTerm)),
+          contact.phoneNumber.includes(lowerCaseSearchTerm))
+        )
+      }
     );
 
     // console.log("withAccountContacts", withAccountContacts)
@@ -135,39 +143,51 @@ const Contacts = ({navigation}: NativeStackScreenProps<
     setFilteredData(filteredData);
   };
 
+  const checkdata = filteredData.filter(
+    item => item.displayName === 'D Rameez New',
+  );
+  console.log('checkdata ============> filteredData ======>', checkdata);
+
   // console.log("DATA ===>", data)
   const mergeData = () => {
-    const combinedContacts: CombinedContact[] = []
+    const combinedContacts: CombinedContact[] = [];
 
     if (contatcs.contactsWithAccount.length) {
-      combinedContacts.push({ type: 'header', title: 'Contacts on AlarmApp' });
-      combinedContacts.push(...contatcs.contactsWithAccount.map(contact => ({
+      combinedContacts.push({type: 'header', title: 'Contacts on AlarmApp'});
+      combinedContacts.push(
+        ...contatcs.contactsWithAccount.map(contact => ({
           ...contact,
           type: 'withAccount' as const, // Ensure the type is added
-      })));
-  }
-  
-  if (contatcs.contactsWithoutAccount.length) {
-      combinedContacts.push({ type: 'header', title: 'Contacts Not on AlarmApp' });
-      combinedContacts.push(...contatcs.contactsWithoutAccount.map(contact => {
-        return ({
-          ...contact as Contact,
-          type: 'withoutAccount' as const, // Ensure the type is added
-      })
-      }));
-  }
-  //   const combinedContacts: CombinedContact[] = [
-  //     { type: 'header', title: 'Contacts on AlarmApp' },
-  //     ...contatcs.contactsWithAccount.map((contact: ContactWithAccount) => ({
-  //         ...contact,
-  //         type: 'withAccount' as const, // Use 'as const' to assert the string literal
-  //     })),
-  //     { type: 'header', title: 'Contacts Not on AlarmApp' },
-  //     ...contatcs.contactsWithoutAccount.map((contact: Contact) => ({
-  //         ...contact,
-  //         type: 'withoutAccount' as const, // Use 'as const' to assert the string literal
-  //     })),
-  // ];
+        })),
+      );
+    }
+
+    if (contatcs.contactsWithoutAccount.length) {
+      combinedContacts.push({
+        type: 'header',
+        title: 'Contacts Not on AlarmApp',
+      });
+      combinedContacts.push(
+        ...contatcs.contactsWithoutAccount.map(contact => {
+          return {
+            ...(contact as Contact),
+            type: 'withoutAccount' as const, // Ensure the type is added
+          };
+        }),
+      );
+    }
+    //   const combinedContacts: CombinedContact[] = [
+    //     { type: 'header', title: 'Contacts on AlarmApp' },
+    //     ...contatcs.contactsWithAccount.map((contact: ContactWithAccount) => ({
+    //         ...contact,
+    //         type: 'withAccount' as const, // Use 'as const' to assert the string literal
+    //     })),
+    //     { type: 'header', title: 'Contacts Not on AlarmApp' },
+    //     ...contatcs.contactsWithoutAccount.map((contact: Contact) => ({
+    //         ...contact,
+    //         type: 'withoutAccount' as const, // Use 'as const' to assert the string literal
+    //     })),
+    // ];
     setData(combinedContacts);
     setFilteredData(combinedContacts);
   };
@@ -188,7 +208,9 @@ const Contacts = ({navigation}: NativeStackScreenProps<
       if (contact.phoneNumber && selectedContacts[contact.phoneNumber]) {
         if ((contact as ContactWithAccount)?.user?.uid) {
           // Add contacts with UID directly
-          selectedContactsData.push(((contact as ContactWithAccount).user?.uid) as string);
+          selectedContactsData.push(
+            (contact as ContactWithAccount).user?.uid as string,
+          );
         } else {
           // Collect contacts without UID for later processing
           contactsWithoutUID.push(contact as Contact);
@@ -260,8 +282,8 @@ const Contacts = ({navigation}: NativeStackScreenProps<
 
   const createSelectedUsersUIDArr = async () => {
     const {selectedContactsData, contactsWithoutUID} =
-    separateActiveAndNonActiveContacts();
-    console.log("createSelectedUsersUIDArr")
+      separateActiveAndNonActiveContacts();
+    console.log('createSelectedUsersUIDArr');
 
     // If no contacts need further processing, return early
     if (contactsWithoutUID.length === 0) return selectedContactsData;
@@ -353,6 +375,10 @@ const Contacts = ({navigation}: NativeStackScreenProps<
       contatcs.contactsWithAccount.length ||
       contatcs.contactsWithoutAccount.length
     ) {
+      // const checkdata = data.filter(
+      //   item => item.displayName === 'D Rameez New',
+      // );
+      // console.log('checkdata ======>', checkdata);
       mergeData();
     }
   }, [contatcs.contactsWithAccount, contatcs.contactsWithoutAccount]);
@@ -392,8 +418,9 @@ const Contacts = ({navigation}: NativeStackScreenProps<
         <FlatList
           data={filteredData}
           renderItem={renderList}
-          extraData={filteredData}
-          keyExtractor={(item, index) => (item as Contact).phoneNumber}
+          // extraData={filteredData}
+          // keyExtractor={(item, index) => (item as Contact).phoneNumber}
+          keyExtractor={(item, index) => index.toString()}
           refreshControl={
             <RefreshControl
               refreshing={contactsLoading}

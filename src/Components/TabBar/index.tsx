@@ -41,7 +41,7 @@ const TabBar = ({state}: BottomTabBarProps) => {
           title="Home"
         />
         <TabBarItem
-          // screenName={ScreenNameConstants.CONTACTS}
+          screenName={ScreenNameConstants.CONTACTS}
           title="Profile"
           selected={state.index === 1}
           icon={userGreyIcon}
