@@ -42,6 +42,7 @@ import styles from './style';
 interface ContactListProps {
   onChange?: (index: number) => void;
   onCloseModal?: () => void;
+  onSelectContacts: (selectedContacts: SelectedContacts) => void;
 }
 
 interface SelectedContacts {
@@ -59,7 +60,7 @@ export type CombinedContact =
   | Header;
 
 const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
-  ({onChange, onCloseModal}, ref: Ref<BottomSheetModal>) => {
+  ({onChange, onCloseModal, onSelectContacts}, ref: Ref<BottomSheetModal>) => {
     const [data, setData] = useState<CombinedContact[]>([]);
     //   const [selectedContacts, setSelectedContacts] = useState(new Set());
     const [selectedContacts, setSelectedContacts] = useState<SelectedContacts>(
@@ -69,10 +70,6 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
     const [grpName, setGrpName] = useState('');
     const [filteredData, setFilteredData] = useState<CombinedContact[]>([]);
     const [createGrpLoading, setCreateGrpLoading] = useState(false);
-    const [errors, setErrors] = useState({
-      grpName: '',
-      contacts: '',
-    });
     const [page, setPage] = useState(1);
     const [paginatedData, setPaginatedData] = useState<CombinedContact[]>([]);
 
@@ -97,7 +94,6 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
     };
 
     const handleSelectContact = (phoneNumber: string) => {
-      setErrors({...errors, contacts: ''});
       const selected: SelectedContacts = {...selectedContacts};
       if (selected[phoneNumber]) {
         delete selected[phoneNumber];
@@ -106,7 +102,6 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
       }
       setSelectedContacts(selected);
     };
-
 
     const renderList = ({item}: {item: CombinedContact}) => {
       return (
@@ -157,7 +152,7 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
         searchedData = searchedData.concat(withoutAccountContacts);
       }
       setPaginatedData(searchedData.slice(0, CONTACTS_ITEMS_PER_PAGE));
-      setFilteredData(searchedData)
+      setFilteredData(searchedData);
     };
 
     const mergeData = () => {
@@ -206,7 +201,6 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
 
     const onChangeGrpName = (text: string) => {
       setGrpName(text);
-      setErrors({...errors, grpName: ''});
     };
 
     const separateActiveAndNonActiveContacts = () => {
@@ -307,45 +301,6 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
       return [...selectedContactsData, ...foundUserUIDs, ...newUserUIDs];
     };
 
-    const validate = () => {
-      let isValid = true;
-      const errorText = {...errors};
-
-      if (!grpName) {
-        errorText.grpName = 'Required';
-        isValid = false;
-      }
-
-      if (!Object.keys(selectedContacts).length) {
-        errorText.contacts = 'Please Select atleast on contact';
-        isValid = false;
-      }
-
-      setErrors(errorText);
-      return isValid;
-    };
-
-    const onCreateGroup = async () => {
-      try {
-        if (!validate()) return;
-        setCreateGrpLoading(true);
-        const uids = await createSelectedUsersUIDArr();
-        const payload = {
-          groupName: grpName,
-          createdBy: user?.uid,
-          members: [user?.uid, ...uids],
-          createdAt: firestore.FieldValue.serverTimestamp(),
-        };
-
-        await firestore().collection('groups').add(payload);
-        // navigation.navigate(ScreenNameConstants.HOME);
-      } catch (e) {
-        console.log('onCreateGroup ERR', e.message);
-      } finally {
-        setCreateGrpLoading(false);
-      }
-    };
-
     const getContacts = async () => {
       try {
         dispatch(setContactLoading(true));
@@ -381,6 +336,30 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
       }
     };
 
+    const onCreateGroup = async () => {
+      try {
+        setCreateGrpLoading(true);
+        const uids = await createSelectedUsersUIDArr();
+        const payload = {
+          groupName: grpName,
+          createdBy: user?.uid,
+          members: [user?.uid, ...uids],
+          createdAt: firestore.FieldValue.serverTimestamp(),
+        };
+
+        await firestore().collection('groups').add(payload);
+        // navigation.navigate(ScreenNameConstants.HOME);
+      } catch (e) {
+        console.log('onCreateGroup ERR', e.message);
+      } finally {
+        setCreateGrpLoading(false);
+      }
+    };
+
+    const handleNextPress = () => {
+      onSelectContacts(selectedContacts);
+    };
+
     useEffect(() => {
       if (
         contatcs.contactsWithAccount.length ||
@@ -390,24 +369,35 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
       }
     }, [contatcs.contactsWithAccount, contatcs.contactsWithoutAccount]);
 
-    const renderHeader = () => (
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.closeIconBox} onPress={onCloseModal}>
-          <Image source={closeIcon} style={styles.closeIcon} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Select Contacts</Text>
-        <TouchableOpacity>
-          <Text style={styles.headerActionButtonText}>Next</Text>
-        </TouchableOpacity>
-      </View>
-    );
+    const renderHeader = () => {
+      const shouldNextBtnDisable = !Object.keys(selectedContacts).length;
+      return (
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.closeIconBox} onPress={onCloseModal}>
+            <Image source={closeIcon} style={styles.closeIcon} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Select Contacts</Text>
+          <TouchableOpacity
+            onPress={handleNextPress}
+            disabled={shouldNextBtnDisable}>
+            <Text
+              style={[
+                styles.headerActionButtonText,
+                shouldNextBtnDisable && styles.disabledText,
+              ]}>
+              Next
+            </Text>
+          </TouchableOpacity>
+        </View>
+      );
+    };
 
     const onChangeSnapIndex = (index: number) => {
       if (index === -1) {
         setSelectedContacts({});
         setSearchTerm('');
         setPage(1);
-        mergeData()
+        mergeData();
       }
     };
 
@@ -416,7 +406,7 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
         ref={ref}
         onChange={onChangeSnapIndex}
         renderHeader={renderHeader}
-        >
+        enablePanDownToClose={false}>
         <View style={styles.container}>
           <View style={styles.contentBox}>
             <TextInput
@@ -464,7 +454,7 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
               }
               onEndReached={loadMoreContacts}
               onEndReachedThreshold={0.1}
-              contentContainerStyle={{ flexGrow: 1, paddingBottom: 60 }}
+              contentContainerStyle={{flexGrow: 1, paddingBottom: 60}}
               showsVerticalScrollIndicator={false}
             />
           </View>

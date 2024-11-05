@@ -7,6 +7,10 @@ export const completeProfileFormSchema = yup.object({
     address: yup.string(),
 });
 
+export const createGroupSchema = yup.object({
+    groupName: yup.string().required().label("Group Name"),
+});
+
 
 export const validate = async (
     schema: yup.ObjectSchema<any>,

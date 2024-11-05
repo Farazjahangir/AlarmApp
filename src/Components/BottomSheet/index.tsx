@@ -15,6 +15,8 @@ interface BottomSheetProps {
   showIndicator?: boolean;
   onChange?: (index: number) => void;
   renderHeader?: () => ReactNode;
+  enableDynamicSizing?: boolean;
+  enablePanDownToClose?: boolean
 }
 
 const bottomSheet = forwardRef<BottomSheetModal, BottomSheetProps>(
@@ -25,6 +27,8 @@ const bottomSheet = forwardRef<BottomSheetModal, BottomSheetProps>(
       showIndicator = false,
       onChange,
       renderHeader,
+      enableDynamicSizing = false,
+      enablePanDownToClose = true
     }: BottomSheetProps,
     ref: Ref<BottomSheetModal>,
   ) => {
@@ -47,8 +51,12 @@ const bottomSheet = forwardRef<BottomSheetModal, BottomSheetProps>(
         handleIndicatorStyle={{display: showIndicator ? 'flex' : 'none'}}
         backdropComponent={renderBackdrop}
         backgroundStyle={styles.bgStyle}
-        style={{flex: 1}}>
-        <BottomSheetView style={{ flex: 1 }}>{!!renderHeader && renderHeader()}</BottomSheetView>
+        style={{flex: 1}}
+        enableDynamicSizing={enableDynamicSizing}
+        enablePanDownToClose={enablePanDownToClose}>
+        {!!renderHeader && (
+          <BottomSheetView>{renderHeader()}</BottomSheetView>
+        )}
         {/* <BottomSheetScrollView style={styles.contentContainer}> */}
         {children}
         {/* </BottomSheetScrollView> */}

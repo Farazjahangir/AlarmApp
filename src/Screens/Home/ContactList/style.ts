@@ -48,6 +48,9 @@ const styles = StyleSheet.create({
     },
     searchInput: {
         backgroundColor: COLORS.input
+    },
+    disabledText: {
+        color: COLORS.textGrey
     }
 });
 
