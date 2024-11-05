@@ -11,6 +11,7 @@ import notifee, {
   AndroidImportance,
   AndroidVisibility,
 } from '@notifee/react-native';
+import 'react-native-get-random-values'
 
 import AlarmManager from './src/Services/AlarmManager';
 import {checkNotificationPermission} from './src/Utils';

@@ -14,7 +14,8 @@ export type User = {
 
 export interface Contact extends ContactLibType {
     phoneNumber: string;
-    localFormat: string
+    localFormat: string;
+    localId: string
 }
 
 export interface ContactWithAccount extends Partial<Contact> {

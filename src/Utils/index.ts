@@ -7,6 +7,7 @@ import firestore from '@react-native-firebase/firestore';
 import { parsePhoneNumber } from 'libphonenumber-js';
 import Geolocation from 'react-native-geolocation-service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { v4 as uuidv4 } from 'uuid';
 
 export const checkNotificationPermission = async () => {
     try {
@@ -169,6 +170,7 @@ export const transformContacts = contacts => {
                     const newContact = { ...contact };
                     newContact.phoneNumber = number;
                     newContact.localFormat = normalizePhoneNumberOnLocalFormat(number)
+                    newContact.localId = uuidv4();
                     transformedContacts.push(newContact);
                     seenNumbers.add(number);
                 }
