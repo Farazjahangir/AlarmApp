@@ -415,7 +415,8 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
       <BottomSheet
         ref={ref}
         onChange={onChangeSnapIndex}
-        renderHeader={renderHeader}>
+        renderHeader={renderHeader}
+        >
         <View style={styles.container}>
           <View style={styles.contentBox}>
             <TextInput
@@ -453,7 +454,6 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
               data={paginatedData}
               renderItem={renderList}
               extraData={paginatedData}
-              contentContainerStyle={{flexGrow: 1}}
               // keyExtractor={(item, index) => (item as Contact).phoneNumber}
               keyExtractor={(item, index) => index.toString()}
               refreshControl={
@@ -464,7 +464,8 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
               }
               onEndReached={loadMoreContacts}
               onEndReachedThreshold={0.1}
-              style={{flex: 1}}
+              contentContainerStyle={{ flexGrow: 1, paddingBottom: 60 }}
+              showsVerticalScrollIndicator={false}
             />
           </View>
         </View>

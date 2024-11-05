@@ -4,7 +4,7 @@ import {
   BottomSheetBackdrop,
   BottomSheetBackdropProps,
   BottomSheetScrollView,
-  BottomSheetView
+  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 
 import styles from './style';
@@ -47,10 +47,10 @@ const bottomSheet = forwardRef<BottomSheetModal, BottomSheetProps>(
         handleIndicatorStyle={{display: showIndicator ? 'flex' : 'none'}}
         backdropComponent={renderBackdrop}
         backgroundStyle={styles.bgStyle}
-        >
-        {!!renderHeader && renderHeader()}
+        style={{flex: 1}}>
+        <BottomSheetView style={{ flex: 1 }}>{!!renderHeader && renderHeader()}</BottomSheetView>
         {/* <BottomSheetScrollView style={styles.contentContainer}> */}
-          {children}
+        {children}
         {/* </BottomSheetScrollView> */}
       </BottomSheetModal>
     );
