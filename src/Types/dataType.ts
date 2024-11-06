@@ -24,3 +24,11 @@ export interface ContactWithAccount extends Partial<Contact> {
 // export type ContactWithAccount = User & {
 //     localData: Contact;
 //   };
+
+export type Group = {
+    createdAt: string;
+    createdBy: string;
+    groupName: string;
+    members: string[];
+    uid: string
+}
