@@ -1,20 +1,15 @@
 import {useEffect, useState, forwardRef, Ref} from 'react';
 import {
   Text,
-  FlatList,
   View,
   TouchableOpacity,
-  ActivityIndicator,
   Alert,
   RefreshControl,
   Image,
 } from 'react-native';
-import RNContacts from 'react-native-contacts';
 import firestore from '@react-native-firebase/firestore';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {BottomSheetModal, BottomSheetFlatList} from '@gorhom/bottom-sheet';
 
-import Button from '../../../Components/Button';
 import TextInput from '../../../Components/TextInput';
 import List from './List';
 import {
@@ -28,8 +23,6 @@ import {
   setContacts,
   setContactLoading,
 } from '../../../Redux/contacts/contactSlice';
-import {RootStackParamList} from '../../../Types/navigationTypes';
-import {ScreenNameConstants} from '../../../Constants/navigationConstants';
 import {useAppSelector} from '../../../Hooks/useAppSelector';
 import {useAppDispatch} from '../../../Hooks/useAppDispatch';
 import {Contact, ContactWithAccount} from '../../../Types/dataType';
@@ -66,7 +59,6 @@ export type CombinedContact =
 const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
   (
     {
-      onChange,
       onCloseModal,
       onSelectContacts,
       selectedContacts,
@@ -76,11 +68,9 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
     ref: Ref<BottomSheetModal>,
   ) => {
     const [data, setData] = useState<CombinedContact[]>([]);
-    //   const [selectedContacts, setSelectedContacts] = useState(new Set());
     const [searchTerm, setSearchTerm] = useState('');
     const [grpName, setGrpName] = useState('');
     const [filteredData, setFilteredData] = useState<CombinedContact[]>([]);
-    const [createGrpLoading, setCreateGrpLoading] = useState(false);
     const [page, setPage] = useState(1);
     const [paginatedData, setPaginatedData] = useState<CombinedContact[]>([]);
 
@@ -109,9 +99,6 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
         <List
           item={item}
           selectedContacts={selectedContacts}
-          // handleSelectContact={() =>
-          //   handleSelectContact((item as ContactWithAccount)?.user.number || (item as Contact).phoneNumber)
-          // }
           handleSelectContact={() =>
             handleSelectContact((item as Contact).phoneNumber)
           }
@@ -196,123 +183,9 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
           }),
         );
       }
-      //   const combinedContacts: CombinedContact[] = [
-      //     { type: 'header', title: 'Contacts on AlarmApp' },
-      //     ...contatcs.contactsWithAccount.map((contact: ContactWithAccount) => ({
-      //         ...contact,
-      //         type: 'withAccount' as const, // Use 'as const' to assert the string literal
-      //     })),
-      //     { type: 'header', title: 'Contacts Not on AlarmApp' },
-      //     ...contatcs.contactsWithoutAccount.map((contact: Contact) => ({
-      //         ...contact,
-      //         type: 'withoutAccount' as const, // Use 'as const' to assert the string literal
-      //     })),
-      // ];
       setData(combinedContacts);
       setFilteredData(combinedContacts);
       setPaginatedData([...combinedContacts.slice(0, CONTACTS_ITEMS_PER_PAGE)]);
-    };
-
-    const onChangeGrpName = (text: string) => {
-      setGrpName(text);
-    };
-
-    const separateActiveAndNonActiveContacts = () => {
-      const selectedContactsData: string[] = [];
-      const contactsWithoutUID: Contact[] = [];
-
-      data.forEach(contact => {
-        // Skip headers
-        if (contact.type === 'header') return;
-
-        if (contact.phoneNumber && selectedContacts[contact.phoneNumber]) {
-          if ((contact as ContactWithAccount)?.user?.uid) {
-            // Add contacts with UID directly
-            selectedContactsData.push(
-              (contact as ContactWithAccount).user?.uid as string,
-            );
-          } else {
-            // Collect contacts without UID for later processing
-            contactsWithoutUID.push(contact as Contact);
-          }
-        }
-      });
-
-      return {
-        selectedContactsData,
-        contactsWithoutUID,
-      };
-    };
-
-    const processFirestoreData = async (contactsWithoutUID: Contact[]) => {
-      const foundUserUIDs: string[] = [];
-      const newUserUIDs: string[] = [];
-      const batchSize = 2; // Firestore 'in' query can handle up to 30 numbers
-      const existingUIDs = new Set();
-
-      for (let i = 0; i < contactsWithoutUID.length; i += batchSize) {
-        const batch = contactsWithoutUID
-          .slice(i, i + batchSize)
-          .map(contact => contact.phoneNumber);
-        // Query Firestore for the current batch of phone numbers
-        const userSnapshot = await firestore()
-          .collection('users')
-          .where('number', 'in', batch)
-          .get();
-
-        if (!userSnapshot.empty) {
-          userSnapshot.forEach(doc => {
-            const userData = doc.data();
-            const uid = doc.id;
-            const number = userData.number;
-
-            // Find matching contact in the batch
-            const foundContact = contactsWithoutUID.find(
-              c => c.phoneNumber === number,
-            );
-            if (foundContact) {
-              foundUserUIDs.push(uid);
-              existingUIDs.add(number); // Mark as found
-            }
-          });
-        }
-
-        // Step 3: Handle remaining contacts not found in Firestore (create new users)
-        for (const contact of contactsWithoutUID) {
-          if (!existingUIDs.has(contact.phoneNumber)) {
-            const newUserRef = await firestore()
-              .collection('users')
-              .add({
-                name: contact.displayName,
-                number: cleanString(contact.phoneNumber),
-                isActive: false,
-                deviceToken: '',
-                email: '',
-              });
-
-            // Add the new user's UID to the array
-            newUserUIDs.push(newUserRef.id);
-            existingUIDs.add(contact.phoneNumber);
-          }
-        }
-      }
-
-      return {foundUserUIDs, newUserUIDs};
-    };
-
-    const createSelectedUsersUIDArr = async () => {
-      const {selectedContactsData, contactsWithoutUID} =
-        separateActiveAndNonActiveContacts();
-
-      // If no contacts need further processing, return early
-      if (contactsWithoutUID.length === 0) return selectedContactsData;
-
-      // Process Firestore data (both find and create users in one pass)
-      const {foundUserUIDs, newUserUIDs} = await processFirestoreData(
-        contactsWithoutUID,
-      );
-
-      return [...selectedContactsData, ...foundUserUIDs, ...newUserUIDs];
     };
 
     const getContacts = async () => {
@@ -336,38 +209,6 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
         );
       } finally {
         dispatch(setContactLoading(false));
-      }
-    };
-
-    const checkForContactPermission = async () => {
-      try {
-        const hasPermission = await hasContactPermission();
-        if (!hasPermission) {
-          await askContactsPermission();
-          getContacts();
-        }
-      } catch (e) {
-        Alert.alert('Permission Error', e?.message || 'Something went wrong');
-      }
-    };
-
-    const onCreateGroup = async () => {
-      try {
-        setCreateGrpLoading(true);
-        const uids = await createSelectedUsersUIDArr();
-        const payload = {
-          groupName: grpName,
-          createdBy: user?.uid,
-          members: [user?.uid, ...uids],
-          createdAt: firestore.FieldValue.serverTimestamp(),
-        };
-
-        await firestore().collection('groups').add(payload);
-        // navigation.navigate(ScreenNameConstants.HOME);
-      } catch (e) {
-        console.log('onCreateGroup ERR', e.message);
-      } finally {
-        setCreateGrpLoading(false);
       }
     };
 
@@ -431,36 +272,12 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
               inputBoxStyle={styles.searchInput}
               leftIcon={searchIcon}
             />
-            {/* <Text style={styles.title}>Create Group</Text>
-            <TextInput
-              onChangeText={onChangeGrpName}
-              value={grpName}
-              placeholder="Enter Group Name"
-              error={errors.grpName}
-            />
-            <View style={styles.createBtnBox}>
-              <Button
-                text="Create Group"
-                onPress={onCreateGroup}
-                loading={createGrpLoading}
-                disabled={createGrpLoading}
-              />
-            </View>
-            {errors.contacts && (
-              <Text style={styles.error}>{errors.contacts}</Text>
-            )} */}
-
-            {/* {contactsLoading && (
-          <View style={{marginTop: 20}}>
-            <ActivityIndicator size="large" />
-          </View>
-        )} */}
             <BottomSheetFlatList
               data={paginatedData}
               renderItem={renderList}
               extraData={paginatedData}
               // keyExtractor={(item, index) => (item as Contact).phoneNumber}
-              keyExtractor={(item, index) => item.localId}
+              keyExtractor={(item, index) => item.localId as string}
               refreshControl={
                 <RefreshControl
                   refreshing={contactsLoading}

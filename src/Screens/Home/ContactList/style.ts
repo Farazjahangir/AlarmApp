@@ -11,19 +11,6 @@ const styles = StyleSheet.create({
         marginTop: 10,
         flex: 1
     },
-    title: {
-        fontSize: RFPercentage(3.5),
-        color: COLORS.black,
-        marginTop: 30,
-        marginBottom: 10
-    },
-    createBtnBox: {
-        alignItems: 'flex-end',
-    },
-    error: {
-        color: COLORS.error,
-        fontSize: RFPercentage(2.2)
-    },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',

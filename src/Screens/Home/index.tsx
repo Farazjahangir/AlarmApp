@@ -4,7 +4,6 @@ import firestore from '@react-native-firebase/firestore';
 import axios from 'axios';
 import {useFocusEffect} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
 
 import {BASE_URL} from '../../Constants';
@@ -24,7 +23,6 @@ import AllGroups from './AllGroups';
 import PublicGroups from './PublicGroups';
 import FloatingButton from '../../Components/FloatingButton';
 import createGroupIcon from '../../Assets/icons/createGroup.png';
-import BottomSheet from '../../Components/BottomSheet';
 import ContactList from './ContactList';
 import CreateGroupSheet from './CreateGroupSheet';
 import styles from './style';
@@ -55,10 +53,6 @@ const Home = ({
 }: NativeStackScreenProps<RootStackParamList, ScreenNameConstants.HOME>) => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
-  const [openMembersModal, setOpenMembersModal] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  const [ContactListModalIndex, setContactListModalIndex] = useState(0);
   const [selectedContacts, setSelectedContacts] = useState<SelectedContacts>(
     {},
   );
@@ -70,11 +64,6 @@ const Home = ({
   const contactSheetModalRef = useRef<BottomSheetModal>(null);
   const createGroupSheetModalRef = useRef<BottomSheetModal>(null);
 
-  const navigateToContacts = () => {
-    navigation.navigate(ScreenNameConstants.CONTACTS);
-  };
-
-  console.log("groupDetails in HOME ========>", groupDetails)
   const checkForLocationPermission = () => requestLocationPermission();
 
   const ringAlarm = async (grpData: Group) => {
@@ -173,7 +162,6 @@ const Home = ({
 
   const openContactList = () => {
     contactSheetModalRef.current?.present();
-    // createGroupSheetModalRef.current?.present()
   };
 
   const onCloseContactListModal = () => {
@@ -313,7 +301,6 @@ const Home = ({
       };
 
       await firestore().collection('groups').add(payload);
-      // navigation.navigate(ScreenNameConstants.HOME);
       createGroupSheetModalRef.current?.dismiss();
     } catch (e) {
       console.log('onCreateGroup ERR', e.message);
