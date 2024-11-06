@@ -16,7 +16,8 @@ interface BottomSheetProps {
   onChange?: (index: number) => void;
   renderHeader?: () => ReactNode;
   enableDynamicSizing?: boolean;
-  enablePanDownToClose?: boolean
+  enablePanDownToClose?: boolean;
+  onBackDropPress?: () => void
 }
 
 const bottomSheet = forwardRef<BottomSheetModal, BottomSheetProps>(
@@ -28,7 +29,8 @@ const bottomSheet = forwardRef<BottomSheetModal, BottomSheetProps>(
       onChange,
       renderHeader,
       enableDynamicSizing = false,
-      enablePanDownToClose = true
+      enablePanDownToClose = true,
+      onBackDropPress
     }: BottomSheetProps,
     ref: Ref<BottomSheetModal>,
   ) => {
@@ -38,6 +40,7 @@ const bottomSheet = forwardRef<BottomSheetModal, BottomSheetProps>(
           {...props}
           appearsOnIndex={0}
           disappearsOnIndex={-1}
+          onPress={onBackDropPress}
         />
       ),
       [],

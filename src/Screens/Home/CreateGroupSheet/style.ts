@@ -23,8 +23,8 @@ const styles = StyleSheet.create({
         fontSize: RFPercentage(2.5)
     },
     closeIconBox: {
-        width: 18,
-        height: 18,
+        width: 22,
+        height: 22,
         justifyContent: 'center',
         alignItems: 'center'
     },

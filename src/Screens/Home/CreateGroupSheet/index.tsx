@@ -10,19 +10,22 @@ import {
 
 import TextInput from '../../../Components/TextInput';
 import BottomSheet from '../../../Components/BottomSheet';
-import closeIcon from '../../../Assets/icons/close.png';
+import backIcon from '../../../Assets/icons/back.png';
 import {createGroupSchema, validate} from '../../../Utils/yup';
 import styles from './style';
 
 interface CreateGroupSheetProps {
-  onCreateGroup: (groupDetails: GroupDetails) => void;
+  onCreateGroup: () => void;
   loading?: boolean;
-  onCloseModal?: () => void;
+  onBackPress?: () => void;
+  onBackDropPress?: () => void;
+  data: GroupDetails;
+  handleOnChange: (data: GroupDetails) => void;
 }
 
 type GroupDetails = {
   groupName: string;
-  description: string;
+  description?: string;
 };
 const INITIAL_STATE = {
   groupName: '',
@@ -30,29 +33,36 @@ const INITIAL_STATE = {
 };
 
 const CreateGroupSheet = forwardRef<BottomSheetModal, CreateGroupSheetProps>(
-  ({onCreateGroup, loading, onCloseModal}, ref: Ref<BottomSheetModal>) => {
-    const [groupDetails, setGroupDetails] =
-      useState<GroupDetails>(INITIAL_STATE);
-
+  (
+    {
+      onCreateGroup,
+      loading,
+      onBackPress,
+      onBackDropPress,
+      data = INITIAL_STATE,
+      handleOnChange,
+    },
+    ref: Ref<BottomSheetModal>,
+  ) => {
     const [errors, setErrors] = useState<GroupDetails>(INITIAL_STATE);
 
     const handleTextChange = (text: string, key: keyof GroupDetails) => {
-      const data = {...groupDetails};
+      const newData = {...data};
       const err = {...errors};
-      data[key] = text;
+      newData[key] = text;
       err[key] = '';
-      setGroupDetails(data);
+      handleOnChange(newData);
       setErrors(err);
     };
 
     const onCreatePress = async () => {
       try {
-        const errors = await validate(createGroupSchema, groupDetails);
+        const errors = await validate(createGroupSchema, data);
         if (Object.keys(errors).length) {
           setErrors(errors as GroupDetails);
           return;
         }
-        onCreateGroup(groupDetails);
+        onCreateGroup();
       } catch (e) {
         console.log('onCreatePress ERR ===>', e.message);
       }
@@ -60,15 +70,14 @@ const CreateGroupSheet = forwardRef<BottomSheetModal, CreateGroupSheetProps>(
 
     const onSheetSnapIndexChange = (index: number) => {
       if (index === -1) {
-        setGroupDetails(INITIAL_STATE);
         setErrors(INITIAL_STATE);
       }
     };
 
     const renderHeader = () => (
       <View style={styles.header}>
-        <TouchableOpacity style={styles.closeIconBox} onPress={onCloseModal}>
-          <Image source={closeIcon} style={styles.closeIcon} />
+        <TouchableOpacity style={styles.closeIconBox} onPress={onBackPress}>
+          <Image source={backIcon} style={styles.closeIcon} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Group Details</Text>
         {loading ? (
@@ -86,20 +95,21 @@ const CreateGroupSheet = forwardRef<BottomSheetModal, CreateGroupSheetProps>(
         ref={ref}
         snapPoints={['35%']}
         renderHeader={renderHeader}
-        onChange={onSheetSnapIndexChange}
-        enablePanDownToClose={false}>
+        enablePanDownToClose={false}
+        onBackDropPress={onBackDropPress}
+        onChange={onSheetSnapIndexChange}>
         <View style={styles.contentBox}>
           <TextInput
             placeholder="Group Name"
             onChangeText={text => handleTextChange(text, 'groupName')}
-            value={groupDetails.groupName}
+            value={data.groupName}
             error={errors.groupName}
           />
           <TextInput
             placeholder="Description"
             inputBoxStyle={styles.mt15}
             onChangeText={text => handleTextChange(text, 'description')}
-            value={groupDetails.description}
+            value={data.description}
           />
         </View>
       </BottomSheet>

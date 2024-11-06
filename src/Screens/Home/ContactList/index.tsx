@@ -43,6 +43,9 @@ interface ContactListProps {
   onChange?: (index: number) => void;
   onCloseModal?: () => void;
   onSelectContacts: (selectedContacts: SelectedContacts) => void;
+  selectedContacts: SelectedContacts;
+  handleSelectContact: (phoneNumber: string) => void;
+  onBackDropPress?: () => void;
 }
 
 interface SelectedContacts {
@@ -52,7 +55,7 @@ interface SelectedContacts {
 interface Header {
   type: 'header';
   title: string;
-  localId: string
+  localId: string;
 }
 
 export type CombinedContact =
@@ -61,12 +64,19 @@ export type CombinedContact =
   | Header;
 
 const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
-  ({onChange, onCloseModal, onSelectContacts}, ref: Ref<BottomSheetModal>) => {
+  (
+    {
+      onChange,
+      onCloseModal,
+      onSelectContacts,
+      selectedContacts,
+      handleSelectContact,
+      onBackDropPress,
+    },
+    ref: Ref<BottomSheetModal>,
+  ) => {
     const [data, setData] = useState<CombinedContact[]>([]);
     //   const [selectedContacts, setSelectedContacts] = useState(new Set());
-    const [selectedContacts, setSelectedContacts] = useState<SelectedContacts>(
-      {},
-    );
     const [searchTerm, setSearchTerm] = useState('');
     const [grpName, setGrpName] = useState('');
     const [filteredData, setFilteredData] = useState<CombinedContact[]>([]);
@@ -92,16 +102,6 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
         ]);
         setPage(nextPage);
       }
-    };
-
-    const handleSelectContact = (phoneNumber: string) => {
-      const selected: SelectedContacts = {...selectedContacts};
-      if (selected[phoneNumber]) {
-        delete selected[phoneNumber];
-      } else {
-        selected[phoneNumber] = true;
-      }
-      setSelectedContacts(selected);
     };
 
     const renderList = ({item}: {item: CombinedContact}) => {
@@ -143,13 +143,21 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
 
       // Add 'withAccount' section if it has data
       if (withAccountContacts.length > 0) {
-        searchedData.push({type: 'header', title: 'Contacts on AlarmApp', localId: "ContactsOnApp"});
+        searchedData.push({
+          type: 'header',
+          title: 'Contacts on AlarmApp',
+          localId: 'ContactsOnApp',
+        });
         searchedData = searchedData.concat(withAccountContacts);
       }
 
       // Add 'withoutAccount' section if it has data
       if (withoutAccountContacts.length > 0) {
-        searchedData.push({type: 'header', title: 'Contacts Not on AlarmApp', localId: "ContactsNotOnApp"});
+        searchedData.push({
+          type: 'header',
+          title: 'Contacts Not on AlarmApp',
+          localId: 'ContactsNotOnApp',
+        });
         searchedData = searchedData.concat(withoutAccountContacts);
       }
       setPaginatedData(searchedData.slice(0, CONTACTS_ITEMS_PER_PAGE));
@@ -160,7 +168,11 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
       const combinedContacts: CombinedContact[] = [];
 
       if (contatcs.contactsWithAccount.length) {
-        combinedContacts.push({type: 'header', title: 'Contacts on AlarmApp', localId: "ContactsOnApp"});
+        combinedContacts.push({
+          type: 'header',
+          title: 'Contacts on AlarmApp',
+          localId: 'ContactsOnApp',
+        });
         combinedContacts.push(
           ...contatcs.contactsWithAccount.map(contact => ({
             ...contact,
@@ -173,7 +185,7 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
         combinedContacts.push({
           type: 'header',
           title: 'Contacts Not on AlarmApp',
-          localId: "ContactsNotOnApp"
+          localId: 'ContactsNotOnApp',
         });
         combinedContacts.push(
           ...contatcs.contactsWithoutAccount.map(contact => {
@@ -309,7 +321,7 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
         // await new Promise(resolve => setTimeout(resolve, 500));
 
         const contacts = await fetchContacts();
-        console.log("contacts =====>", contacts[0])
+        console.log('contacts =====>', contacts[0]);
         const firestoreRes = await checkContactsWithFirestore(contacts, user);
         dispatch(
           setContacts({
@@ -397,20 +409,19 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
 
     const onChangeSnapIndex = (index: number) => {
       if (index === -1) {
-        setSelectedContacts({});
         setSearchTerm('');
         setPage(1);
         mergeData();
       }
     };
 
-
     return (
       <BottomSheet
         ref={ref}
         onChange={onChangeSnapIndex}
         renderHeader={renderHeader}
-        enablePanDownToClose={false}>
+        enablePanDownToClose={false}
+        onBackDropPress={onBackDropPress}>
         <View style={styles.container}>
           <View style={styles.contentBox}>
             <TextInput

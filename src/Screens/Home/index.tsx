@@ -8,7 +8,11 @@ import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
 
 import {BASE_URL} from '../../Constants';
-import {requestLocationPermission, getPositionAsync, cleanString} from '../../Utils';
+import {
+  requestLocationPermission,
+  getPositionAsync,
+  cleanString,
+} from '../../Utils';
 import {RootStackParamList} from '../../Types/navigationTypes';
 import {ScreenNameConstants} from '../../Constants/navigationConstants';
 import {useAppSelector} from '../../Hooks/useAppSelector';
@@ -37,6 +41,11 @@ type GroupDetails = {
   description?: string;
 };
 
+const INITIAL_STATE = {
+  groupName: '',
+  description: '',
+};
+
 interface SelectedContacts {
   [phoneNumber: string]: boolean; // Using an index signature
 }
@@ -53,7 +62,8 @@ const Home = ({
   const [selectedContacts, setSelectedContacts] = useState<SelectedContacts>(
     {},
   );
-  const [createGroupLoading, setCreateGroupLoading] = useState(false)
+  const [createGroupLoading, setCreateGroupLoading] = useState(false);
+  const [groupDetails, setGroupDetails] = useState<GroupDetails>(INITIAL_STATE)
 
   const user = useAppSelector(state => state.user.data.user);
   const contatcs = useAppSelector(state => state.contacts.data);
@@ -64,6 +74,7 @@ const Home = ({
     navigation.navigate(ScreenNameConstants.CONTACTS);
   };
 
+  console.log("groupDetails in HOME ========>", groupDetails)
   const checkForLocationPermission = () => requestLocationPermission();
 
   const ringAlarm = async (grpData: Group) => {
@@ -167,6 +178,23 @@ const Home = ({
 
   const onCloseContactListModal = () => {
     contactSheetModalRef.current?.dismiss();
+    setSelectedContacts({});
+    onCloseGroupDetailsModal()
+  };
+
+  const onCloseGroupDetailsModal = () => {
+    createGroupSheetModalRef.current?.dismiss();
+    setGroupDetails({...INITIAL_STATE});
+  };
+
+  const onContactListBackDropPress = () => {
+    onCloseContactListModal();
+    onCloseGroupDetailsModal()
+  };
+
+  const onGroupListBackDropPress = () => {
+    onCloseContactListModal();
+    onCloseGroupDetailsModal()
   };
 
   const onSelectedContacts = (selectedContacts: SelectedContacts) => {
@@ -178,7 +206,10 @@ const Home = ({
   const separateActiveAndNonActiveContacts = () => {
     const selectedContactsData: string[] = [];
     const contactsWithoutUID: Contact[] = [];
-    const data = [...contatcs.contactsWithAccount, ...contatcs.contactsWithoutAccount]
+    const data = [
+      ...contatcs.contactsWithAccount,
+      ...contatcs.contactsWithoutAccount,
+    ];
     data.forEach((contact: ContactWithAccount) => {
       if (contact.phoneNumber && selectedContacts[contact.phoneNumber]) {
         if (contact.user?.uid) {
@@ -270,7 +301,7 @@ const Home = ({
     return [...selectedContactsData, ...foundUserUIDs, ...newUserUIDs];
   };
 
-  const onCreateGroup = async (groupDetails: GroupDetails) => {
+  const onCreateGroup = async () => {
     try {
       setCreateGroupLoading(true);
       const uids = await createSelectedUsersUIDArr();
@@ -283,8 +314,7 @@ const Home = ({
 
       await firestore().collection('groups').add(payload);
       // navigation.navigate(ScreenNameConstants.HOME);
-      createGroupSheetModalRef.current?.dismiss()
-
+      createGroupSheetModalRef.current?.dismiss();
     } catch (e) {
       console.log('onCreateGroup ERR', e.message);
     } finally {
@@ -292,9 +322,20 @@ const Home = ({
     }
   };
 
-  const onCloseCreateGroupSheet = () => {
-    createGroupSheetModalRef.current?.dismiss()
-  }
+  const onGroupDetailsBackPress = () => {
+    createGroupSheetModalRef.current?.dismiss();
+    contactSheetModalRef.current?.present()
+  };
+
+  const handleSelectContact = (phoneNumber: string) => {
+    const selected: SelectedContacts = {...selectedContacts};
+    if (selected[phoneNumber]) {
+      delete selected[phoneNumber];
+    } else {
+      selected[phoneNumber] = true;
+    }
+    setSelectedContacts(selected);
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -323,12 +364,18 @@ const Home = ({
         ref={contactSheetModalRef}
         onCloseModal={onCloseContactListModal}
         onSelectContacts={onSelectedContacts}
+        selectedContacts={selectedContacts}
+        handleSelectContact={handleSelectContact}
+        onBackDropPress={onContactListBackDropPress}
       />
       <CreateGroupSheet
         ref={createGroupSheetModalRef}
         onCreateGroup={onCreateGroup}
         loading={createGroupLoading}
-        onCloseModal={onCloseCreateGroupSheet}
+        onBackPress={onGroupDetailsBackPress}
+        onBackDropPress={onGroupListBackDropPress}
+        handleOnChange={setGroupDetails}
+        data={groupDetails}
       />
       <View style={styles.container}>
         {/* <BottomSheet isVisible>
