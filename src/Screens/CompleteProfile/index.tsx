@@ -1,6 +1,15 @@
 import {useState, useEffect, useRef} from 'react';
-import {Text, View, Image, AppState, ScrollView, Alert, AppStateStatus} from 'react-native';
+import {
+  Text,
+  View,
+  Image,
+  AppState,
+  ScrollView,
+  Alert,
+  AppStateStatus,
+} from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import ImagePicker from 'react-native-image-crop-picker';
 
 import Switch from '../../Components/Switch';
 import {
@@ -8,17 +17,24 @@ import {
   askContactsPermission,
   requestLocationPermission,
   checkForBatteryOptimization,
+  getBlobFromURI,
+  getFileExtension,
 } from '../../Utils';
 import TextInput from '../../Components/TextInput';
 import Button from '../../Components/Button';
 import {useAppSelector} from '../../Hooks/useAppSelector';
 import {completeProfileFormSchema, validate} from '../../Utils/yup';
 import {useUpdateUserProfile} from '../../Hooks/reactQuery/useUpdateUserProfile';
-import { useAppDispatch } from '../../Hooks/useAppDispatch';
-import { setUser } from '../../Redux/user/userSlice';
+import {useAppDispatch} from '../../Hooks/useAppDispatch';
+import {setUser} from '../../Redux/user/userSlice';
 import {RootStackParamList} from '../../Types/navigationTypes';
 import {ScreenNameConstants} from '../../Constants/navigationConstants';
+import ImageUploader from '../../Components/ImageUploader';
+import {useUploadImage} from '../../Hooks/reactQuery/useUploadImage';
+import {uploadImage} from '../../Utils/api';
+import {v4 as uuidv4} from 'uuid';
 import styles from './style';
+import {SelectedImage} from '../../Types/dataType';
 
 const PERMISSION_LIST = {
   notification: false,
@@ -30,9 +46,22 @@ const PERMISSION_LIST = {
 type Data = {
   name: string;
   address: string;
+  image?: string;
 };
 
-const CompleteProfile = ({ navigation }: NativeStackScreenProps<
+type Payload = {
+  data: {
+    name: string,
+    address?: string,
+    isProfileComplete: boolean,
+    image?: string
+  },
+  uid: string,
+}
+
+const CompleteProfile = ({
+  navigation,
+}: NativeStackScreenProps<
   RootStackParamList,
   ScreenNameConstants.COMPLETE_PROFILE
 >) => {
@@ -42,11 +71,15 @@ const CompleteProfile = ({ navigation }: NativeStackScreenProps<
   const [data, setData] = useState<Data>({
     name: user?.name || '',
     address: '',
+    image: '',
   });
   const [validationError, setValidationError] = useState<Data>({
     name: '',
     address: '',
   });
+  const [imageMetadata, setImageMetadata] = useState<SelectedImage | null>(
+    null,
+  );
   //   const [prevState, setPrevState] = useState(null);
   const prevAppState = useRef(AppState.currentState);
   // const permissionChecked = useRef(false);
@@ -54,7 +87,8 @@ const CompleteProfile = ({ navigation }: NativeStackScreenProps<
   const isSettingsOpened = useRef(false);
   const hasPermissionRef = useRef({});
   const updateProfileMut = useUpdateUserProfile();
-  const dispatch = useAppDispatch()
+  const uploadImageMut = useUploadImage();
+  const dispatch = useAppDispatch();
 
   // const checkIsAllGranted = async () => {
   //   const notificationRes = await askNotificationPermission();
@@ -162,7 +196,9 @@ const CompleteProfile = ({ navigation }: NativeStackScreenProps<
     return permissionStatus === 'granted';
   };
 
-  const requestPermissions = async (permissionsList:Array<keyof typeof hasPermission>) => {
+  const requestPermissions = async (
+    permissionsList: Array<keyof typeof hasPermission>,
+  ) => {
     try {
       isPermissionChecked.current = true;
       isSettingsOpened.current = false;
@@ -204,7 +240,11 @@ const CompleteProfile = ({ navigation }: NativeStackScreenProps<
       ).then(results => results.every(res => res));
 
       if (!allGranted) {
-        requestPermissions(Object.keys(hasPermissionRef.current) as Array<keyof typeof hasPermissionRef.current>);
+        requestPermissions(
+          Object.keys(hasPermissionRef.current) as Array<
+            keyof typeof hasPermissionRef.current
+          >,
+        );
       }
       return;
     }
@@ -215,7 +255,11 @@ const CompleteProfile = ({ navigation }: NativeStackScreenProps<
       prevAppStateStatus === 'background' &&
       currentAppState === 'active'
     ) {
-      requestPermissions(Object.keys(hasPermissionRef.current) as Array<keyof typeof hasPermissionRef.current>);
+      requestPermissions(
+        Object.keys(hasPermissionRef.current) as Array<
+          keyof typeof hasPermissionRef.current
+        >,
+      );
     }
   };
   // };
@@ -236,10 +280,29 @@ const CompleteProfile = ({ navigation }: NativeStackScreenProps<
       !hasPermission.location ||
       !hasPermission.notification
     ) {
-      await requestPermissions(Object.keys(PERMISSION_LIST) as Array<keyof typeof hasPermissionRef.current>);
+      await requestPermissions(
+        Object.keys(PERMISSION_LIST) as Array<
+          keyof typeof hasPermissionRef.current
+        >,
+      );
       return false;
     }
     return true;
+  };
+
+  const handleImageUpload = async () => {
+    if (!imageMetadata) return null;
+    const imageName = `${uuidv4()}.${getFileExtension(imageMetadata.mime)}`;
+    const formData = new FormData();
+    formData.append('folder', `user/${user?.uid}`);
+    formData.append('image', {
+      uri: imageMetadata.path, // Jo path aapke paas image ka hai
+      name: imageName, // Name auto-generate kar diya hai with mime type
+      type: imageMetadata.mime,
+    });
+
+    const res = await uploadImageMut.mutateAsync(formData);
+    return res.imageUrl;
   };
 
   const handleCompleteProfile = async () => {
@@ -250,7 +313,7 @@ const CompleteProfile = ({ navigation }: NativeStackScreenProps<
         return;
       }
       if (!(await hasAllPermissions())) return;
-      const payload = {
+      const payload: Payload = {
         data: {
           name: data.name,
           address: data.address,
@@ -258,16 +321,35 @@ const CompleteProfile = ({ navigation }: NativeStackScreenProps<
         },
         uid: user?.uid as string,
       };
+
+      if (imageMetadata) {
+        const imageUri = await handleImageUpload();
+        if (imageUri) payload.data.image = imageUri;
+      }
       const res = await updateProfileMut.mutateAsync(payload);
-      dispatch(setUser({user: res}))
-      navigation.navigate(ScreenNameConstants.HOME)
+      dispatch(setUser({user: res}));
+      navigation.navigate(ScreenNameConstants.TAB_NAV)
     } catch (e) {
       console.log('ERRR', e?.message || 'Error');
     }
   };
 
+  const onImageSelected = async (image: SelectedImage) => {
+    try {
+      console.log('onImageSelected', image);
+      setData({...data, image: image.path});
+      setImageMetadata(image);
+    } catch (e) {
+      console.log('onImageSelected ERR ==>', e?.response?.data?.message);
+    }
+  };
+
   useEffect(() => {
-    requestPermissions(Object.keys(PERMISSION_LIST) as Array<keyof typeof hasPermissionRef.current>); // Initial permission list
+    requestPermissions(
+      Object.keys(PERMISSION_LIST) as Array<
+        keyof typeof hasPermissionRef.current
+      >,
+    ); // Initial permission list
     const appStateListener = AppState.addEventListener(
       'change',
       handleAppStateChange,
@@ -275,17 +357,25 @@ const CompleteProfile = ({ navigation }: NativeStackScreenProps<
     return () => appStateListener.remove();
   }, []);
 
+  console.log('DATA', data);
   return (
     <View style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.scollViewContentBox}
         showsVerticalScrollIndicator={false}>
-        <View>
+        <View style={styles.contentContainer}>
           <Text style={styles.screenTitle}>Complete Your Profile</Text>
           <Text style={styles.title}>Your Email</Text>
           <Text style={styles.value}>{user?.email}</Text>
           <Text style={styles.title}>Your Number</Text>
           <Text style={styles.value}>{user?.number}</Text>
+          <View style={styles.photoSection}>
+            <Text style={styles.title}>Profile Photo</Text>
+            <ImageUploader
+              onImageSelected={onImageSelected}
+              value={data.image}
+            />
+          </View>
           <View style={styles.inputBox}>
             <TextInput
               containerStyle={styles.mt10}
@@ -329,7 +419,7 @@ const CompleteProfile = ({ navigation }: NativeStackScreenProps<
             text="Next"
             containerStyle={styles.btnBox}
             onPress={handleCompleteProfile}
-            loading={updateProfileMut.isPending}
+            loading={updateProfileMut.isPending || uploadImageMut.isPending}
           />
         </View>
       </ScrollView>

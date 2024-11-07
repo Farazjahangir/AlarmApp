@@ -363,3 +363,13 @@ export const getDataFromAsync = async (key) => {
 export const removeValueFromAsync = (key) => (
     AsyncStorage.removeItem(key)
 )
+
+export const getBlobFromURI = async (fileUri: string) => {
+    const resp = await fetch(fileUri);
+    const imageBody = await resp.blob();
+    return imageBody;
+};
+
+export const getFileExtension = (mime: string) => {
+    return mime.split("/")[1]; // MIME type mein '/' ke baad extension hoti hai
+  };

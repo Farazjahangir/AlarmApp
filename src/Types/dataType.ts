@@ -1,4 +1,5 @@
 import { Contact as ContactLibType } from "react-native-contacts/type";
+import { ImageOrVideo } from "react-native-image-crop-picker";
 
 export type User = {
     deviceToken: string;
@@ -32,3 +33,7 @@ export type Group = {
     members: string[];
     uid: string
 }
+
+export type SelectedImage = ImageOrVideo & {
+    data: string;
+};

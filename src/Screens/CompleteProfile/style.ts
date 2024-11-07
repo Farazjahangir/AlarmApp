@@ -14,6 +14,9 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         justifyContent: 'center'
     },
+    contentContainer: {
+        marginTop: 20
+    },
     icon: {
         width: 14,
         height: 14
@@ -51,6 +54,9 @@ const styles = StyleSheet.create({
     },
     btnBox: {
         marginTop: 30
+    },
+    photoSection: {
+        marginTop: 20
     }
 });
 

@@ -45,5 +45,3 @@ export type AddGroupPayload = {
 export type AddGroup = (payload: AddGroupPayload) => Promise<Group>;
 
 export type CreateGroup = (contacts: Contact[] | ContactWithAccount[], selectedContacts: SelectedContacts, groupName: string, currentUserUid: string) => Promise<Group>;
-
-

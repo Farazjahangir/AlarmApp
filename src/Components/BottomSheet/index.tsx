@@ -5,6 +5,7 @@ import {
   BottomSheetBackdropProps,
   BottomSheetScrollView,
   BottomSheetView,
+  BottomSheetBackgroundProps
 } from '@gorhom/bottom-sheet';
 
 import styles from './style';
@@ -17,10 +18,11 @@ interface BottomSheetProps {
   renderHeader?: () => ReactNode;
   enableDynamicSizing?: boolean;
   enablePanDownToClose?: boolean;
-  onBackDropPress?: () => void
+  onBackDropPress?: () => void;
+  backgroundStyle?: BottomSheetBackgroundProps['style']
 }
 
-const bottomSheet = forwardRef<BottomSheetModal, BottomSheetProps>(
+const BottomSheet = forwardRef<BottomSheetModal, BottomSheetProps>(
   (
     {
       children,
@@ -30,7 +32,8 @@ const bottomSheet = forwardRef<BottomSheetModal, BottomSheetProps>(
       renderHeader,
       enableDynamicSizing = false,
       enablePanDownToClose = true,
-      onBackDropPress
+      onBackDropPress,
+      backgroundStyle
     }: BottomSheetProps,
     ref: Ref<BottomSheetModal>,
   ) => {
@@ -53,7 +56,7 @@ const bottomSheet = forwardRef<BottomSheetModal, BottomSheetProps>(
         ref={ref}
         handleIndicatorStyle={{display: showIndicator ? 'flex' : 'none'}}
         backdropComponent={renderBackdrop}
-        backgroundStyle={styles.bgStyle}
+        backgroundStyle={[styles.bgStyle, backgroundStyle]}
         style={{flex: 1}}
         enableDynamicSizing={enableDynamicSizing}
         enablePanDownToClose={enablePanDownToClose}>
@@ -68,4 +71,4 @@ const bottomSheet = forwardRef<BottomSheetModal, BottomSheetProps>(
   },
 );
 
-export default bottomSheet;
+export default BottomSheet;
