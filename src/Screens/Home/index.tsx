@@ -79,11 +79,13 @@ const Home = ({
       });
 
       const payload = {
+        name: user?.name,
         coords: {
           latitude: userLocation.coords.latitude,
           longitude: userLocation.coords.longitude,
         },
       };
+      console.log("payload", payload)
       if (tokens.length) {
         const res = await axios.post(`${BASE_URL}/send-notifications`, {
           tokens,

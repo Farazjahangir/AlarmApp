@@ -27,11 +27,37 @@ import {Provider} from 'react-redux';
 import {PersistGate} from 'redux-persist/integration/react';
 import {getDataFromAsync, removeValueFromAsync} from './src/Utils';
 import {ScreenNameConstants} from './src/Constants/navigationConstants';
+import HelpModal from './src/Components/HelpModal';
 
 const {AlarmSoundModule} = NativeModules;
 
+const INITAL_HELP_MODAL_VALUES = {
+  isOpen: false,
+  data: {
+    name: '',
+    coords: {
+      latitude: null,
+      longitude: null,
+    },
+  },
+};
+
+type HelpModalValues = {
+  isOpen: boolean;
+  data: {
+    name: string
+    coords: {
+      latitude: number | null;
+      longitude: number | null;
+    };
+  };
+};
+
 function App(): React.JSX.Element {
   const [alarmRinging, setAlarmRinging] = useState(false);
+  const [helpModalDetails, setHelpModalDetails] = useState<HelpModalValues>(
+    INITAL_HELP_MODAL_VALUES,
+  );
 
   const appStateRef = useRef(false);
   const queryClient = new QueryClient();
@@ -41,15 +67,27 @@ function App(): React.JSX.Element {
       try {
         const notifeeObj = JSON.parse(remoteMessage.data?.notifee as string);
         await AlarmManager.playAlarm();
-        navigate(ScreenNameConstants.ALARM_SCREEN, {
-          latitude: notifeeObj.data.latitude,
-          longitude: notifeeObj.data.longitude,
+        setHelpModalDetails({
+          isOpen: true,
+          data: {
+          name: notifeeObj.data.name,
+            coords: {
+              latitude: notifeeObj.data.latitude,
+              longitude: notifeeObj.data.longitude,
+            },
+          },
         });
+        // navigate(ScreenNameConstants.ALARM_SCREEN, {
+        //   latitude: notifeeObj.data.latitude,
+        //   longitude: notifeeObj.data.longitude,
+        // });
       } catch (e) {
         console.log('ERR => listenForForegroundMessage', e.message);
       }
     });
   };
+
+  console.log("HELP MODAL", helpModalDetails)
 
   const stopAlarm = async () => {
     await AlarmManager.stopAlarm();
@@ -61,20 +99,30 @@ function App(): React.JSX.Element {
       const notifData = await getDataFromAsync('notif');
       let latitude: number;
       let longitude: number;
-
-      console.log('notifData ====>', notifData);
+      let name = ''
 
       if (notifData) {
         latitude = notifData.latitude;
         longitude = notifData.longitude;
+        name = notifData.name
         // await removeValueFromAsync('notif');
       }
-      if (AlarmManager.isAlarmRinging) {
+      if (notifData) {
         setTimeout(() => {
-          navigate(ScreenNameConstants.ALARM_SCREEN, {
-            latitude,
-            longitude,
+          setHelpModalDetails({
+            isOpen: true,
+            data: {
+              name,
+              coords: {
+                latitude,
+                longitude,
+              },
+            },
           });
+          // navigate(ScreenNameConstants.ALARM_SCREEN, {
+          //   latitude,
+          //   longitude,
+          // });
         }, 500);
       }
     } catch (e) {
@@ -105,6 +153,12 @@ function App(): React.JSX.Element {
     // }
   };
 
+  const onCloseHelpModal = async () => {
+    setHelpModalDetails(INITAL_HELP_MODAL_VALUES);
+    AlarmManager.stopAlarm()
+    await removeValueFromAsync('notif');
+  };
+
   useEffect(() => {
     // takePermissions();
     listenForForegroundMessage();
@@ -129,7 +183,12 @@ function App(): React.JSX.Element {
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
           <QueryClientProvider client={queryClient}>
-            <GestureHandlerRootView style={{ flex: 1 }}>
+            <GestureHandlerRootView style={{flex: 1}}>
+              <HelpModal
+                isVisible={helpModalDetails.isOpen}
+                data={helpModalDetails.data}
+                onClose={onCloseHelpModal}
+              />
               <BottomSheetModalProvider>
                 <Navigation />
               </BottomSheetModalProvider>

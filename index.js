@@ -49,7 +49,7 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {
       },
     },
   });
-  Linking.openURL(notifeeObj.data.deep_link);
+  // Linking.openURL(notifeeObj.data.deep_link);
   await storeDataInAsync(notifeeObj.data, 'notif')
 });
 
@@ -64,7 +64,7 @@ notifee.onBackgroundEvent(async ({type, detail}) => {
     console.log("deepLink =========>", deepLink)
     if (deepLink) {
       // Open app with deep link
-      Linking.openURL(deepLink);
+      // Linking.openURL(deepLink);
     }
   }
 });
