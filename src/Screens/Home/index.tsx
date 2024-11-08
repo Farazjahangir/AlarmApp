@@ -1,4 +1,4 @@
-import {useState, useCallback, useRef} from 'react';
+import {useState, useCallback, useRef, useMemo} from 'react';
 import {Text, View, Alert} from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import axios from 'axios';
@@ -26,6 +26,7 @@ import createGroupIcon from '../../Assets/icons/createGroup.png';
 import ContactList from './ContactList';
 import CreateGroupSheet from './CreateGroupSheet';
 import {useCreateGroup} from '../../Hooks/reactQuery/useCreateGroup';
+import PrivateGroups from './PrivateGroups';
 import styles from './style';
 
 export type Group = {
@@ -33,6 +34,9 @@ export type Group = {
   groupName: string;
   createdBy: string;
   members: ContactWithAccount[];
+  createdAt: string;
+  description?: string;
+  groupType: string;
 };
 
 type GroupDetails = {
@@ -44,7 +48,7 @@ type GroupDetails = {
 const INITIAL_STATE = {
   groupName: '',
   description: '',
-  groupType: ''
+  groupType: '',
 };
 
 interface SelectedContacts {
@@ -87,7 +91,7 @@ const Home = ({
           longitude: userLocation.coords.longitude,
         },
       };
-      console.log("payload", payload)
+      console.log('payload', payload);
       if (tokens.length) {
         const res = await axios.post(`${BASE_URL}/send-notifications`, {
           tokens,
@@ -154,6 +158,9 @@ const Home = ({
             groupName: groupData.groupName,
             createdBy: groupData.createdBy,
             members: membersData,
+            createdAt: groupData.createdAt,
+            description: groupData.description || '',
+            groupType: groupData.groupType,
           });
         }
         setGroups(groupsWithMembersData);
@@ -207,10 +214,11 @@ const Home = ({
         groupName: groupDetails.groupName,
         currentUserUid: user?.uid as string,
         description: groupDetails.description,
-        groupType: groupDetails.groupType
+        groupType: groupDetails.groupType,
       };
       await createGroupMut.mutateAsync(payload);
       createGroupSheetModalRef.current?.dismiss();
+      loadUserGroups()
     } catch (e) {
       console.log('onCreateGroup ERR', e.message);
     }
@@ -237,6 +245,27 @@ const Home = ({
     }, []),
   );
 
+  const seperatedGroupsWithTypes = useMemo(() => {
+    const privateGroups: Group[] = [];
+    const publicGroups: Group[] = [];
+
+    if (groups.length) {
+      groups.forEach(item => {
+        if (item.groupType === 'public') {
+          publicGroups.push(item);
+        }
+        if (item.groupType === 'private') {
+          privateGroups.push(item);
+        }
+      });
+    }
+
+    return {
+      privateGroups,
+      publicGroups,
+    };
+  }, [groups]);
+
   const routes = [
     {
       key: 'allGroups',
@@ -248,7 +277,23 @@ const Home = ({
       key: 'publicGroups',
       title: 'Public',
       component: PublicGroups,
-      props: {ringAlarm},
+      props: {
+        ringAlarm,
+        groups: seperatedGroupsWithTypes.publicGroups,
+        loadUserGroups,
+        loading,
+      },
+    },
+      {
+        key: 'privateGroups',
+        title: 'Private',
+        component: PrivateGroups,
+        props: {
+          ringAlarm,
+          groups: seperatedGroupsWithTypes.privateGroups,
+          loadUserGroups,
+          loading,
+        },
     },
   ];
 

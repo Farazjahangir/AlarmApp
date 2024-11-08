@@ -31,7 +31,9 @@ export type Group = {
     createdBy: string;
     groupName: string;
     members: string[];
-    uid: string
+    uid: string;
+    description?: string;
+    groupType: string
 }
 
 export type SelectedImage = ImageOrVideo & {

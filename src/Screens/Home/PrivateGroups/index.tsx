@@ -13,14 +13,14 @@ import {useAppSelector} from '../../../Hooks/useAppSelector';
 import { Group } from '..';
 import styles from './style';
 
-interface PublicGroupsProps {
+interface PrivateGroupsProps {
     ringAlarm: (grpData: Group) => void;
     groups: Group[] | [];
     loadUserGroups: () => void;
     loading: boolean
 }
 
-const PublicGroups = ({ringAlarm, groups = [], loadUserGroups, loading}: PublicGroupsProps) => {
+const PrivateGroups = ({ringAlarm, groups = [], loadUserGroups, loading}: PrivateGroupsProps) => {
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [openMembersModal, setOpenMembersModal] = useState(false);
 
@@ -73,4 +73,4 @@ const PublicGroups = ({ringAlarm, groups = [], loadUserGroups, loading}: PublicG
   );
 };
 
-export default PublicGroups;
+export default PrivateGroups;
