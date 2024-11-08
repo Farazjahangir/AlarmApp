@@ -14,7 +14,7 @@ const styles = StyleSheet.create({
     },
     input: {
         flex: 1,
-        fontSize: 16,
+        fontSize: RFPercentage(2.2),
         color: COLORS.black,
         height: 40,
         paddingHorizontal: 12

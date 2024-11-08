@@ -12,6 +12,9 @@ import TextInput from '../../../Components/TextInput';
 import BottomSheet from '../../../Components/BottomSheet';
 import backIcon from '../../../Assets/icons/back.png';
 import {createGroupSchema, validate} from '../../../Utils/yup';
+import SelectInput from '../../../Components/SelectInput';
+import {GROUP_TYPES} from '../../../Constants';
+import ImageUploader from '../../../Components/ImageUploader';
 import styles from './style';
 
 interface CreateGroupSheetProps {
@@ -26,10 +29,12 @@ interface CreateGroupSheetProps {
 type GroupDetails = {
   groupName: string;
   description?: string;
+  groupType: string;
 };
 const INITIAL_STATE = {
   groupName: '',
   description: '',
+  groupType: '',
 };
 
 const CreateGroupSheet = forwardRef<BottomSheetModal, CreateGroupSheetProps>(
@@ -93,7 +98,7 @@ const CreateGroupSheet = forwardRef<BottomSheetModal, CreateGroupSheetProps>(
     return (
       <BottomSheet
         ref={ref}
-        snapPoints={['35%']}
+        snapPoints={['43%']}
         renderHeader={renderHeader}
         enablePanDownToClose={false}
         onBackDropPress={onBackDropPress}
@@ -110,6 +115,14 @@ const CreateGroupSheet = forwardRef<BottomSheetModal, CreateGroupSheetProps>(
             inputBoxStyle={styles.mt15}
             onChangeText={text => handleTextChange(text, 'description')}
             value={data.description}
+          />
+          <SelectInput
+            items={GROUP_TYPES}
+            inputAndroidContainerStyle={styles.mt15}
+            placeholder="Group Type"
+            onValueChange={value => handleTextChange(value, 'groupType')}
+            value={data.groupType}
+            error={errors.groupType}
           />
         </View>
       </BottomSheet>

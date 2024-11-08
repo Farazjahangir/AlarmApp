@@ -8,7 +8,8 @@ export const completeProfileFormSchema = yup.object({
 });
 
 export const createGroupSchema = yup.object({
-    groupName: yup.string().required().label("Group Name"),
+    groupName: yup.string().required().label("Group name"),
+    groupType: yup.string().required().label("Group type")
 });
 
 

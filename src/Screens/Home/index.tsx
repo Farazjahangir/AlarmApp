@@ -38,11 +38,13 @@ export type Group = {
 type GroupDetails = {
   groupName: string;
   description?: string;
+  groupType: string;
 };
 
 const INITIAL_STATE = {
   groupName: '',
   description: '',
+  groupType: ''
 };
 
 interface SelectedContacts {
@@ -203,7 +205,9 @@ const Home = ({
         ],
         selectedContacts,
         groupName: groupDetails.groupName,
-        currentUserUid: user?.uid as string
+        currentUserUid: user?.uid as string,
+        description: groupDetails.description,
+        groupType: groupDetails.groupType
       };
       await createGroupMut.mutateAsync(payload);
       createGroupSheetModalRef.current?.dismiss();

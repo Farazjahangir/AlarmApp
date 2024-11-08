@@ -23,6 +23,7 @@ export const separateActiveAndNonActiveContacts = (contacts: Contact[] | Contact
     const selectedContactsData: string[] = [];
     const contactsWithoutUID: Contact[] = [];
     const data = contacts;
+    console.log("data =====>", data)
     data.forEach((contact: ContactWithAccount) => {
         if (contact.phoneNumber && selectedContacts[contact.phoneNumber]) {
             if (contact.user?.uid) {
