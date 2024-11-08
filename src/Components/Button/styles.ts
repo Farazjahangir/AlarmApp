@@ -24,13 +24,13 @@ const styles = StyleSheet.create({
         height: 40
     },
     textLarge: {
-        fontSize: RFPercentage(2.8)
+        fontSize: RFPercentage(2.4)
     },
     textMedium: {
-        fontSize: RFPercentage(2.3)
+        fontSize: RFPercentage(2)
     },
     textSmall: {
-        fontSize: RFPercentage(2)
+        fontSize: RFPercentage(1.9)
     },
     bgColorDefault: {
         backgroundColor: COLORS.primePurple,
