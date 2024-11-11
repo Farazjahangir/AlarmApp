@@ -5,6 +5,7 @@ import {
   fetchContacts,
   checkContactsWithFirestore,
   hasContactPermission,
+  askNotificationPermission
 } from '../Utils';
 import {setContacts, setContactLoading} from '../Redux/contacts/contactSlice';
 import Header from '../Components/Header';
@@ -77,14 +78,22 @@ const StackNavigation = () => {
     }
   };
 
-  const checkBatteryOptimization = async () => {
-    await checkForBatteryOptimization();
+  const checkForPermissions = async () => {
+    try {
+      await askNotificationPermission()
+      await checkForBatteryOptimization();
+    } catch(e) {
+      console.log("ERRR checkForPermissions", e.message)
+    }
   };
 
   useEffect(() => {
     if (user) {
       getContacts();
-      // checkBatteryOptimization();
+      if (user.isProfileComplete) {
+        checkForPermissions()
+      }
+      
     }
   }, [user]);
 

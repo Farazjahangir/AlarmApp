@@ -198,8 +198,8 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
         const firestoreRes = await checkContactsWithFirestore(contacts, user);
         dispatch(
           setContacts({
-            contactsWithAccount: firestoreRes?.contactsWithAccount,
-            contactsWithoutAccount: firestoreRes?.contactsWithoutAccount,
+            contactsWithAccount: firestoreRes?.contactsWithAccount || [],
+            contactsWithoutAccount: firestoreRes?.contactsWithoutAccount || [],
           }),
         );
       } catch (e) {
@@ -215,6 +215,24 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
     const handleNextPress = () => {
       onSelectContacts(selectedContacts);
     };
+
+    const checkForContactPermission = async () => {
+      try {
+        const hasPermission = await hasContactPermission()
+        if (!hasPermission) {
+          const res = await askContactsPermission()
+          if (res === 'granted') {
+            getContacts()
+          }
+        }
+      } catch(e) {
+        console.log("ERRR", e.message)
+      }
+    }
+
+    useEffect(() => {
+      checkForContactPermission()
+    }, [])
 
     useEffect(() => {
       if (
