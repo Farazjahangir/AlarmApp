@@ -5,6 +5,7 @@ import axios from 'axios';
 import {useFocusEffect} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
+import { useQueryClient } from '@tanstack/react-query';
 
 import {BASE_URL} from '../../Constants';
 import {
@@ -15,7 +16,7 @@ import {
 import {RootStackParamList} from '../../Types/navigationTypes';
 import {ScreenNameConstants} from '../../Constants/navigationConstants';
 import {useAppSelector} from '../../Hooks/useAppSelector';
-import {Contact, ContactWithAccount} from '../../Types/dataType';
+import {Contact, ContactWithAccount, Group, User} from '../../Types/dataType';
 import TextInput from '../../Components/TextInput';
 import searchIcon from '../../Assets/icons/search.png';
 import TabView from '../../Components/TabView';
@@ -27,17 +28,9 @@ import ContactList from './ContactList';
 import CreateGroupSheet from './CreateGroupSheet';
 import {useCreateGroup} from '../../Hooks/reactQuery/useCreateGroup';
 import PrivateGroups from './PrivateGroups';
+import {useFetchUserGroups} from '../../Hooks/reactQuery/useFetchUserGroups';
 import styles from './style';
 
-export type Group = {
-  groupId: string;
-  groupName: string;
-  createdBy: string;
-  members: ContactWithAccount[];
-  createdAt: string;
-  description?: string;
-  groupType: string;
-};
 
 type GroupDetails = {
   groupName: string;
@@ -58,7 +51,7 @@ interface SelectedContacts {
 const Home = ({
   navigation,
 }: NativeStackScreenProps<RootStackParamList, ScreenNameConstants.HOME>) => {
-  const [groups, setGroups] = useState<Group[]>([]);
+  // const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedContacts, setSelectedContacts] = useState<SelectedContacts>(
     {},
@@ -70,6 +63,11 @@ const Home = ({
   const contactSheetModalRef = useRef<BottomSheetModal>(null);
   const createGroupSheetModalRef = useRef<BottomSheetModal>(null);
   const createGroupMut = useCreateGroup();
+  const {data:groups = [], isFetching: isGroupsLoading, refetch} = useFetchUserGroups({
+    user: user as User,
+    contactWithAccount: contatcs.contactsWithAccount,
+  });
+  const queryClient = useQueryClient()
 
   const checkForLocationPermission = () => requestLocationPermission();
 
@@ -78,7 +76,7 @@ const Home = ({
       if (!(await checkForLocationPermission())) return;
       const userLocation = await getPositionAsync();
       const tokens: string[] = [];
-      grpData.members.forEach(item => {
+      (grpData.members as ContactWithAccount[]).forEach(item => {
         if (item.user?.uid !== user?.uid && item.user?.deviceToken) {
           tokens.push(item.user?.deviceToken);
         }
@@ -101,74 +99,6 @@ const Home = ({
       Alert.alert('Success', 'Alarm Rang');
     } catch (e) {
       Alert.alert('Error', e?.message);
-    }
-  };
-
-  const loadUserGroups = async () => {
-    try {
-      setLoading(true);
-      const userUid = user?.uid;
-      const contactWithAccount = contatcs.contactsWithAccount;
-      // 1. Fetch groups where the user is a member
-      const groupSnapshots = await firestore()
-        .collection('groups')
-        .where('members', 'array-contains', userUid)
-        .orderBy('createdAt', 'desc')
-        .get();
-
-      if (!groupSnapshots.empty) {
-        let groupsWithMembersData: Group[] = [];
-
-        // 2. Loop through each group
-        for (const groupDoc of groupSnapshots.docs) {
-          const groupData = groupDoc.data();
-          let membersData: ContactWithAccount[] = [];
-
-          // 3. Check for member UIDs in Redux state first
-          for (const uid of groupData.members) {
-            if (uid === userUid) {
-              membersData.push({user});
-            }
-            if (uid !== userUid) {
-              // Exclude current user
-              let memberData = contactWithAccount.find(
-                contact => contact.user?.uid === uid,
-              );
-
-              if (memberData) {
-                // 4. If member data found in Redux, push it to membersData
-                membersData.push(memberData);
-              } else {
-                // 5. If member data not found in Redux, fetch from Firestore
-                const userSnapshot = await firestore()
-                  .collection('users')
-                  .doc(uid)
-                  .get();
-                if (userSnapshot.exists) {
-                  const fetchedUserData = userSnapshot.data();
-                  membersData.push({user: {...fetchedUserData, uid}});
-                }
-              }
-            }
-          }
-
-          // 7. Build the group object with member data
-          groupsWithMembersData.push({
-            groupId: groupDoc.id,
-            groupName: groupData.groupName,
-            createdBy: groupData.createdBy,
-            members: membersData,
-            createdAt: groupData.createdAt,
-            description: groupData.description || '',
-            groupType: groupData.groupType,
-          });
-        }
-        setGroups(groupsWithMembersData);
-      }
-    } catch (error) {
-      console.error('Error loading groups:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -218,7 +148,7 @@ const Home = ({
       };
       await createGroupMut.mutateAsync(payload);
       createGroupSheetModalRef.current?.dismiss();
-      loadUserGroups()
+      refetch()
     } catch (e) {
       console.log('onCreateGroup ERR', e.message);
     }
@@ -239,11 +169,9 @@ const Home = ({
     setSelectedContacts(selected);
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      loadUserGroups();
-    }, []),
-  );
+  const refetchUserGroups = () => {
+    refetch()
+  }
 
   const seperatedGroupsWithTypes = useMemo(() => {
     const privateGroups: Group[] = [];
@@ -271,7 +199,7 @@ const Home = ({
       key: 'allGroups',
       title: 'All',
       component: AllGroups,
-      props: {ringAlarm, groups, loadUserGroups, loading},
+      props: {ringAlarm, groups, loading: isGroupsLoading, refetchUserGroups},
     },
     {
       key: 'publicGroups',
@@ -280,20 +208,20 @@ const Home = ({
       props: {
         ringAlarm,
         groups: seperatedGroupsWithTypes.publicGroups,
-        loadUserGroups,
-        loading,
+        loading: isGroupsLoading,
+        refetchUserGroups
       },
     },
-      {
-        key: 'privateGroups',
-        title: 'Private',
-        component: PrivateGroups,
-        props: {
-          ringAlarm,
-          groups: seperatedGroupsWithTypes.privateGroups,
-          loadUserGroups,
-          loading,
-        },
+    {
+      key: 'privateGroups',
+      title: 'Private',
+      component: PrivateGroups,
+      props: {
+        ringAlarm,
+        groups: seperatedGroupsWithTypes.privateGroups,
+        loading: isGroupsLoading,
+        refetchUserGroups
+      },
     },
   ];
 

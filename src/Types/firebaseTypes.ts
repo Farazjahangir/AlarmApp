@@ -63,8 +63,15 @@ export type LoginFirebasePayload = {
   password: string
 };
 
-export type LoginFirebase = (payload: LoginFirebasePayload) => Promise<User>;
+export type LoginFirebase = (payload: LoginFirebasePayload) => Promise<User | null>;
 
 
-export type GetUserById = (uid: string) => Promise<User>;
+export type GetUserById = (uid: string) => Promise<User | null>;
 
+
+export type FetchUserGroupsPayload = {
+  user: User;
+  contactWithAccount: ContactWithAccount[]
+};
+
+export type FetchUserGroups = (payload: FetchUserGroupsPayload) => Promise<Group[]>;

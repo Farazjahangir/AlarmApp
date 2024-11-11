@@ -10,17 +10,17 @@ import {
 import GroupBox from '../GroupBox';
 import MembersList from '../MemberList';
 import {useAppSelector} from '../../../Hooks/useAppSelector';
-import { Group } from '..';
+import { Group } from '../../../Types/dataType';
 import styles from './style';
 
 interface PrivateGroupsProps {
     ringAlarm: (grpData: Group) => void;
     groups: Group[] | [];
-    loadUserGroups: () => void;
+    refetchUserGroups: () => void;
     loading: boolean
 }
 
-const PrivateGroups = ({ringAlarm, groups = [], loadUserGroups, loading}: PrivateGroupsProps) => {
+const PrivateGroups = ({ringAlarm, groups = [], refetchUserGroups, loading}: PrivateGroupsProps) => {
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [openMembersModal, setOpenMembersModal] = useState(false);
 
@@ -62,10 +62,10 @@ const PrivateGroups = ({ringAlarm, groups = [], loadUserGroups, loading}: Privat
         <FlatList
           data={groups}
           renderItem={renderList}
-          keyExtractor={(item, index) => item.groupId}
+          keyExtractor={(item, index) => item.uid}
           contentContainerStyle={{flexGrow: 1}}
           refreshControl={
-            <RefreshControl refreshing={false} onRefresh={loadUserGroups} />
+            <RefreshControl refreshing={false} onRefresh={refetchUserGroups} />
           }
         />
       )}

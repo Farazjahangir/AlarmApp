@@ -30,7 +30,7 @@ export type Group = {
     createdAt: string;
     createdBy: string;
     groupName: string;
-    members: string[];
+    members: string[] | ContactWithAccount[];
     uid: string;
     description?: string;
     groupType: string

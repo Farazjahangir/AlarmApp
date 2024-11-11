@@ -12,11 +12,13 @@ import {
     AddGroup,
     CreateGroup,
     LoginFirebase,
-    GetUserById
+    GetUserById,
+    FetchUserGroups
 } from '../Types/firebaseTypes';
 import {
     convertFirestoreDataIntoArrayOfObject,
     createSelectedUsersUIDArr,
+    prepareGroupsArray
 } from './helpers';
 
 export const updateUserProfile: UpdateUserProfile = async (payload, uid) => {
@@ -87,9 +89,21 @@ export const getUserById: GetUserById = async (uid) => {
         .collection('users')
         .doc(uid)
         .get();
-    
+    if (!userDataSnapshot.exists) return null
     return ({
         ...userDataSnapshot.data(),
         uid: userDataSnapshot.id,
     } as User)
+}
+
+export const fetchUserGroups: FetchUserGroups = async ({ user, contactWithAccount }) => {
+    const groupSnapshots = await firestore()
+        .collection('groups')
+        .where('members', 'array-contains', user.uid)
+        .orderBy('createdAt', 'desc')
+        .get();
+    if (!groupSnapshots.empty) {
+        return await prepareGroupsArray(user, contactWithAccount, groupSnapshots)
+    }
+    return []
 }
