@@ -2,7 +2,7 @@ import firestore, {
   FirebaseFirestoreTypes,
 } from '@react-native-firebase/firestore';
 
-import {User, Group, ContactWithAccount, Contact} from './dataType';
+import { User, Group, ContactWithAccount, Contact } from './dataType';
 
 type SelectedContacts = {
   [phoneNumber: string]: boolean; // Using an index signature
@@ -57,3 +57,14 @@ export type CreateGroupPayload = {
 };
 
 export type CreateGroup = (payload: CreateGroupPayload) => Promise<Group>;
+
+export type LoginFirebasePayload = {
+  email: string;
+  password: string
+};
+
+export type LoginFirebase = (payload: LoginFirebasePayload) => Promise<User>;
+
+
+export type GetUserById = (uid: string) => Promise<User>;
+

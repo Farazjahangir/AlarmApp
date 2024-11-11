@@ -1,7 +1,7 @@
 import firestore, {
     FirebaseFirestoreTypes,
 } from '@react-native-firebase/firestore';
-import storage from '@react-native-firebase/storage';
+import auth from '@react-native-firebase/auth';
 
 import { User, Group, Contact, ContactWithAccount } from '../Types/dataType';
 import {
@@ -11,6 +11,8 @@ import {
     AddUserProfile,
     AddGroup,
     CreateGroup,
+    LoginFirebase,
+    GetUserById
 } from '../Types/firebaseTypes';
 import {
     convertFirestoreDataIntoArrayOfObject,
@@ -55,7 +57,7 @@ export const createGroup: CreateGroup = async (
     { contacts,
         selectedContacts,
         groupName,
-        currentUserUid, 
+        currentUserUid,
         groupType,
         description
     }
@@ -71,3 +73,23 @@ export const createGroup: CreateGroup = async (
     };
     return addGroup(data);
 };
+
+export const loginFirebase: LoginFirebase = async ({ email, password }) => {
+    const authUser = await auth().signInWithEmailAndPassword(
+        email,
+        password,
+    );
+    return getUserById(authUser.user.uid)
+}
+
+export const getUserById: GetUserById = async (uid) => {
+    const userDataSnapshot = await firestore()
+        .collection('users')
+        .doc(uid)
+        .get();
+    
+    return ({
+        ...userDataSnapshot.data(),
+        uid: userDataSnapshot.id,
+    } as User)
+}

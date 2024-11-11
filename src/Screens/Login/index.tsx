@@ -18,6 +18,7 @@ import Button from '../../Components/Button';
 import {RootStackParamList} from '../../Types/navigationTypes';
 import {ScreenNameConstants} from '../../Constants/navigationConstants';
 import {User} from '../../Types/dataType';
+import {useLoginFirebase} from '../../Hooks/reactQuery/useLoginFirebase';
 import styles from './style';
 
 type UserCreds = {
@@ -36,13 +37,13 @@ const Login = ({
     email: '',
     password: '',
   });
-  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<UserCreds>({
     email: '',
     password: '',
   });
 
   const dispatch = useDispatch();
+  const loginFirebaseMut = useLoginFirebase();
 
   const handleTextChange = (text: string, key: Keys) => {
     const data = {...userCreds};
@@ -74,26 +75,14 @@ const Login = ({
   const handleSignin = async () => {
     try {
       if (!isValidFields()) return;
-      setLoading(true);
-      const authUser = await auth().signInWithEmailAndPassword(
-        userCreds.email,
-        userCreds.password,
-      );
-      const userDataSnapshot = await firestore()
-        .collection('users')
-        .doc(authUser.user.uid)
-        .get();
-      console.log('first', userDataSnapshot.data());
-      const payload = {
-        user: {...(userDataSnapshot.data() as User), uid: userDataSnapshot.id},
-      };
-      console.log('PAYLOAD', payload.user);
-      dispatch(setUser(payload));
-      registerDeviceForFCM(authUser.user.uid);
+      const userData = await loginFirebaseMut.mutateAsync({
+        email: userCreds.email,
+        password: userCreds.password,
+      });
+      dispatch(setUser({user:userData }));
+      registerDeviceForFCM(userData.uid);
     } catch (e) {
       Alert.alert('ERROR', e?.message || 'Something went wrong');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -126,7 +115,8 @@ const Login = ({
             <TouchableOpacity>
               <Text style={styles.forgotText}>Forgot Password</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate(ScreenNameConstants.SIGNUP)}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate(ScreenNameConstants.SIGNUP)}>
               <Text style={styles.signupText}>New User? Signup</Text>
             </TouchableOpacity>
           </View>
@@ -135,8 +125,8 @@ const Login = ({
           <Button
             text="Log In"
             onPress={handleSignin}
-            disabled={loading}
-            loading={loading}
+            disabled={loginFirebaseMut.isPending}
+            loading={loginFirebaseMut.isPending}
           />
         </View>
       </View>
