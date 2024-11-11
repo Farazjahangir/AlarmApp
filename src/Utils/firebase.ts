@@ -1,7 +1,9 @@
 import firestore, {
     FirebaseFirestoreTypes,
+    Filter
 } from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
+import parsePhoneNumber, { CountryCode } from 'libphonenumber-js';
 
 import { User, Group, Contact, ContactWithAccount } from '../Types/dataType';
 import {
@@ -13,13 +15,18 @@ import {
     CreateGroup,
     LoginFirebase,
     GetUserById,
-    FetchUserGroups
+    FetchUserGroups,
+    SignupFirebase,
+    CheckUserWithPhoneNumber,
+    CreateUserWithEmailAndPasswordFirebase
 } from '../Types/firebaseTypes';
 import {
     convertFirestoreDataIntoArrayOfObject,
     createSelectedUsersUIDArr,
     prepareGroupsArray
 } from './helpers';
+import { removeSpaces } from '.';
+import { createUser } from './api';
 
 export const updateUserProfile: UpdateUserProfile = async (payload, uid) => {
     const userDocRef = firestore().collection('users').doc(uid);
@@ -106,4 +113,62 @@ export const fetchUserGroups: FetchUserGroups = async ({ user, contactWithAccoun
         return await prepareGroupsArray(user, contactWithAccount, groupSnapshots)
     }
     return []
+}
+
+export const checkUserWithPhoneNumber: CheckUserWithPhoneNumber = async ({ countryCode, number }) => {
+    const num = parsePhoneNumber(number, countryCode);
+    const internationalFormat = num?.formatInternational();
+    const nationalFormat = num?.formatNational();
+    const snapShot = await firestore()
+        .collection('users')
+        .where(
+            Filter.or(
+                Filter('number', '==', removeSpaces(internationalFormat)),
+                Filter('number', '==', removeSpaces(nationalFormat)),
+                Filter('number', '==', number),
+            ),
+        )
+        .get();
+    if (snapShot.empty) return null;
+    return {
+        ...snapShot.docs[0].data() as User,
+        uid: snapShot.docs[0].id
+    }
+}
+
+export const createUserWithEmailPasswordFirebase: CreateUserWithEmailAndPasswordFirebase = async (payload) => {
+    const authUser = await auth().createUserWithEmailAndPassword(
+        payload.email.trim(),
+        payload.password
+    );
+   await firestore().collection('users').doc(authUser.user.uid).set({
+        name: payload.name,
+        email: payload.email.trim(),
+        number: payload.number,
+        isActive: true,
+        countryCode: payload.countryCode,
+        isProfileComplete: false,
+      });
+    return null
+}
+
+
+export const signupFirebase: SignupFirebase = async ({ user, countryCode }) => {
+    const userData = await checkUserWithPhoneNumber({ countryCode, number: user.number })
+    if (userData) {
+        if (userData.isActive) throw new Error("Phone number Already Exist")
+            console.log("userData", userData)
+        await createUser({ ...user, uid: userData.uid, countryCode })
+    }
+    else {
+        const payload = {
+            name: user.name,
+            email: user.email.trim(),
+            number: user.number,
+            countryCode,
+            password: user.password
+        }
+        createUserWithEmailPasswordFirebase(payload)
+    }
+    return null
 }

@@ -1,6 +1,7 @@
 import firestore, {
   FirebaseFirestoreTypes,
 } from '@react-native-firebase/firestore';
+import { CountryCode } from 'libphonenumber-js';
 
 import { User, Group, ContactWithAccount, Contact } from './dataType';
 
@@ -75,3 +76,32 @@ export type FetchUserGroupsPayload = {
 };
 
 export type FetchUserGroups = (payload: FetchUserGroupsPayload) => Promise<Group[]>;
+
+export type SignupFirebasePayload = {
+  countryCode: CountryCode;
+  user: {
+    email: string;
+    password: string;
+    name: string;
+    number: string;
+  }
+};
+
+export type SignupFirebase = (payload: SignupFirebasePayload) => Promise<null>;
+
+export type CheckUserWithPhoneNumberPayload = {
+  countryCode: CountryCode;
+  number: string;
+};
+
+export type CheckUserWithPhoneNumber = (payload: CheckUserWithPhoneNumberPayload) => Promise<User | null>;
+
+export type CreateUserWithEmailAndPasswordFirebasePayload = {
+  email: string;
+  password: string;
+  name: string;
+  number: string;
+  countryCode: CountryCode
+};
+
+export type CreateUserWithEmailAndPasswordFirebase = (payload: CreateUserWithEmailAndPasswordFirebasePayload) => Promise<null>;

@@ -21,6 +21,7 @@ import Button from '../../Components/Button';
 import {validateEmail} from '../../Utils';
 import {RootStackParamList} from '../../Types/navigationTypes';
 import {ScreenNameConstants} from '../../Constants/navigationConstants';
+import {useSignupFirebase} from '../../Hooks/reactQuery/useSignupFirebase';
 import styles from './style';
 
 type User = {
@@ -49,8 +50,8 @@ const Signup = ({
     number: '',
   });
 
-  const [loading, setLoading] = useState(false);
   const phoneInputRef = useRef<RNPhoneInput>(null);
+  const signupFirebaseMut = useSignupFirebase();
 
   const handleTextChange = (text: string, key: Keys) => {
     const data = {...user};
@@ -60,57 +61,6 @@ const Signup = ({
     errorsText[key] = '';
     setUser(data);
     setErrors(errorsText);
-  };
-
-  const checkUser = async () => {
-    try {
-      const countryCode =
-        phoneInputRef.current?.getCountryCode() as CountryCode;
-      const num = parsePhoneNumber(user.number, countryCode);
-      const internationalFormat = num?.formatInternational();
-      const nationalFormat = num?.formatNational();
-      const snapShot = await firestore()
-        .collection('users')
-        .where(
-          Filter.or(
-            Filter('number', '==', removeSpaces(internationalFormat)),
-            Filter('number', '==', removeSpaces(nationalFormat)),
-            Filter('number', '==', user.number),
-          ),
-        )
-        .get();
-
-      return snapShot;
-    } catch (e) {
-      Alert.alert('Error', e?.message || 'Something Went Wrong');
-    }
-  };
-
-  const createAccountWithExistingUser = async (uid: string) =>
-    await axios.post(`${BASE_URL}/user/create`, {
-      ...user,
-      uid,
-      countryCode: phoneInputRef.current?.getCountryCode(),
-      email: user.email.trim(),
-    });
-
-  const createUser = async () => {
-    try {
-      const authUser = await auth().createUserWithEmailAndPassword(
-        user.email.trim(),
-        user.password,
-      );
-      await firestore().collection('users').doc(authUser.user.uid).set({
-        name: user.name,
-        email: user.email.trim(),
-        number: user.number,
-        isActive: true,
-        countryCode: phoneInputRef.current?.getCountryCode(),
-        isProfileComplete: false
-      });
-    } catch (e) {
-      throw new Error(e);
-    }
   };
 
   const validateInputs = () => {
@@ -156,20 +106,11 @@ const Signup = ({
   const handleSignup = async () => {
     try {
       if (!validateInputs()) return;
-      setLoading(true);
-      const userSnapshot = await checkUser();
-      if (!userSnapshot?.empty) {
-        const uid = userSnapshot?.docs[0].id;
-        if (userSnapshot?.docs[0].data().isActive) {
-          throw new Error('Phone number Already Exist');
-        }
-        if (uid) {
-          await createAccountWithExistingUser(uid);
-        }
-      } else {
-        await createUser();
-      }
-
+      const payload = {
+        countryCode: phoneInputRef.current?.getCountryCode() as CountryCode,
+        user
+      };
+      await signupFirebaseMut.mutateAsync(payload);
       Alert.alert('Success', 'User Created');
       navigation.navigate(ScreenNameConstants.LOGIN);
     } catch (e) {
@@ -178,8 +119,6 @@ const Signup = ({
         'ERROR',
         e?.response?.data?.message || e?.message || 'Something went wrong',
       );
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -238,8 +177,8 @@ const Signup = ({
           <Button
             text="Signup"
             onPress={handleSignup}
-            disabled={loading}
-            loading={loading}
+            disabled={signupFirebaseMut.isPending}
+            loading={signupFirebaseMut.isPending}
           />
         </View>
       </View>
