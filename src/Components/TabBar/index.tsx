@@ -14,18 +14,23 @@ import { useAppDispatch } from '../../Hooks/useAppDispatch';
 import {logout} from '../../Redux/user/userSlice';
 import { useAppSelector } from '../../Hooks/useAppSelector';
 import { setContacts } from '../../Redux/contacts/contactSlice';
+import { useUpdateUserProfile } from '../../Hooks/reactQuery/useUpdateUserProfile';
 import styles from './style';
 
 const TabBar = ({state}: BottomTabBarProps) => {
   const dispatch = useAppDispatch();
   const user = useAppSelector(state => state.user.data.user);
+  const updateUserProfileMut = useUpdateUserProfile()
 
   const onLogout = async () => {
     try {
-      const userDocRef = firestore().collection('users').doc(user?.uid);
-      userDocRef.update({
-        deviceToken: '',
-      });
+      const payload = {
+        data: {
+          deviceToken: ''
+        },
+        uid: user?.uid as string,
+      };
+      updateUserProfileMut.mutateAsync(payload)
       dispatch(setContacts({
         contactsWithAccount: [],
         contactsWithoutAccount: []

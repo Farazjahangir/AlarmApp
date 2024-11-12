@@ -14,6 +14,8 @@ export type UpdateUserProfilePayload = {
   address?: string;
   isActive?: boolean;
   isProfileComplete?: boolean;
+  deviceToken?: string;
+  image?: string;
 };
 
 export type UpdateUserProfile = (
