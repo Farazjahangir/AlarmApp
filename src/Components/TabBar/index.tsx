@@ -13,6 +13,7 @@ import userGreyIcon from '../../Assets/icons/userGrey.png';
 import { useAppDispatch } from '../../Hooks/useAppDispatch';
 import {logout} from '../../Redux/user/userSlice';
 import { useAppSelector } from '../../Hooks/useAppSelector';
+import { setContacts } from '../../Redux/contacts/contactSlice';
 import styles from './style';
 
 const TabBar = ({state}: BottomTabBarProps) => {
@@ -22,14 +23,19 @@ const TabBar = ({state}: BottomTabBarProps) => {
   const onLogout = async () => {
     try {
       const userDocRef = firestore().collection('users').doc(user?.uid);
-      await userDocRef.update({
+      userDocRef.update({
         deviceToken: '',
       });
+      dispatch(setContacts({
+        contactsWithAccount: [],
+        contactsWithoutAccount: []
+      }))
       dispatch(logout());
     } catch (e) {
       console.log('ERR', e.message);
     }
   };
+
   return (
     <View style={styles.container}>
       <View style={styles.contentBox}>
@@ -41,7 +47,7 @@ const TabBar = ({state}: BottomTabBarProps) => {
           title="Home"
         />
         <TabBarItem
-          screenName={ScreenNameConstants.CONTACTS}
+          // screenName={ScreenNameConstants.CONTACTS}
           title="Profile"
           selected={state.index === 1}
           icon={userGreyIcon}
