@@ -12,6 +12,18 @@ export const createGroupSchema = yup.object({
     groupType: yup.string().required().label("Group type")
 });
 
+export const signupSchema = yup.object({
+    name: yup.string().required().label("Name"),
+    email: yup.string().required().email().label("Email"),
+    number: yup.string().required().label('Number'),
+    password: yup.string().length(8).required().label('Password')
+});
+
+export const loginSchema = yup.object({
+    email: yup.string().required().email().label("Email"),
+    password: yup.string().required().label('Password')
+});
+
 
 export const validate = async (
     schema: yup.ObjectSchema<any>,

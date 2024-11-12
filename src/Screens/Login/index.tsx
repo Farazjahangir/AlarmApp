@@ -19,6 +19,7 @@ import {RootStackParamList} from '../../Types/navigationTypes';
 import {ScreenNameConstants} from '../../Constants/navigationConstants';
 import {User} from '../../Types/dataType';
 import {useLoginFirebase} from '../../Hooks/reactQuery/useLoginFirebase';
+import { loginSchema, validate } from '../../Utils/yup';
 import styles from './style';
 
 type UserCreds = {
@@ -54,33 +55,21 @@ const Login = ({
     setErrors(error);
   };
 
-  const isValidFields = () => {
-    let isValid = true;
-    const error = {...errors};
-
-    if (!userCreds.email) {
-      error.email = 'Required';
-      isValid = false;
-    }
-
-    if (!userCreds.password) {
-      error.password = 'Required';
-      isValid = false;
-    }
-
-    setErrors(error);
-    return isValid;
-  };
-
   const handleSignin = async () => {
     try {
-      if (!isValidFields()) return;
+      const errors = await validate(loginSchema, userCreds)
+      if (Object.keys(errors).length) {
+        setErrors(errors as UserCreds)
+        return
+      }
       const userData = await loginFirebaseMut.mutateAsync({
         email: userCreds.email,
         password: userCreds.password,
       });
-      dispatch(setUser({user:userData }));
-      registerDeviceForFCM(userData.uid);
+      if (userData) {
+        dispatch(setUser({user:userData }));
+        registerDeviceForFCM(userData.uid);
+      }
     } catch (e) {
       Alert.alert('ERROR', e?.message || 'Something went wrong');
     }

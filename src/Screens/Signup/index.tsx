@@ -22,6 +22,7 @@ import {validateEmail} from '../../Utils';
 import {RootStackParamList} from '../../Types/navigationTypes';
 import {ScreenNameConstants} from '../../Constants/navigationConstants';
 import {useSignupFirebase} from '../../Hooks/reactQuery/useSignupFirebase';
+import { signupSchema, validate } from '../../Utils/yup';
 import styles from './style';
 
 type User = {
@@ -63,49 +64,13 @@ const Signup = ({
     setErrors(errorsText);
   };
 
-  const validateInputs = () => {
-    const errorText = {...errors};
-    let isValid = true;
-
-    if (!user.name) {
-      errorText.name = 'Required';
-      isValid = false;
-    }
-    if (!user.email) {
-      errorText.email = 'Required';
-      isValid = false;
-    }
-    if (user.email && !validateEmail(user.email)) {
-      errorText.email = 'Email is not valid';
-      isValid = false;
-    }
-    if (!user.number) {
-      errorText.number = 'Required';
-      isValid = false;
-    }
-
-    if (user.number) {
-      if (
-        user.number.startsWith('0') ||
-        !phoneInputRef.current?.isValidNumber(user.number)
-      ) {
-        errorText.number = 'Please enter valid number';
-        isValid = false;
-      }
-    }
-
-    if (!user.password) {
-      errorText.password = 'Required';
-      isValid = false;
-    }
-
-    setErrors(errorText);
-    return isValid;
-  };
-
   const handleSignup = async () => {
     try {
-      if (!validateInputs()) return;
+      const errors = await validate(signupSchema, user)
+      if (Object.keys(errors).length) {
+        setErrors(errors as User);
+        return
+      }
       const payload = {
         countryCode: phoneInputRef.current?.getCountryCode() as CountryCode,
         user
