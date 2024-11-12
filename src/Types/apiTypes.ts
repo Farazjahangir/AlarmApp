@@ -24,3 +24,21 @@ export type CreateUserResponse = {
 };
 
 export type CreateUser = (body: CreateUserBody) => Promise<CreateUserResponse>;
+
+export type RingAlarmBody = {
+  tokens: string[];
+  payload: {
+    name: string,
+    coords: {
+      latitude: number,
+      longitude: number,
+    },
+  }
+}
+
+export type RingAlarmResponse = {
+  message: string,
+  tokensProcessed: number,
+};
+
+export type RingAlarm = (body: RingAlarmBody) => Promise<RingAlarmResponse>;

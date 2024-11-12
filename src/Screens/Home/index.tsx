@@ -1,22 +1,16 @@
 import {useState, useCallback, useRef, useMemo} from 'react';
 import {Text, View, Alert} from 'react-native';
-import firestore from '@react-native-firebase/firestore';
-import axios from 'axios';
-import {useFocusEffect} from '@react-navigation/native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
-import { useQueryClient } from '@tanstack/react-query';
 
-import {BASE_URL} from '../../Constants';
 import {
   requestLocationPermission,
   getPositionAsync,
-  cleanString,
 } from '../../Utils';
 import {RootStackParamList} from '../../Types/navigationTypes';
 import {ScreenNameConstants} from '../../Constants/navigationConstants';
 import {useAppSelector} from '../../Hooks/useAppSelector';
-import {Contact, ContactWithAccount, Group, User} from '../../Types/dataType';
+import {ContactWithAccount, Group, User} from '../../Types/dataType';
 import TextInput from '../../Components/TextInput';
 import searchIcon from '../../Assets/icons/search.png';
 import TabView from '../../Components/TabView';
@@ -29,8 +23,8 @@ import CreateGroupSheet from './CreateGroupSheet';
 import {useCreateGroup} from '../../Hooks/reactQuery/useCreateGroup';
 import PrivateGroups from './PrivateGroups';
 import {useFetchUserGroups} from '../../Hooks/reactQuery/useFetchUserGroups';
+import {useRingAlarm} from '../../Hooks/reactQuery/useRingAlarm';
 import styles from './style';
-
 
 type GroupDetails = {
   groupName: string;
@@ -63,11 +57,16 @@ const Home = ({
   const contactSheetModalRef = useRef<BottomSheetModal>(null);
   const createGroupSheetModalRef = useRef<BottomSheetModal>(null);
   const createGroupMut = useCreateGroup();
-  const {data:groups = [], isFetching: isGroupsLoading, refetch} = useFetchUserGroups({
+  const {
+    data: groups = [],
+    isFetching: isGroupsLoading,
+    refetch,
+  } = useFetchUserGroups({
     user: user as User,
     contactWithAccount: contatcs.contactsWithAccount,
   });
-  const queryClient = useQueryClient()
+
+  const ringAlarmMut = useRingAlarm();
 
   const checkForLocationPermission = () => requestLocationPermission();
 
@@ -83,18 +82,14 @@ const Home = ({
       });
 
       const payload = {
-        name: user?.name,
+        name: user?.name as string,
         coords: {
           latitude: userLocation.coords.latitude,
           longitude: userLocation.coords.longitude,
         },
       };
-      console.log('payload', payload);
       if (tokens.length) {
-        const res = await axios.post(`${BASE_URL}/send-notifications`, {
-          tokens,
-          payload,
-        });
+        await ringAlarmMut.mutateAsync({tokens, payload});
       }
       Alert.alert('Success', 'Alarm Rang');
     } catch (e) {
@@ -148,7 +143,7 @@ const Home = ({
       };
       await createGroupMut.mutateAsync(payload);
       createGroupSheetModalRef.current?.dismiss();
-      refetch()
+      refetch();
     } catch (e) {
       console.log('onCreateGroup ERR', e.message);
     }
@@ -170,8 +165,8 @@ const Home = ({
   };
 
   const refetchUserGroups = () => {
-    refetch()
-  }
+    refetch();
+  };
 
   const seperatedGroupsWithTypes = useMemo(() => {
     const privateGroups: Group[] = [];
@@ -209,7 +204,7 @@ const Home = ({
         ringAlarm,
         groups: seperatedGroupsWithTypes.publicGroups,
         loading: isGroupsLoading,
-        refetchUserGroups
+        refetchUserGroups,
       },
     },
     {
@@ -220,7 +215,7 @@ const Home = ({
         ringAlarm,
         groups: seperatedGroupsWithTypes.privateGroups,
         loading: isGroupsLoading,
-        refetchUserGroups
+        refetchUserGroups,
       },
     },
   ];
