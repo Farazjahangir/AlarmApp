@@ -20,7 +20,7 @@ export const processAxiosResponse = async (func: any) => {
       throw new Error('It seems your device is not connected to the internet');
     }
 
-    const message = e?.response?.data?.message || 'Something went wrong';
+    const message = e?.response?.data?.error?.message || e?.response?.data?.message || 'Something went wrong';
 
     throw new Error(message);
   }

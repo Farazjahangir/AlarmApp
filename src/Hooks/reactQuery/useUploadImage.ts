@@ -2,14 +2,12 @@ import {useMutation} from '@tanstack/react-query';
 
 import {createGroup} from '../../Utils/firebase';
 import {Contact, ContactWithAccount} from '../../Types/dataType';
-import { uploadImage } from '../../Utils/api';
+import { uploadFile } from '../../Utils/api';
+import { UploadFileBody } from '../../Types/apiTypes';
 
-type SelectedContacts = {
-  [phoneNumber: string]: boolean; // Using an index signature
-};
 
-export const useUploadImage = () => {
+export const useUploadFile = () => {
   return useMutation({
-    mutationFn: (image: FormData) => uploadImage(image),
+    mutationFn: (image: UploadFileBody) => uploadFile(image),
   });
 };

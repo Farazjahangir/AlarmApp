@@ -30,7 +30,7 @@ import {setUser} from '../../Redux/user/userSlice';
 import {RootStackParamList} from '../../Types/navigationTypes';
 import {ScreenNameConstants} from '../../Constants/navigationConstants';
 import ImageUploader from '../../Components/ImageUploader';
-import {useUploadImage} from '../../Hooks/reactQuery/useUploadImage';
+import {useUploadFile} from '../../Hooks/reactQuery/useUploadImage';
 import {uploadImage} from '../../Utils/api';
 import {v4 as uuidv4} from 'uuid';
 import styles from './style';
@@ -87,7 +87,7 @@ const CompleteProfile = ({
   const isSettingsOpened = useRef(false);
   const hasPermissionRef = useRef({});
   const updateProfileMut = useUpdateUserProfile();
-  const uploadImageMut = useUploadImage();
+  const uploadFileMut = useUploadFile();
   const dispatch = useAppDispatch();
 
   // const checkIsAllGranted = async () => {
@@ -293,16 +293,16 @@ const CompleteProfile = ({
   const handleImageUpload = async () => {
     if (!imageMetadata) return null;
     const imageName = `${uuidv4()}.${getFileExtension(imageMetadata.mime)}`;
-    const formData = new FormData();
-    formData.append('folder', `user/${user?.uid}`);
-    formData.append('image', {
-      uri: imageMetadata.path, // Jo path aapke paas image ka hai
-      name: imageName, // Name auto-generate kar diya hai with mime type
+    const payload = {
+      folder: `AlarmApp/user/${user?.uid}`,
+      file: {
+        uri: imageMetadata.path,
+      name: imageName,
       type: imageMetadata.mime,
-    });
-
-    const res = await uploadImageMut.mutateAsync(formData);
-    return res.imageUrl;
+      }
+    }
+    const res = await uploadFileMut.mutateAsync(payload);
+    return res.secure_url
   };
 
   const handleCompleteProfile = async () => {
@@ -330,7 +330,7 @@ const CompleteProfile = ({
       dispatch(setUser({user: res}));
       navigation.navigate(ScreenNameConstants.TAB_NAV)
     } catch (e) {
-      console.log('ERRR', e?.message || 'Error');
+      console.log('ERRR', e || 'Error');
     }
   };
 
@@ -419,7 +419,7 @@ const CompleteProfile = ({
             text="Next"
             containerStyle={styles.btnBox}
             onPress={handleCompleteProfile}
-            loading={updateProfileMut.isPending || uploadImageMut.isPending}
+            loading={updateProfileMut.isPending || uploadFileMut.isPending}
           />
         </View>
       </ScrollView>

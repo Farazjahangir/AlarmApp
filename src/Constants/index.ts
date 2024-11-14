@@ -14,3 +14,5 @@ export const GROUP_TYPES = [
         key: 'private',
     },
 ]
+
+export const CLOUDNARY_UPLOAD_URL = 'https://api.cloudinary.com/v1_1/farazcloud/image/upload'
