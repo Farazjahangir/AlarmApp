@@ -34,6 +34,10 @@ const styles = StyleSheet.create({
     },
     mt15: {
         marginTop: 15,
+    },
+    pictureBox: {
+        alignItems: 'center',
+        marginBottom: 10
     }
 });
 

@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 
 import Button from '../../../Components/Button';
-import {Group} from '..';
+import { Group } from '../../../Types/dataType';
 import groupDummy from '../../../Assets/images/groupDummy.png';
 import styles from './style';
 
@@ -20,7 +20,7 @@ interface GroupBoxProps {
 const GroupBox = ({item, onBoxPress, onBtnPress}: GroupBoxProps) => {
   return (
     <TouchableOpacity style={styles.container} onPress={onBoxPress}>
-      <Image source={groupDummy} style={styles.picture} resizeMode='cover' />
+      <Image source={item.image ? { uri: item.image }: groupDummy} style={styles.picture} resizeMode='cover' />
       <View style={styles.leftContainer}>
         <Text style={styles.groupName}>{item.groupName}</Text>
         <Text style={styles.count}>{item.members.length} Member</Text>

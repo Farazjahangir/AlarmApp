@@ -1,16 +1,18 @@
-import {useState, useCallback, useRef, useMemo} from 'react';
+import {useState, useCallback, useRef, useMemo, useEffect} from 'react';
 import {Text, View, Alert} from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
+import {v4 as uuidv4} from 'uuid';
 
 import {
   requestLocationPermission,
   getPositionAsync,
+  getFileExtension,
 } from '../../Utils';
 import {RootStackParamList} from '../../Types/navigationTypes';
 import {ScreenNameConstants} from '../../Constants/navigationConstants';
 import {useAppSelector} from '../../Hooks/useAppSelector';
-import {ContactWithAccount, Group, User} from '../../Types/dataType';
+import {ContactWithAccount, Group, User, SelectedImage} from '../../Types/dataType';
 import TextInput from '../../Components/TextInput';
 import searchIcon from '../../Assets/icons/search.png';
 import TabView from '../../Components/TabView';
@@ -24,18 +26,22 @@ import {useCreateGroup} from '../../Hooks/reactQuery/useCreateGroup';
 import PrivateGroups from './PrivateGroups';
 import {useFetchUserGroups} from '../../Hooks/reactQuery/useFetchUserGroups';
 import {useRingAlarm} from '../../Hooks/reactQuery/useRingAlarm';
+import ImageUploader from '../../Components/ImageUploader';
 import styles from './style';
+import { useUploadFile } from '../../Hooks/reactQuery/useUploadImage';
 
 type GroupDetails = {
   groupName: string;
   description?: string;
   groupType: string;
+  image?: string
 };
 
 const INITIAL_STATE = {
   groupName: '',
   description: '',
   groupType: '',
+  image: ''
 };
 
 interface SelectedContacts {
@@ -51,12 +57,16 @@ const Home = ({
     {},
   );
   const [groupDetails, setGroupDetails] = useState<GroupDetails>(INITIAL_STATE);
+  const [imageMetadata, setImageMetadata] = useState<SelectedImage | null>(
+    null,
+  );
 
   const user = useAppSelector(state => state.user.data.user);
   const contatcs = useAppSelector(state => state.contacts.data);
   const contactSheetModalRef = useRef<BottomSheetModal>(null);
   const createGroupSheetModalRef = useRef<BottomSheetModal>(null);
   const createGroupMut = useCreateGroup();
+  const uploadFileMut = useUploadFile()
   const {
     data: groups = [],
     isFetching: isGroupsLoading,
@@ -128,6 +138,21 @@ const Home = ({
     createGroupSheetModalRef.current?.present();
   };
 
+  const handleImageUpload = async () => {
+    if (!imageMetadata) return null;
+    const imageName = `${uuidv4()}.${getFileExtension(imageMetadata.mime)}`;
+    const payload = {
+      folder: `AlarmApp/groups`,
+      file: {
+        uri: imageMetadata.path,
+      name: imageName,
+      type: imageMetadata.mime,
+      }
+    }
+    const res = await uploadFileMut.mutateAsync(payload);
+    return res.secure_url
+  };
+
   const onCreateGroup = async () => {
     try {
       const payload = {
@@ -140,7 +165,15 @@ const Home = ({
         currentUserUid: user?.uid as string,
         description: groupDetails.description,
         groupType: groupDetails.groupType,
+        image: ''
       };
+
+      if (imageMetadata) {
+        console.log("imageMetadata")
+        const imageUri = await handleImageUpload();
+        if (imageUri) payload.image = imageUri;
+      }
+
       await createGroupMut.mutateAsync(payload);
       createGroupSheetModalRef.current?.dismiss();
       refetch();
@@ -220,6 +253,9 @@ const Home = ({
     },
   ];
 
+  // useEffect(() => {
+  //   createGroupSheetModalRef.current?.present()
+  // }, [])
   return (
     <>
       <ContactList
@@ -233,11 +269,12 @@ const Home = ({
       <CreateGroupSheet
         ref={createGroupSheetModalRef}
         onCreateGroup={onCreateGroup}
-        loading={createGroupMut.isPending}
+        loading={createGroupMut.isPending || uploadFileMut.isPending}
         onBackPress={onGroupDetailsBackPress}
         onBackDropPress={onGroupListBackDropPress}
         handleOnChange={setGroupDetails}
         data={groupDetails}
+        setImageMetadata={setImageMetadata}
       />
       <View style={styles.container}>
         {/* <BottomSheet isVisible>

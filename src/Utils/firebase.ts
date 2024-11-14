@@ -68,7 +68,8 @@ export const createGroup: CreateGroup = async (
         groupName,
         currentUserUid,
         groupType,
-        description
+        description,
+        image
     }
 ) => {
     const uids = await createSelectedUsersUIDArr(contacts, selectedContacts);
@@ -78,7 +79,8 @@ export const createGroup: CreateGroup = async (
         members: [currentUserUid, ...uids],
         createdAt: firestore.FieldValue.serverTimestamp(),
         groupType,
-        description
+        description,
+        image
     };
     return addGroup(data);
 };

@@ -156,6 +156,7 @@ export const prepareGroupsArray = async (
       createdAt: groupData.createdAt,
       description: groupData.description || '',
       groupType: groupData.groupType,
+      image: groupData.image
     });
   }
   return groupsWithMembersData;

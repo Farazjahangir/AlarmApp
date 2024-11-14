@@ -56,7 +56,8 @@ export type CreateGroupPayload = {
   groupName: string;
   currentUserUid: string;
   groupType: string;
-  description?: string
+  description?: string,
+  image: string
 };
 
 export type CreateGroup = (payload: CreateGroupPayload) => Promise<Group>;

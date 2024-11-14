@@ -15,6 +15,7 @@ type Payload = {
   currentUserUid: string;
   description?: string;
   groupType: string
+  image: string
 }
 
 export const useCreateGroup = () => {

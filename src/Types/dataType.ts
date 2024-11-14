@@ -33,7 +33,8 @@ export type Group = {
     members: string[] | ContactWithAccount[];
     uid: string;
     description?: string;
-    groupType: string
+    groupType: string;
+    image?: string
 }
 
 export type SelectedImage = ImageOrVideo & {
