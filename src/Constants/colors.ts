@@ -16,7 +16,8 @@ const COLORS = {
     primeRed: '#DD1D1D',
     grey: '#7f8c8d',
     input: '#F2F4F7',
-    inputPlaceholder: '#667085'
+    inputPlaceholder: '#667085',
+    textDarkGrey: '#344054',
 };
 
 export default COLORS;

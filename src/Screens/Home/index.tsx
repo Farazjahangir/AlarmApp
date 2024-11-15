@@ -27,8 +27,9 @@ import PrivateGroups from './PrivateGroups';
 import {useFetchUserGroups} from '../../Hooks/reactQuery/useFetchUserGroups';
 import {useRingAlarm} from '../../Hooks/reactQuery/useRingAlarm';
 import ImageUploader from '../../Components/ImageUploader';
-import styles from './style';
 import { useUploadFile } from '../../Hooks/reactQuery/useUploadImage';
+import GroupOptionsSheet from './GroupOptionsSheet';
+import styles from './style';
 
 type GroupDetails = {
   groupName: string;
@@ -60,11 +61,13 @@ const Home = ({
   const [imageMetadata, setImageMetadata] = useState<SelectedImage | null>(
     null,
   );
+  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null)
 
   const user = useAppSelector(state => state.user.data.user);
   const contatcs = useAppSelector(state => state.contacts.data);
   const contactSheetModalRef = useRef<BottomSheetModal>(null);
   const createGroupSheetModalRef = useRef<BottomSheetModal>(null);
+  const groupOptionsSheetRef = useRef<BottomSheetModal>(null);
   const createGroupMut = useCreateGroup();
   const uploadFileMut = useUploadFile()
   const {
@@ -201,6 +204,11 @@ const Home = ({
     refetch();
   };
 
+  const onGroupBoxPress = (group: Group) => {
+    setSelectedGroup(group)
+    groupOptionsSheetRef.current?.present()
+  }
+
   const seperatedGroupsWithTypes = useMemo(() => {
     const privateGroups: Group[] = [];
     const publicGroups: Group[] = [];
@@ -227,7 +235,7 @@ const Home = ({
       key: 'allGroups',
       title: 'All',
       component: AllGroups,
-      props: {ringAlarm, groups, loading: isGroupsLoading, refetchUserGroups},
+      props: {ringAlarm, groups, loading: isGroupsLoading, refetchUserGroups, onBoxPress: onGroupBoxPress},
     },
     {
       key: 'publicGroups',
@@ -253,9 +261,6 @@ const Home = ({
     },
   ];
 
-  // useEffect(() => {
-  //   createGroupSheetModalRef.current?.present()
-  // }, [])
   return (
     <>
       <ContactList
@@ -276,6 +281,7 @@ const Home = ({
         data={groupDetails}
         setImageMetadata={setImageMetadata}
       />
+      <GroupOptionsSheet ref={groupOptionsSheetRef} data={selectedGroup} />
       <View style={styles.container}>
         {/* <BottomSheet isVisible>
           <Text style={{ color: 'black' }}>Hello</Text>
