@@ -7,7 +7,7 @@ interface ModalProps {
   children: ReactNode; // Type for children
   isVisible: boolean; // Control modal visibility
   title?: string; // Optional title
-  onClose: TouchableOpacityProps['onPress']; // Function to handle close
+  onClose?: TouchableOpacityProps['onPress']; // Function to handle close
 }
 
 const Modal = ({children, isVisible, title, onClose}: ModalProps) => {

@@ -13,6 +13,7 @@ import OptionItem from './OptionItem';
 import {useLeaveGroup} from '../../../Hooks/reactQuery/useLeaveGroup';
 import {useAppSelector} from '../../../Hooks/useAppSelector';
 import queryKeys from '../../../Constants/queryKeys';
+import { useConfirmDialog } from '../../../Context/ConfirmDialogueContextProvider';
 import styles from './style';
 
 interface GroupOptionsSheet {
@@ -24,9 +25,11 @@ const GroupOptionsSheet = forwardRef<BottomSheetModal, GroupOptionsSheet>(
     const userUid = useAppSelector(state => state.user.data.user?.uid);
     const leaveGroupMut = useLeaveGroup();
     const queryClient = useQueryClient()
+    const { openDialog, closeDialog } = useConfirmDialog()
 
     const leaveGroup = async () => {
       try {
+        closeDialog()
         await leaveGroupMut.mutateAsync({
           groupUid: data?.uid as string,
           userUid: userUid as string,
@@ -41,6 +44,13 @@ const GroupOptionsSheet = forwardRef<BottomSheetModal, GroupOptionsSheet>(
         console.log('leaveGroup ERR =====>', e.message);
       }
     };
+    const leaveGroupConfirm = () => {
+      openDialog({
+        onConfirm: leaveGroup,
+        title: `Leave ${data?.groupName}`,
+        message: 'Are you sure you want to leave ?'
+      })
+    }
 
     return (
       <BottomSheet snapPoints={['50%', '60%']} ref={ref} showIndicator>
@@ -68,7 +78,7 @@ const GroupOptionsSheet = forwardRef<BottomSheetModal, GroupOptionsSheet>(
               icon={exitIcon}
               textRed
               containerStyle={styles.optionItemContainer}
-              onPress={leaveGroup}
+              onPress={leaveGroupConfirm}
               disabled={leaveGroupMut.isPending}
             />
           </View>

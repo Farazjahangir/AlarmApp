@@ -28,6 +28,7 @@ import {PersistGate} from 'redux-persist/integration/react';
 import {getDataFromAsync, removeValueFromAsync} from './src/Utils';
 import {ScreenNameConstants} from './src/Constants/navigationConstants';
 import HelpModal from './src/Components/HelpModal';
+import ConfirmDialogContextProvider from './src/Context/ConfirmDialogueContextProvider';
 
 const {AlarmSoundModule} = NativeModules;
 
@@ -45,7 +46,7 @@ const INITAL_HELP_MODAL_VALUES = {
 type HelpModalValues = {
   isOpen: boolean;
   data: {
-    name: string
+    name: string;
     coords: {
       latitude: number | null;
       longitude: number | null;
@@ -70,7 +71,7 @@ function App(): React.JSX.Element {
         setHelpModalDetails({
           isOpen: true,
           data: {
-          name: notifeeObj.data.name,
+            name: notifeeObj.data.name,
             coords: {
               latitude: notifeeObj.data.latitude,
               longitude: notifeeObj.data.longitude,
@@ -87,7 +88,7 @@ function App(): React.JSX.Element {
     });
   };
 
-  console.log("HELP MODAL", helpModalDetails)
+  console.log('HELP MODAL', helpModalDetails);
 
   const stopAlarm = async () => {
     await AlarmManager.stopAlarm();
@@ -99,12 +100,12 @@ function App(): React.JSX.Element {
       const notifData = await getDataFromAsync('notif');
       let latitude: number;
       let longitude: number;
-      let name = ''
+      let name = '';
 
       if (notifData) {
         latitude = notifData.latitude;
         longitude = notifData.longitude;
-        name = notifData.name
+        name = notifData.name;
         // await removeValueFromAsync('notif');
       }
       if (notifData) {
@@ -155,7 +156,7 @@ function App(): React.JSX.Element {
 
   const onCloseHelpModal = async () => {
     setHelpModalDetails(INITAL_HELP_MODAL_VALUES);
-    AlarmManager.stopAlarm()
+    AlarmManager.stopAlarm();
     await removeValueFromAsync('notif');
   };
 
@@ -190,7 +191,9 @@ function App(): React.JSX.Element {
                 onClose={onCloseHelpModal}
               />
               <BottomSheetModalProvider>
-                <Navigation />
+                <ConfirmDialogContextProvider>
+                  <Navigation />
+                </ConfirmDialogContextProvider>
               </BottomSheetModalProvider>
             </GestureHandlerRootView>
           </QueryClientProvider>

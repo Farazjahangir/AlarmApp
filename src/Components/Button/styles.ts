@@ -37,6 +37,14 @@ const styles = StyleSheet.create({
     },
     bgColorPanic: {
         backgroundColor: COLORS.primeRed
+    },
+    whiteBtn: {
+        backgroundColor: COLORS.white,
+        borderWidth: 1,
+        borderColor: COLORS.inputBorder
+    },
+    whiteBtnTxt: {
+        color: COLORS.black
     }
 });
 

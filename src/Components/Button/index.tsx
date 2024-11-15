@@ -4,6 +4,7 @@ import {
   ActivityIndicator,
   TouchableOpacityProps,
   ViewStyle,
+  TextStyle,
 } from 'react-native';
 import styles from './styles';
 
@@ -14,7 +15,8 @@ interface ButtonProps {
   loading?: boolean;
   disabled?: boolean;
   size?: 'small' | 'medium' | 'large';
-  theme?: 'default' | 'panic';
+  theme?: 'default' | 'panic' | 'white';
+  textStyle?: TextStyle
 }
 
 const Button = ({
@@ -25,6 +27,7 @@ const Button = ({
   disabled,
   size,
   theme,
+  textStyle
 }: ButtonProps) => {
   const btnContainerStyles = () => {
     let sizeStyle = styles.largeBtn;
@@ -41,12 +44,16 @@ const Button = ({
     if (theme === 'panic') {
       bgTheme = styles.bgColorPanic;
     }
+
+    if (theme === 'white') {
+      bgTheme = styles.whiteBtn
+    }
     return [styles.container, bgTheme, sizeStyle, containerStyle];
   };
 
   const textStyles = () => {
     let sizeStyle = styles.textLarge;
-
+    let textTheme = styles.text
     if (size === 'medium') {
       sizeStyle = styles.textMedium;
     }
@@ -54,7 +61,11 @@ const Button = ({
     if (size === 'small') {
       sizeStyle = styles.textSmall;
     }
-    return [styles.text, sizeStyle];
+
+    if (theme === 'white') {
+      textTheme = styles.whiteBtnTxt
+    }
+    return [sizeStyle, textTheme, textStyle];
   };
 
   return (
