@@ -24,6 +24,10 @@ export const loginSchema = yup.object({
     password: yup.string().required().label('Password')
 });
 
+export const updateProfileSchema = yup.object({
+    name: yup.string().required().label("Name"),
+});
+
 
 export const validate = async (
     schema: yup.ObjectSchema<any>,

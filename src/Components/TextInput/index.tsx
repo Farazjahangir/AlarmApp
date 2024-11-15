@@ -19,14 +19,15 @@ import styles from './style';
 interface TextInputProps {
   placeholder?: string;
   value: RNTextInputProps['value'];
-  onChangeText: RNTextInputProps['onChangeText'];
+  onChangeText?: RNTextInputProps['onChangeText'];
   secureTextEntry?: RNTextInputProps['secureTextEntry'];
   error?: string;
   showEyeIcon?: boolean;
   containerStyle?: ViewStyle;
   label?: string;
   inputBoxStyle?: ViewStyle;
-  leftIcon?: ImageSourcePropType
+  leftIcon?: ImageSourcePropType;
+  readOnly?: boolean
 }
 
 const TextInput = ({
@@ -39,7 +40,8 @@ const TextInput = ({
   containerStyle,
   label,
   inputBoxStyle,
-  leftIcon
+  leftIcon,
+  readOnly
 }: TextInputProps) => {
   const [isSecure, setIsSecure] = useState(secureTextEntry);
 
@@ -59,6 +61,7 @@ const TextInput = ({
           onChangeText={onChangeText}
           placeholderTextColor={COLORS.inputPlaceholder}
           secureTextEntry={isSecure}
+          readOnly={readOnly}
         />
         {showEyeIcon && (
           <TouchableOpacity
@@ -79,7 +82,8 @@ const TextInput = ({
 TextInput.defaultProps = {
   secureTextEntry: false,
   showEyeIcon: false,
-  label: ''
+  label: '',
+  readOnly: false
 };
 
 export default TextInput;

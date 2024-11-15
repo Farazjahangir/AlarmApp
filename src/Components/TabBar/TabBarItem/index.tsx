@@ -21,6 +21,7 @@ interface TabBarItemProps {
   iconSelected?: ImageSourcePropType;
   title: string;
   onPress?: TouchableOpacityProps['onPress'];
+  image?: string;
 }
 
 const TabBarItem = ({
@@ -29,7 +30,8 @@ const TabBarItem = ({
   icon,
   iconSelected,
   title,
-  onPress
+  onPress,
+  image
 }: TabBarItemProps) => {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
@@ -41,7 +43,7 @@ const TabBarItem = ({
 
   return (
     <TouchableOpacity onPress={onPress || navigateTo} style={styles.container}>
-      <Image source={selected ? iconSelected : icon} style={styles.icon} />
+      <Image source={image ? {uri: image} : selected ? iconSelected : icon} style={[styles.icon, image && styles.image]} />
       <Text style={[styles.screenName, selected && styles.selectedScreenName]}>
         {title}
       </Text>

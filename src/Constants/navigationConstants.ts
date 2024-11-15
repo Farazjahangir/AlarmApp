@@ -7,6 +7,7 @@ import Contacts from "../Screens/Contacts";
 import AlarmScreen from "../Screens/AlarmScreen";
 import CompleteProfile from "../Screens/CompleteProfile";
 import TabNavigation from "../Navigation/tabNavigation";
+import Profile from "../Screens/Profile";
 
 export enum ScreenNameConstants {
     LOGIN = 'Login',
@@ -15,7 +16,8 @@ export enum ScreenNameConstants {
     CONTACTS = 'Contacts',
     ALARM_SCREEN = 'Alarm Screen',
     COMPLETE_PROFILE = 'Complete Profile',
-    TAB_NAV= 'tabNav'
+    TAB_NAV= 'tabNav',
+    PROFILE = 'PROFILE'
 }
 
 const defaultNavOptions = {
@@ -62,6 +64,11 @@ export const tabNavigationList: BottomNavigationObj[] = [
     {
         name: ScreenNameConstants.CONTACTS,
         component: Contacts,
+        options: defaultNavOptions,
+    },
+    {
+        name: ScreenNameConstants.PROFILE,
+        component: Profile,
         options: defaultNavOptions,
     },
 ];  

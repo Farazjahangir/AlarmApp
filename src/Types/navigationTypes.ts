@@ -11,7 +11,8 @@ const {
     ALARM_SCREEN,
     CONTACTS,
     COMPLETE_PROFILE,
-    TAB_NAV
+    TAB_NAV,
+    PROFILE
 } = ScreenNameConstants
 
 export type RootStackParamList = {
@@ -24,7 +25,8 @@ export type RootStackParamList = {
         longitude: number;
     },
     [COMPLETE_PROFILE]: undefined;
-    [TAB_NAV]: undefined
+    [TAB_NAV]: undefined;
+    [PROFILE]: undefined
 };
 
 export type NavigationObj = {

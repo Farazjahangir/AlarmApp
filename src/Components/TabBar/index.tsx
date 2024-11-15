@@ -52,11 +52,12 @@ const TabBar = ({state}: BottomTabBarProps) => {
           title="Home"
         />
         <TabBarItem
-          // screenName={ScreenNameConstants.CONTACTS}
+          screenName={ScreenNameConstants.PROFILE}
           title="Profile"
           selected={state.index === 1}
           icon={userGreyIcon}
           iconSelected={userIcon}
+          image={user?.image}
         />
         <TabBarItem icon={logoutGreyIcon} title="Logout" onPress={onLogout} />
       </View>
