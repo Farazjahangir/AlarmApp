@@ -22,6 +22,9 @@ const styles = StyleSheet.create({
   },
   textRed: {
     color: COLORS.primeRed
+  },
+  disabledBox: {
+    backgroundColor: COLORS.lightGrey
   }
 });
 

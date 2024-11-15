@@ -12,7 +12,12 @@ import {
 import {RootStackParamList} from '../../Types/navigationTypes';
 import {ScreenNameConstants} from '../../Constants/navigationConstants';
 import {useAppSelector} from '../../Hooks/useAppSelector';
-import {ContactWithAccount, Group, User, SelectedImage} from '../../Types/dataType';
+import {
+  ContactWithAccount,
+  Group,
+  User,
+  SelectedImage,
+} from '../../Types/dataType';
 import TextInput from '../../Components/TextInput';
 import searchIcon from '../../Assets/icons/search.png';
 import TabView from '../../Components/TabView';
@@ -27,7 +32,7 @@ import PrivateGroups from './PrivateGroups';
 import {useFetchUserGroups} from '../../Hooks/reactQuery/useFetchUserGroups';
 import {useRingAlarm} from '../../Hooks/reactQuery/useRingAlarm';
 import ImageUploader from '../../Components/ImageUploader';
-import { useUploadFile } from '../../Hooks/reactQuery/useUploadImage';
+import {useUploadFile} from '../../Hooks/reactQuery/useUploadImage';
 import GroupOptionsSheet from './GroupOptionsSheet';
 import styles from './style';
 
@@ -35,14 +40,14 @@ type GroupDetails = {
   groupName: string;
   description?: string;
   groupType: string;
-  image?: string
+  image?: string;
 };
 
 const INITIAL_STATE = {
   groupName: '',
   description: '',
   groupType: '',
-  image: ''
+  image: '',
 };
 
 interface SelectedContacts {
@@ -61,7 +66,7 @@ const Home = ({
   const [imageMetadata, setImageMetadata] = useState<SelectedImage | null>(
     null,
   );
-  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null)
+  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
 
   const user = useAppSelector(state => state.user.data.user);
   const contatcs = useAppSelector(state => state.contacts.data);
@@ -69,7 +74,7 @@ const Home = ({
   const createGroupSheetModalRef = useRef<BottomSheetModal>(null);
   const groupOptionsSheetRef = useRef<BottomSheetModal>(null);
   const createGroupMut = useCreateGroup();
-  const uploadFileMut = useUploadFile()
+  const uploadFileMut = useUploadFile();
   const {
     data: groups = [],
     isFetching: isGroupsLoading,
@@ -148,12 +153,12 @@ const Home = ({
       folder: `AlarmApp/groups`,
       file: {
         uri: imageMetadata.path,
-      name: imageName,
-      type: imageMetadata.mime,
-      }
-    }
+        name: imageName,
+        type: imageMetadata.mime,
+      },
+    };
     const res = await uploadFileMut.mutateAsync(payload);
-    return res.secure_url
+    return res.secure_url;
   };
 
   const onCreateGroup = async () => {
@@ -168,11 +173,11 @@ const Home = ({
         currentUserUid: user?.uid as string,
         description: groupDetails.description,
         groupType: groupDetails.groupType,
-        image: ''
+        image: '',
       };
 
       if (imageMetadata) {
-        console.log("imageMetadata")
+        console.log('imageMetadata');
         const imageUri = await handleImageUpload();
         if (imageUri) payload.image = imageUri;
       }
@@ -205,9 +210,13 @@ const Home = ({
   };
 
   const onGroupBoxPress = (group: Group) => {
-    setSelectedGroup(group)
-    groupOptionsSheetRef.current?.present()
-  }
+    setSelectedGroup(group);
+    groupOptionsSheetRef.current?.present();
+  };
+
+  const onCloseGroupOptionsSheet = () => {
+    groupOptionsSheetRef.current?.dismiss();
+  };
 
   const seperatedGroupsWithTypes = useMemo(() => {
     const privateGroups: Group[] = [];
@@ -235,7 +244,13 @@ const Home = ({
       key: 'allGroups',
       title: 'All',
       component: AllGroups,
-      props: {ringAlarm, groups, loading: isGroupsLoading, refetchUserGroups, onBoxPress: onGroupBoxPress},
+      props: {
+        ringAlarm,
+        groups,
+        loading: isGroupsLoading,
+        refetchUserGroups,
+        onBoxPress: onGroupBoxPress,
+      },
     },
     {
       key: 'publicGroups',
@@ -281,7 +296,11 @@ const Home = ({
         data={groupDetails}
         setImageMetadata={setImageMetadata}
       />
-      <GroupOptionsSheet ref={groupOptionsSheetRef} data={selectedGroup} />
+      <GroupOptionsSheet
+        ref={groupOptionsSheetRef}
+        data={selectedGroup}
+        onCloseSheet={onCloseGroupOptionsSheet}
+      />
       <View style={styles.container}>
         {/* <BottomSheet isVisible>
           <Text style={{ color: 'black' }}>Hello</Text>

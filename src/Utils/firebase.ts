@@ -18,7 +18,8 @@ import {
     FetchUserGroups,
     SignupFirebase,
     CheckUserWithPhoneNumber,
-    CreateUserWithEmailAndPasswordFirebase
+    CreateUserWithEmailAndPasswordFirebase,
+    LeaveGroup
 } from '../Types/firebaseTypes';
 import {
     convertFirestoreDataIntoArrayOfObject,
@@ -143,14 +144,14 @@ export const createUserWithEmailPasswordFirebase: CreateUserWithEmailAndPassword
         payload.email.trim(),
         payload.password
     );
-   await firestore().collection('users').doc(authUser.user.uid).set({
+    await firestore().collection('users').doc(authUser.user.uid).set({
         name: payload.name,
         email: payload.email.trim(),
         number: payload.number,
         isActive: true,
         countryCode: payload.countryCode,
         isProfileComplete: false,
-      });
+    });
     return null
 }
 
@@ -159,7 +160,7 @@ export const signupFirebase: SignupFirebase = async ({ user, countryCode }) => {
     const userData = await checkUserWithPhoneNumber({ countryCode, number: user.number })
     if (userData) {
         if (userData.isActive) throw new Error("Phone number Already Exist")
-            console.log("userData", userData)
+        console.log("userData", userData)
         await createUser({ ...user, uid: userData.uid, countryCode })
     }
     else {
@@ -172,5 +173,15 @@ export const signupFirebase: SignupFirebase = async ({ user, countryCode }) => {
         }
         createUserWithEmailPasswordFirebase(payload)
     }
+    return null
+}
+
+export const leaveGroup: LeaveGroup = async ({ groupUid, userUid }) => {
+    await firestore()
+        .collection('groups')
+        .doc(groupUid)
+        .update({
+            members: firestore.FieldValue.arrayRemove(userUid),
+        });
     return null
 }

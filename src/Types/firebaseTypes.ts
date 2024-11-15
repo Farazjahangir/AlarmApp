@@ -108,3 +108,10 @@ export type CreateUserWithEmailAndPasswordFirebasePayload = {
 };
 
 export type CreateUserWithEmailAndPasswordFirebase = (payload: CreateUserWithEmailAndPasswordFirebasePayload) => Promise<null>;
+
+export type LeaveGroupPayload = {
+  groupUid: string;
+  userUid: string;
+};
+
+export type LeaveGroup = (payload: LeaveGroupPayload) => Promise<null>;
