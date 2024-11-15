@@ -6,7 +6,7 @@ const styles = StyleSheet.create({
     contentBox: {
         paddingHorizontal: 16,
         marginTop: 20,
-        height: '100%',
+        flex: 1
     },
     header: {
         flexDirection: 'row',

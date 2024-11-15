@@ -15,8 +15,9 @@ import {createGroupSchema, validate} from '../../../Utils/yup';
 import SelectInput from '../../../Components/SelectInput';
 import {GROUP_TYPES} from '../../../Constants';
 import ImageUploader from '../../../Components/ImageUploader';
-import { SelectedImage } from '../../../Types/dataType';
-import { useUploadFile } from '../../../Hooks/reactQuery/useUploadImage';
+import {SelectedImage} from '../../../Types/dataType';
+import {useUploadFile} from '../../../Hooks/reactQuery/useUploadImage';
+import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import styles from './style';
 
 interface CreateGroupSheetProps {
@@ -26,21 +27,20 @@ interface CreateGroupSheetProps {
   onBackDropPress?: () => void;
   data: GroupDetails;
   handleOnChange: (data: GroupDetails) => void;
-  setImageMetadata?: (image: SelectedImage) => void
+  setImageMetadata?: (image: SelectedImage) => void;
 }
 
 type GroupDetails = {
   groupName: string;
   description?: string;
   groupType: string;
-  image?: string
-
+  image?: string;
 };
 const INITIAL_STATE = {
   groupName: '',
   description: '',
   groupType: '',
-  image: ''
+  image: '',
 };
 
 const CreateGroupSheet = forwardRef<BottomSheetModal, CreateGroupSheetProps>(
@@ -52,7 +52,7 @@ const CreateGroupSheet = forwardRef<BottomSheetModal, CreateGroupSheetProps>(
       onBackDropPress,
       data,
       handleOnChange,
-      setImageMetadata = () => {}
+      setImageMetadata = () => {},
     },
     ref: Ref<BottomSheetModal>,
   ) => {
@@ -90,9 +90,9 @@ const CreateGroupSheet = forwardRef<BottomSheetModal, CreateGroupSheetProps>(
       try {
         const newData = {...data};
         newData.image = image.path;
-        setImageMetadata(image)
+        setImageMetadata(image);
         handleOnChange(newData);
-  
+
         console.log('onImageSelected', image);
       } catch (e) {
         console.log('onImageSelected ERR ==>', e?.response?.data?.message);
@@ -124,29 +124,33 @@ const CreateGroupSheet = forwardRef<BottomSheetModal, CreateGroupSheetProps>(
         onBackDropPress={onBackDropPress}
         onChange={onSheetSnapIndexChange}>
         <View style={styles.contentBox}>
-          <View style={styles.pictureBox}>
-            <ImageUploader onImageSelected={onImageSelected} />
-          </View>
-          <TextInput
-            placeholder="Group Name"
-            onChangeText={text => handleTextChange(text, 'groupName')}
-            value={data.groupName}
-            error={errors.groupName}
-          />
-          <TextInput
-            placeholder="Description"
-            inputBoxStyle={styles.mt15}
-            onChangeText={text => handleTextChange(text, 'description')}
-            value={data.description}
-          />
-          <SelectInput
-            items={GROUP_TYPES}
-            inputAndroidContainerStyle={styles.mt15}
-            placeholder="Group Type"
-            onValueChange={value => handleTextChange(value, 'groupType')}
-            value={data.groupType}
-            error={errors.groupType}
-          />
+          <BottomSheetScrollView
+            contentContainerStyle={{flexGrow: 1, paddingBottom: 20}}
+            showsVerticalScrollIndicator={false}>
+            <View style={styles.pictureBox}>
+              <ImageUploader onImageSelected={onImageSelected} />
+            </View>
+            <TextInput
+              placeholder="Group Name"
+              onChangeText={text => handleTextChange(text, 'groupName')}
+              value={data.groupName}
+              error={errors.groupName}
+            />
+            <TextInput
+              placeholder="Description"
+              inputBoxStyle={styles.mt15}
+              onChangeText={text => handleTextChange(text, 'description')}
+              value={data.description}
+            />
+            <SelectInput
+              items={GROUP_TYPES}
+              inputAndroidContainerStyle={styles.mt15}
+              placeholder="Group Type"
+              onValueChange={value => handleTextChange(value, 'groupType')}
+              value={data.groupType}
+              error={errors.groupType}
+            />
+          </BottomSheetScrollView>
         </View>
       </BottomSheet>
     );
