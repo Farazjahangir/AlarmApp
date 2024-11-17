@@ -10,18 +10,24 @@ import {
 import GroupBox from '../GroupBox';
 import MembersList from '../MemberList';
 import {useAppSelector} from '../../../Hooks/useAppSelector';
-import { Group } from '../../../Types/dataType';
+import {Group} from '../../../Types/dataType';
 import styles from './style';
 
 interface AllGroupsProps {
-    ringAlarm: (grpData: Group) => void;
-    groups: Group[] | [];
-    refetchUserGroups: () => void;
-    loading: boolean;
-    onBoxPress: (group: Group) => void
+  ringAlarm: (grpData: Group) => void;
+  groups: Group[] | [];
+  refetchUserGroups: () => void;
+  loading: boolean;
+  onBoxPress: (group: Group) => void;
 }
 
-const AllGroups = ({ringAlarm, groups = [], refetchUserGroups, loading, onBoxPress}: AllGroupsProps) => {
+const AllGroups = ({
+  ringAlarm,
+  groups = [],
+  refetchUserGroups,
+  loading,
+  onBoxPress,
+}: AllGroupsProps) => {
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [openMembersModal, setOpenMembersModal] = useState(false);
 
@@ -40,7 +46,7 @@ const AllGroups = ({ringAlarm, groups = [], refetchUserGroups, loading, onBoxPre
   );
 
   return (
-    <>
+    <View style={{position: "relative"}}>
       {loading && (
         <View style={{marginTop: 20}}>
           <ActivityIndicator size={'large'} />
@@ -65,7 +71,7 @@ const AllGroups = ({ringAlarm, groups = [], refetchUserGroups, loading, onBoxPre
           }
         />
       )}
-    </>
+    </View>
   );
 };
 

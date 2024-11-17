@@ -5,7 +5,8 @@ import COLORS from '../../../Constants/colors';
 const styles = StyleSheet.create({
     title: {
         fontSize: RFPercentage(3),
-        color: COLORS.black
+        color: COLORS.black,
+        fontWeight: 'bold'
     },
     container: {
         backgroundColor: COLORS.white,
@@ -17,11 +18,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 20
+        marginBottom: 20,
+        paddingHorizontal: 10
     },
     closeIconBox: {
-        width: 22,
-        height: 22
+        width: 18,
+        height: 18
     },
     closeIcon: {
         width: '100%',

@@ -1,5 +1,5 @@
 import {ReactNode} from 'react';
-import {TouchableOpacityProps} from 'react-native';
+import {TouchableOpacityProps, View} from 'react-native';
 import RNModal from 'react-native-modal';
 
 import ModalContent from './ModelContent';
@@ -11,8 +11,11 @@ interface ModalProps {
 }
 
 const Modal = ({children, isVisible, title, onClose}: ModalProps) => {
+
   return (
-    <RNModal isVisible={isVisible} backdropOpacity={0.4}>
+    <RNModal
+      isVisible={isVisible}
+      backdropOpacity={0.7}>
       {isVisible && (
         <ModalContent title={title} onClose={onClose}>
           {children}

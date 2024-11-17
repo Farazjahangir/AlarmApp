@@ -29,6 +29,7 @@ import {getDataFromAsync, removeValueFromAsync} from './src/Utils';
 import {ScreenNameConstants} from './src/Constants/navigationConstants';
 import HelpModal from './src/Components/HelpModal';
 import ConfirmDialogContextProvider from './src/Context/ConfirmDialogueContextProvider';
+import MessageContextProvider from './src/Context/MessageBoxContextProvider';
 
 const {AlarmSoundModule} = NativeModules;
 
@@ -192,7 +193,9 @@ function App(): React.JSX.Element {
               />
               <BottomSheetModalProvider>
                 <ConfirmDialogContextProvider>
-                  <Navigation />
+                  <MessageContextProvider>
+                    <Navigation />
+                  </MessageContextProvider>
                 </ConfirmDialogContextProvider>
               </BottomSheetModalProvider>
             </GestureHandlerRootView>

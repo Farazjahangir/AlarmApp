@@ -34,7 +34,8 @@ import {useRingAlarm} from '../../Hooks/reactQuery/useRingAlarm';
 import ImageUploader from '../../Components/ImageUploader';
 import {useUploadFile} from '../../Hooks/reactQuery/useUploadImage';
 import GroupOptionsSheet from './GroupOptionsSheet';
-import { useUpdateGroup } from '../../Hooks/reactQuery/useUpdateGroup';
+import {useUpdateGroup} from '../../Hooks/reactQuery/useUpdateGroup';
+import {useMessageBox} from '../../Context/MessageBoxContextProvider';
 import styles from './style';
 
 type GroupDetails = {
@@ -88,6 +89,7 @@ const Home = ({
   });
 
   const ringAlarmMut = useRingAlarm();
+  const {openMessageBox, closeMessageBox} = useMessageBox();
 
   const checkForLocationPermission = () => requestLocationPermission();
 
@@ -119,7 +121,7 @@ const Home = ({
   };
 
   const openContactList = () => {
-    setEditGroupMode(false)
+    setEditGroupMode(false);
     contactSheetModalRef.current?.present();
   };
 
@@ -166,7 +168,7 @@ const Home = ({
   };
 
   const onCreateGroup = async () => {
-    console.log("onCreateGroup ========>")
+    console.log('onCreateGroup ========>');
     try {
       const payload = {
         contacts: [
@@ -196,7 +198,7 @@ const Home = ({
   };
 
   const onEditGroup = async () => {
-    console.log("onEditGroup ========>")
+    console.log('onEditGroup ========>');
     try {
       const payload = {
         contacts: [
@@ -209,7 +211,7 @@ const Home = ({
         description: groupDetails.description,
         groupType: groupDetails.groupType,
         image: '',
-        groupUid: selectedGroup?.uid as string
+        groupUid: selectedGroup?.uid as string,
       };
 
       if (imageMetadata) {
@@ -221,7 +223,7 @@ const Home = ({
       await updateGroupMut.mutateAsync(payload);
       createGroupSheetModalRef.current?.dismiss();
       refetch();
-      setEditGroupMode(false)
+      setEditGroupMode(false);
     } catch (e) {
       console.log('onCreateGroup ERR', e.message);
     }
@@ -229,11 +231,11 @@ const Home = ({
 
   const onOkPress = () => {
     if (editGroupMode) {
-      onEditGroup()
-      return
+      onEditGroup();
+      return;
     }
-    onCreateGroup()
-  }
+    onCreateGroup();
+  };
 
   const onGroupDetailsBackPress = () => {
     createGroupSheetModalRef.current?.dismiss();
@@ -280,11 +282,11 @@ const Home = ({
       groupName: selectedGroup?.groupName,
       description: selectedGroup?.description,
       image: selectedGroup?.image,
-      groupType: selectedGroup?.groupType
-    } as GroupDetails)
-    setEditGroupMode(true)
+      groupType: selectedGroup?.groupType,
+    } as GroupDetails);
+    setEditGroupMode(true);
     groupOptionsSheetRef.current?.dismiss();
-    contactSheetModalRef.current?.present()
+    contactSheetModalRef.current?.present();
   };
 
   const seperatedGroupsWithTypes = useMemo(() => {
@@ -349,50 +351,56 @@ const Home = ({
 
   return (
     <>
-      <ContactList
-        ref={contactSheetModalRef}
-        onCloseModal={onCloseContactListModal}
-        onSelectContacts={onSelectedContacts}
-        selectedContacts={selectedContacts}
-        handleSelectContact={handleSelectContact}
-        onBackDropPress={onContactListBackDropPress}
-      />
-      <CreateGroupSheet
-        ref={createGroupSheetModalRef}
-        onCreateGroup={onOkPress}
-        loading={createGroupMut.isPending || uploadFileMut.isPending || updateGroupMut.isPending}
-        onBackPress={onGroupDetailsBackPress}
-        onBackDropPress={onGroupListBackDropPress}
-        handleOnChange={setGroupDetails}
-        data={groupDetails}
-        setImageMetadata={setImageMetadata}
-        isEditMode={editGroupMode}
-      />
-      <GroupOptionsSheet
-        ref={groupOptionsSheetRef}
-        data={selectedGroup}
-        onCloseSheet={onCloseGroupOptionsSheet}
-        onEditGroupPress={onEditGroupPress}
-        onPanicPress={() => ringAlarm(selectedGroup as Group)}
-      />
-      <View style={styles.container}>
-        {/* <BottomSheet isVisible>
+      
+        <ContactList
+          ref={contactSheetModalRef}
+          onCloseModal={onCloseContactListModal}
+          onSelectContacts={onSelectedContacts}
+          selectedContacts={selectedContacts}
+          handleSelectContact={handleSelectContact}
+          onBackDropPress={onContactListBackDropPress}
+        />
+        <CreateGroupSheet
+          ref={createGroupSheetModalRef}
+          onCreateGroup={onOkPress}
+          loading={
+            createGroupMut.isPending ||
+            uploadFileMut.isPending ||
+            updateGroupMut.isPending
+          }
+          onBackPress={onGroupDetailsBackPress}
+          onBackDropPress={onGroupListBackDropPress}
+          handleOnChange={setGroupDetails}
+          data={groupDetails}
+          setImageMetadata={setImageMetadata}
+          isEditMode={editGroupMode}
+        />
+        <GroupOptionsSheet
+          ref={groupOptionsSheetRef}
+          data={selectedGroup}
+          onCloseSheet={onCloseGroupOptionsSheet}
+          onEditGroupPress={onEditGroupPress}
+          onPanicPress={() => ringAlarm(selectedGroup as Group)}
+        />
+        <View style={styles.container}>
+          {/* <BottomSheet isVisible>
           <Text style={{ color: 'black' }}>Hello</Text>
         </BottomSheet> */}
-        <FloatingButton icon={createGroupIcon} onPress={openContactList} />
-        <View style={styles.contentBox}>
-          <Text style={styles.title}>Groups</Text>
-          <TextInput
-            placeholder="Search"
-            // inputBoxStyle={styles.input}
-            containerStyle={styles.mt15}
-            leftIcon={searchIcon}
-          />
-          <View style={styles.tabContainer}>
-            <TabView routes={routes} />
+          <FloatingButton icon={createGroupIcon} onPress={openContactList} />
+          <View style={styles.contentBox}>
+            <Text style={styles.title}>Groups</Text>
+            <TextInput
+              placeholder="Search"
+              // inputBoxStyle={styles.input}
+              containerStyle={styles.mt15}
+              leftIcon={searchIcon}
+            />
+            <View style={styles.tabContainer}>
+              <TabView routes={routes} />
+            </View>
           </View>
         </View>
-      </View>
+    
     </>
   );
 };
