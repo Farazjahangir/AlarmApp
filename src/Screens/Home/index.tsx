@@ -373,6 +373,7 @@ const Home = ({
         data={selectedGroup}
         onCloseSheet={onCloseGroupOptionsSheet}
         onEditGroupPress={onEditGroupPress}
+        onPanicPress={() => ringAlarm(selectedGroup as Group)}
       />
       <View style={styles.container}>
         {/* <BottomSheet isVisible>

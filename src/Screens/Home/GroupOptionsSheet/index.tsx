@@ -2,9 +2,9 @@ import {forwardRef, Ref} from 'react';
 import {Text, Image, View} from 'react-native';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
 import BottomSheet from '../../../Components/BottomSheet';
-import { useQueryClient, QueryKey } from '@tanstack/react-query';
-import { ParamListBase, useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import {useQueryClient, QueryKey} from '@tanstack/react-query';
+import {ParamListBase, useNavigation} from '@react-navigation/native';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 
 import groupDummy from '../../../Assets/images/groupDummy.png';
 import bellIcon from '../../../Assets/icons/bell.png';
@@ -15,35 +15,39 @@ import OptionItem from './OptionItem';
 import {useLeaveGroup} from '../../../Hooks/reactQuery/useLeaveGroup';
 import {useAppSelector} from '../../../Hooks/useAppSelector';
 import queryKeys from '../../../Constants/queryKeys';
-import { useConfirmDialog } from '../../../Context/ConfirmDialogueContextProvider';
-import { ScreenNameConstants } from '../../../Constants/navigationConstants';
+import {useConfirmDialog} from '../../../Context/ConfirmDialogueContextProvider';
+import {ScreenNameConstants} from '../../../Constants/navigationConstants';
 import styles from './style';
 
 interface GroupOptionsSheet {
   data: Group | null;
   onCloseSheet?: () => void;
-  onEditGroupPress: () => void
+  onEditGroupPress: () => void;
+  onPanicPress: () => void;
 }
 const GroupOptionsSheet = forwardRef<BottomSheetModal, GroupOptionsSheet>(
-  ({data, onCloseSheet, onEditGroupPress}, ref: Ref<BottomSheetModal>) => {
+  (
+    {data, onCloseSheet, onEditGroupPress, onPanicPress},
+    ref: Ref<BottomSheetModal>,
+  ) => {
     const userUid = useAppSelector(state => state.user.data.user?.uid);
     const leaveGroupMut = useLeaveGroup();
-    const queryClient = useQueryClient()
-    const { openDialog, closeDialog } = useConfirmDialog()
+    const queryClient = useQueryClient();
+    const {openDialog, closeDialog} = useConfirmDialog();
 
     const leaveGroup = async () => {
       try {
-        closeDialog()
+        closeDialog();
         await leaveGroupMut.mutateAsync({
           groupUid: data?.uid as string,
           userUid: userUid as string,
         });
         if (onCloseSheet) {
-            onCloseSheet()
+          onCloseSheet();
         }
         queryClient.invalidateQueries({
-            queryKey: [queryKeys.USE_GET_USER_GROUPS],
-          });
+          queryKey: [queryKeys.USE_GET_USER_GROUPS],
+        });
       } catch (e) {
         console.log('leaveGroup ERR =====>', e.message);
       }
@@ -52,9 +56,9 @@ const GroupOptionsSheet = forwardRef<BottomSheetModal, GroupOptionsSheet>(
       openDialog({
         onConfirm: leaveGroup,
         title: `Leave ${data?.groupName}`,
-        message: 'Are you sure you want to leave ?'
-      })
-    }
+        message: 'Are you sure you want to leave ?',
+      });
+    };
 
     return (
       <BottomSheet snapPoints={['50%', '60%']} ref={ref} showIndicator>
@@ -70,7 +74,13 @@ const GroupOptionsSheet = forwardRef<BottomSheetModal, GroupOptionsSheet>(
             </View>
           </View>
           <View style={styles.optionsBox}>
-            <OptionItem text="Panic" icon={bellIcon} textRed disabled={leaveGroupMut.isPending} />
+            <OptionItem
+              text="Panic"
+              icon={bellIcon}
+              textRed
+              disabled={leaveGroupMut.isPending}
+              onPress={onPanicPress}
+            />
             <OptionItem
               text="Edit"
               icon={pencilIcon}
