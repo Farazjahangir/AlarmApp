@@ -28,6 +28,7 @@ interface CreateGroupSheetProps {
   data: GroupDetails;
   handleOnChange: (data: GroupDetails) => void;
   setImageMetadata?: (image: SelectedImage) => void;
+  isEditMode?: boolean
 }
 
 type GroupDetails = {
@@ -53,6 +54,7 @@ const CreateGroupSheet = forwardRef<BottomSheetModal, CreateGroupSheetProps>(
       data,
       handleOnChange,
       setImageMetadata = () => {},
+      isEditMode
     },
     ref: Ref<BottomSheetModal>,
   ) => {
@@ -109,7 +111,7 @@ const CreateGroupSheet = forwardRef<BottomSheetModal, CreateGroupSheetProps>(
           <ActivityIndicator size="small" />
         ) : (
           <TouchableOpacity onPress={onCreatePress}>
-            <Text style={styles.headerActionText}>Create</Text>
+            <Text style={styles.headerActionText}>{isEditMode ? "Edit" : "Create"}</Text>
           </TouchableOpacity>
         )}
       </View>

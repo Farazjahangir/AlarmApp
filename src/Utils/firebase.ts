@@ -19,7 +19,9 @@ import {
     SignupFirebase,
     CheckUserWithPhoneNumber,
     CreateUserWithEmailAndPasswordFirebase,
-    LeaveGroup
+    LeaveGroup,
+    EditGroup,
+    ProcessUpdateGroup
 } from '../Types/firebaseTypes';
 import {
     convertFirestoreDataIntoArrayOfObject,
@@ -63,6 +65,12 @@ export const addGroup: AddGroup = async payload => {
     };
 };
 
+export const updateGroup: EditGroup = async (payload) => {
+    const groupDocRef = firestore().collection('groups').doc(payload.uid);
+    await groupDocRef.update(payload.data);
+  
+};
+
 export const createGroup: CreateGroup = async (
     { contacts,
         selectedContacts,
@@ -84,6 +92,33 @@ export const createGroup: CreateGroup = async (
         image
     };
     return addGroup(data);
+};
+
+export const processUpdateGroup: ProcessUpdateGroup = async (
+    { contacts,
+        selectedContacts,
+        groupName,
+        currentUserUid,
+        groupType,
+        description,
+        image,
+        groupUid
+    }
+) => {
+    const uids = await createSelectedUsersUIDArr(contacts, selectedContacts);
+    const payload = {
+        data: {
+            groupName: groupName,
+            createdBy: currentUserUid,
+            members: [currentUserUid, ...uids],
+            createdAt: firestore.FieldValue.serverTimestamp(),
+            groupType,
+            description,
+            image
+        },
+        uid: groupUid
+    }
+    return updateGroup(payload);
 };
 
 export const loginFirebase: LoginFirebase = async ({ email, password }) => {

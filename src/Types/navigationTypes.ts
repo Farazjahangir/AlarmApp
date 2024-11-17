@@ -1,6 +1,6 @@
 import { NativeStackNavigationOptions } from "@react-navigation/native-stack";
 import { ComponentType } from "react";
-import {BottomTabNavigationOptions} from '@react-navigation/bottom-tabs';
+import { BottomTabNavigationOptions } from '@react-navigation/bottom-tabs';
 
 import { ScreenNameConstants } from "../Constants/navigationConstants";
 

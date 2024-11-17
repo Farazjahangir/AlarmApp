@@ -17,20 +17,16 @@ interface PublicGroupsProps {
     ringAlarm: (grpData: Group) => void;
     groups: Group[] | [];
     refetchUserGroups: () => void;
-    loading: boolean
+    loading: boolean;
+    onBoxPress: (group: Group) => void
 }
 
-const PublicGroups = ({ringAlarm, groups = [], refetchUserGroups, loading}: PublicGroupsProps) => {
+const PublicGroups = ({ringAlarm, groups = [], refetchUserGroups, loading, onBoxPress}: PublicGroupsProps) => {
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [openMembersModal, setOpenMembersModal] = useState(false);
 
   const toggleModal = () => {
     setOpenMembersModal(!openMembersModal);
-  };
-
-  const onBoxPress = (data: Group) => {
-    setSelectedGroup(data);
-    toggleModal();
   };
 
   const renderList = ({item}: {item: Group}) => (

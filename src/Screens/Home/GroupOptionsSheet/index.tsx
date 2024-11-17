@@ -3,6 +3,8 @@ import {Text, Image, View} from 'react-native';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
 import BottomSheet from '../../../Components/BottomSheet';
 import { useQueryClient, QueryKey } from '@tanstack/react-query';
+import { ParamListBase, useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import groupDummy from '../../../Assets/images/groupDummy.png';
 import bellIcon from '../../../Assets/icons/bell.png';
@@ -14,14 +16,16 @@ import {useLeaveGroup} from '../../../Hooks/reactQuery/useLeaveGroup';
 import {useAppSelector} from '../../../Hooks/useAppSelector';
 import queryKeys from '../../../Constants/queryKeys';
 import { useConfirmDialog } from '../../../Context/ConfirmDialogueContextProvider';
+import { ScreenNameConstants } from '../../../Constants/navigationConstants';
 import styles from './style';
 
 interface GroupOptionsSheet {
   data: Group | null;
   onCloseSheet?: () => void;
+  onEditGroupPress: () => void
 }
 const GroupOptionsSheet = forwardRef<BottomSheetModal, GroupOptionsSheet>(
-  ({data, onCloseSheet}, ref: Ref<BottomSheetModal>) => {
+  ({data, onCloseSheet, onEditGroupPress}, ref: Ref<BottomSheetModal>) => {
     const userUid = useAppSelector(state => state.user.data.user?.uid);
     const leaveGroupMut = useLeaveGroup();
     const queryClient = useQueryClient()
@@ -62,7 +66,7 @@ const GroupOptionsSheet = forwardRef<BottomSheetModal, GroupOptionsSheet>(
             />
             <View style={styles.nameBox}>
               <Text style={styles.name}>{data?.groupName}</Text>
-              <Text style={styles.count}>{data?.uid} members</Text>
+              <Text style={styles.count}>{data?.members.length} members</Text>
             </View>
           </View>
           <View style={styles.optionsBox}>
@@ -72,6 +76,7 @@ const GroupOptionsSheet = forwardRef<BottomSheetModal, GroupOptionsSheet>(
               icon={pencilIcon}
               containerStyle={styles.optionItemContainer}
               disabled={leaveGroupMut.isPending}
+              onPress={onEditGroupPress}
             />
             <OptionItem
               text="Leave Group"

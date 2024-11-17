@@ -34,6 +34,7 @@ import {useRingAlarm} from '../../Hooks/reactQuery/useRingAlarm';
 import ImageUploader from '../../Components/ImageUploader';
 import {useUploadFile} from '../../Hooks/reactQuery/useUploadImage';
 import GroupOptionsSheet from './GroupOptionsSheet';
+import { useUpdateGroup } from '../../Hooks/reactQuery/useUpdateGroup';
 import styles from './style';
 
 type GroupDetails = {
@@ -67,6 +68,7 @@ const Home = ({
     null,
   );
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
+  const [editGroupMode, setEditGroupMode] = useState(false);
 
   const user = useAppSelector(state => state.user.data.user);
   const contatcs = useAppSelector(state => state.contacts.data);
@@ -75,6 +77,7 @@ const Home = ({
   const groupOptionsSheetRef = useRef<BottomSheetModal>(null);
   const createGroupMut = useCreateGroup();
   const uploadFileMut = useUploadFile();
+  const updateGroupMut = useUpdateGroup();
   const {
     data: groups = [],
     isFetching: isGroupsLoading,
@@ -116,6 +119,7 @@ const Home = ({
   };
 
   const openContactList = () => {
+    setEditGroupMode(false)
     contactSheetModalRef.current?.present();
   };
 
@@ -162,6 +166,7 @@ const Home = ({
   };
 
   const onCreateGroup = async () => {
+    console.log("onCreateGroup ========>")
     try {
       const payload = {
         contacts: [
@@ -190,6 +195,46 @@ const Home = ({
     }
   };
 
+  const onEditGroup = async () => {
+    console.log("onEditGroup ========>")
+    try {
+      const payload = {
+        contacts: [
+          ...contatcs.contactsWithAccount,
+          ...contatcs.contactsWithoutAccount,
+        ],
+        selectedContacts,
+        groupName: groupDetails.groupName,
+        currentUserUid: user?.uid as string,
+        description: groupDetails.description,
+        groupType: groupDetails.groupType,
+        image: '',
+        groupUid: selectedGroup?.uid as string
+      };
+
+      if (imageMetadata) {
+        console.log('imageMetadata');
+        const imageUri = await handleImageUpload();
+        if (imageUri) payload.image = imageUri;
+      }
+
+      await updateGroupMut.mutateAsync(payload);
+      createGroupSheetModalRef.current?.dismiss();
+      refetch();
+      setEditGroupMode(false)
+    } catch (e) {
+      console.log('onCreateGroup ERR', e.message);
+    }
+  };
+
+  const onOkPress = () => {
+    if (editGroupMode) {
+      onEditGroup()
+      return
+    }
+    onCreateGroup()
+  }
+
   const onGroupDetailsBackPress = () => {
     createGroupSheetModalRef.current?.dismiss();
     contactSheetModalRef.current?.present();
@@ -216,6 +261,30 @@ const Home = ({
 
   const onCloseGroupOptionsSheet = () => {
     groupOptionsSheetRef.current?.dismiss();
+  };
+
+  const onEditGroupPress = () => {
+    const selectedNumbers = (
+      selectedGroup?.members as ContactWithAccount[]
+    ).reduce((acc: SelectedContacts, item: ContactWithAccount) => {
+      if (user?.uid !== item.user?.uid) {
+        const key = item?.phoneNumber || item.user?.number;
+        if (key) {
+          acc[key] = true; // Only add if key is not undefined
+        }
+      }
+      return acc;
+    }, {});
+    setSelectedContacts(selectedNumbers);
+    setGroupDetails({
+      groupName: selectedGroup?.groupName,
+      description: selectedGroup?.description,
+      image: selectedGroup?.image,
+      groupType: selectedGroup?.groupType
+    } as GroupDetails)
+    setEditGroupMode(true)
+    groupOptionsSheetRef.current?.dismiss();
+    contactSheetModalRef.current?.present()
   };
 
   const seperatedGroupsWithTypes = useMemo(() => {
@@ -261,6 +330,7 @@ const Home = ({
         groups: seperatedGroupsWithTypes.publicGroups,
         loading: isGroupsLoading,
         refetchUserGroups,
+        onBoxPress: onGroupBoxPress,
       },
     },
     {
@@ -272,6 +342,7 @@ const Home = ({
         groups: seperatedGroupsWithTypes.privateGroups,
         loading: isGroupsLoading,
         refetchUserGroups,
+        onBoxPress: onGroupBoxPress,
       },
     },
   ];
@@ -288,18 +359,20 @@ const Home = ({
       />
       <CreateGroupSheet
         ref={createGroupSheetModalRef}
-        onCreateGroup={onCreateGroup}
-        loading={createGroupMut.isPending || uploadFileMut.isPending}
+        onCreateGroup={onOkPress}
+        loading={createGroupMut.isPending || uploadFileMut.isPending || updateGroupMut.isPending}
         onBackPress={onGroupDetailsBackPress}
         onBackDropPress={onGroupListBackDropPress}
         handleOnChange={setGroupDetails}
         data={groupDetails}
         setImageMetadata={setImageMetadata}
+        isEditMode={editGroupMode}
       />
       <GroupOptionsSheet
         ref={groupOptionsSheetRef}
         data={selectedGroup}
         onCloseSheet={onCloseGroupOptionsSheet}
+        onEditGroupPress={onEditGroupPress}
       />
       <View style={styles.container}>
         {/* <BottomSheet isVisible>

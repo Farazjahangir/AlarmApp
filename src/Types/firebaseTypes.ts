@@ -47,6 +47,8 @@ export type AddGroupPayload = {
   createdBy: string;
   groupName: string;
   members: string[];
+  image?: string;
+  description?: string;
 };
 export type AddGroup = (payload: AddGroupPayload) => Promise<Group>;
 
@@ -115,3 +117,29 @@ export type LeaveGroupPayload = {
 };
 
 export type LeaveGroup = (payload: LeaveGroupPayload) => Promise<null>;
+
+export type EditGroupPayload = {
+  data: {
+    createdAt: FirebaseFirestoreTypes.FieldValue;
+  createdBy: string;
+  groupName: string;
+  members: string[];
+  image?: string;
+  description?: string;
+  },
+  uid: string
+};
+export type EditGroup = (payload: EditGroupPayload) => Promise<null>;
+
+export type ProcessUpdateGroupPayload = {
+  contacts: Contact[] | ContactWithAccount[];
+  selectedContacts: SelectedContacts;
+  groupName: string;
+  currentUserUid: string;
+  groupType: string;
+  description?: string,
+  image: string;
+  groupUid: string
+};
+
+export type ProcessUpdateGroup = (payload: ProcessUpdateGroupPayload) => Promise<null>;
