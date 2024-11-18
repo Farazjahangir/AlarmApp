@@ -19,7 +19,9 @@ import {RootStackParamList} from '../../Types/navigationTypes';
 import {ScreenNameConstants} from '../../Constants/navigationConstants';
 import {User} from '../../Types/dataType';
 import {useLoginFirebase} from '../../Hooks/reactQuery/useLoginFirebase';
-import { loginSchema, validate } from '../../Utils/yup';
+import {loginSchema, validate} from '../../Utils/yup';
+import {handleError} from '../../Utils/helpers';
+import {useMessageBox} from '../../Context/MessageBoxContextProvider';
 import styles from './style';
 
 type UserCreds = {
@@ -45,6 +47,7 @@ const Login = ({
 
   const dispatch = useDispatch();
   const loginFirebaseMut = useLoginFirebase();
+  const {openMessageBox} = useMessageBox();
 
   const handleTextChange = (text: string, key: Keys) => {
     const data = {...userCreds};
@@ -57,21 +60,24 @@ const Login = ({
 
   const handleSignin = async () => {
     try {
-      const errors = await validate(loginSchema, userCreds)
+      const errors = await validate(loginSchema, userCreds);
       if (Object.keys(errors).length) {
-        setErrors(errors as UserCreds)
-        return
+        setErrors(errors as UserCreds);
+        return;
       }
       const userData = await loginFirebaseMut.mutateAsync({
         email: userCreds.email,
         password: userCreds.password,
       });
-      if (userData) {
-        dispatch(setUser({user:userData }));
-        registerDeviceForFCM(userData.uid);
-      }
+      if (!userData) throw new Error('User not found');
+      dispatch(setUser({user: userData}));
+      registerDeviceForFCM(userData.uid);
     } catch (e) {
-      Alert.alert('ERROR', e?.message || 'Something went wrong');
+      const error = handleError(e);
+      openMessageBox({
+        title: 'Error',
+        message: error,
+      });
     }
   };
 

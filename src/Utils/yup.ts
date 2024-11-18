@@ -16,7 +16,7 @@ export const signupSchema = yup.object({
     name: yup.string().required().label("Name"),
     email: yup.string().required().email().label("Email"),
     number: yup.string().required().label('Number'),
-    password: yup.string().length(8).required().label('Password')
+    password: yup.string().min(6).required().label('Password')
 });
 
 export const loginSchema = yup.object({

@@ -18,6 +18,8 @@ import ImageUploader from '../../../Components/ImageUploader';
 import {SelectedImage} from '../../../Types/dataType';
 import {useUploadFile} from '../../../Hooks/reactQuery/useUploadImage';
 import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
+import { handleError } from '../../../Utils/helpers';
+import { useMessageBox } from '../../../Context/MessageBoxContextProvider';
 import styles from './style';
 
 interface CreateGroupSheetProps {
@@ -59,6 +61,7 @@ const CreateGroupSheet = forwardRef<BottomSheetModal, CreateGroupSheetProps>(
     ref: Ref<BottomSheetModal>,
   ) => {
     const [errors, setErrors] = useState<GroupDetails>(INITIAL_STATE);
+    const { openMessageBox } = useMessageBox()
 
     const handleTextChange = (text: string, key: keyof GroupDetails) => {
       const newData = {...data};
@@ -78,7 +81,11 @@ const CreateGroupSheet = forwardRef<BottomSheetModal, CreateGroupSheetProps>(
         }
         onCreateGroup();
       } catch (e) {
-        console.log('onCreatePress ERR ===>', e.message);
+        const error = handleError(e)
+        openMessageBox({
+          title: 'Error',
+          message: error
+        })
       }
     };
 
@@ -94,10 +101,12 @@ const CreateGroupSheet = forwardRef<BottomSheetModal, CreateGroupSheetProps>(
         newData.image = image.path;
         setImageMetadata(image);
         handleOnChange(newData);
-
-        console.log('onImageSelected', image);
       } catch (e) {
-        console.log('onImageSelected ERR ==>', e?.response?.data?.message);
+        const error = handleError(e)
+        openMessageBox({
+          title: 'Error',
+          message: error
+        })
       }
     };
 

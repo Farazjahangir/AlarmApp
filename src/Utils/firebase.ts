@@ -26,6 +26,7 @@ import {
 import {
     convertFirestoreDataIntoArrayOfObject,
     createSelectedUsersUIDArr,
+    handleFirebaseAuthError,
     prepareGroupsArray
 } from './helpers';
 import { removeSpaces } from '.';
@@ -68,7 +69,7 @@ export const addGroup: AddGroup = async payload => {
 export const updateGroup: EditGroup = async (payload) => {
     const groupDocRef = firestore().collection('groups').doc(payload.uid);
     await groupDocRef.update(payload.data);
-  
+    return null
 };
 
 export const createGroup: CreateGroup = async (
@@ -179,6 +180,7 @@ export const createUserWithEmailPasswordFirebase: CreateUserWithEmailAndPassword
         payload.email.trim(),
         payload.password
     );
+    console.log("authUser", authUser)
     await firestore().collection('users').doc(authUser.user.uid).set({
         name: payload.name,
         email: payload.email.trim(),
@@ -195,7 +197,6 @@ export const signupFirebase: SignupFirebase = async ({ user, countryCode }) => {
     const userData = await checkUserWithPhoneNumber({ countryCode, number: user.number })
     if (userData) {
         if (userData.isActive) throw new Error("Phone number Already Exist")
-        console.log("userData", userData)
         await createUser({ ...user, uid: userData.uid, countryCode })
     }
     else {
@@ -206,7 +207,7 @@ export const signupFirebase: SignupFirebase = async ({ user, countryCode }) => {
             countryCode,
             password: user.password
         }
-        createUserWithEmailPasswordFirebase(payload)
+        await createUserWithEmailPasswordFirebase(payload)
     }
     return null
 }

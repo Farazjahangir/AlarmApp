@@ -19,6 +19,8 @@ import {
 import { useAppDispatch } from '../Hooks/useAppDispatch';
 import { useAppSelector } from '../Hooks/useAppSelector';
 import { ContactWithAccount } from '../Types/dataType';
+import { handleError } from '../Utils/helpers';
+import { useMessageBox } from '../Context/MessageBoxContextProvider';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -57,6 +59,7 @@ const AppStack = () => {
 const StackNavigation = () => {
   const user = useAppSelector(state => state.user.data.user);
   const disptach = useAppDispatch();
+  const { openMessageBox } = useMessageBox()
 
   const getContacts = async () => {
     try {
@@ -72,7 +75,11 @@ const StackNavigation = () => {
         }),
       );
     } catch (e) {
-      console.log('getContacts ERRR', e?.message);
+      const error = handleError(e)
+      openMessageBox({
+        title: "Error",
+        message: error
+      })
     } finally {
       disptach(setContactLoading(false));
     }
@@ -83,7 +90,11 @@ const StackNavigation = () => {
       await askNotificationPermission()
       await checkForBatteryOptimization();
     } catch(e) {
-      console.log("ERRR checkForPermissions", e.message)
+      const error = handleError(e)
+      openMessageBox({
+        title: "Error",
+        message: error
+      })
     }
   };
 

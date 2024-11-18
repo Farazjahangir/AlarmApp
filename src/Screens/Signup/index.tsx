@@ -23,6 +23,8 @@ import {RootStackParamList} from '../../Types/navigationTypes';
 import {ScreenNameConstants} from '../../Constants/navigationConstants';
 import {useSignupFirebase} from '../../Hooks/reactQuery/useSignupFirebase';
 import { signupSchema, validate } from '../../Utils/yup';
+import { useMessageBox } from '../../Context/MessageBoxContextProvider';
+import { handleError } from '../../Utils/helpers';
 import styles from './style';
 
 type User = {
@@ -38,10 +40,10 @@ const Signup = ({
   navigation,
 }: NativeStackScreenProps<RootStackParamList, ScreenNameConstants.SIGNUP>) => {
   const [user, setUser] = useState<User>({
-    email: '',
-    password: '',
-    name: '',
-    number: '',
+    email: 'dsdsds@example.com',
+    password: '123456',
+    name: 'sdsds',
+    number: '3118162293',
   });
 
   const [errors, setErrors] = useState<User>({
@@ -53,6 +55,7 @@ const Signup = ({
 
   const phoneInputRef = useRef<RNPhoneInput>(null);
   const signupFirebaseMut = useSignupFirebase();
+  const { openMessageBox } = useMessageBox()
 
   const handleTextChange = (text: string, key: Keys) => {
     const data = {...user};
@@ -76,14 +79,18 @@ const Signup = ({
         user
       };
       await signupFirebaseMut.mutateAsync(payload);
-      Alert.alert('Success', 'User Created');
+      openMessageBox({
+        title: "Success",
+        message: 'User created successfully'
+      })
       navigation.navigate(ScreenNameConstants.LOGIN);
     } catch (e) {
-      console.log('e?.response?.data', e?.response);
-      Alert.alert(
-        'ERROR',
-        e?.response?.data?.message || e?.message || 'Something went wrong',
-      );
+      console.log("SIGNUP ERRROr ", e)
+      const error = handleError(e);
+      openMessageBox({
+        title: 'Error',
+        message: error
+      })
     }
   };
 

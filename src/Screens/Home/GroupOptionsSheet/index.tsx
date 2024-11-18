@@ -17,6 +17,8 @@ import {useAppSelector} from '../../../Hooks/useAppSelector';
 import queryKeys from '../../../Constants/queryKeys';
 import {useConfirmDialog} from '../../../Context/ConfirmDialogueContextProvider';
 import {ScreenNameConstants} from '../../../Constants/navigationConstants';
+import { useMessageBox } from '../../../Context/MessageBoxContextProvider';
+import { handleError } from '../../../Utils/helpers';
 import styles from './style';
 
 interface GroupOptionsSheet {
@@ -34,6 +36,7 @@ const GroupOptionsSheet = forwardRef<BottomSheetModal, GroupOptionsSheet>(
     const leaveGroupMut = useLeaveGroup();
     const queryClient = useQueryClient();
     const {openDialog, closeDialog} = useConfirmDialog();
+    const { openMessageBox } = useMessageBox()
 
     const leaveGroup = async () => {
       try {
@@ -49,7 +52,11 @@ const GroupOptionsSheet = forwardRef<BottomSheetModal, GroupOptionsSheet>(
           queryKey: [queryKeys.USE_GET_USER_GROUPS],
         });
       } catch (e) {
-        console.log('leaveGroup ERR =====>', e.message);
+        const error = handleError(e);
+        openMessageBox({
+          title: 'Error',
+          message: error
+        })
       }
     };
     const leaveGroupConfirm = () => {

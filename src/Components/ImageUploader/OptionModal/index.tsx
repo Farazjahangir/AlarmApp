@@ -13,13 +13,16 @@ import BottomSheet from '../../BottomSheet';
 import cameraIcon from '../../../Assets/icons/camera.png';
 import galleryIcon from '../../../Assets/icons/imagePlaceholder.png';
 import { SelectedImage } from '../../../Types/dataType';
+import { useMessageBox } from '../../../Context/MessageBoxContextProvider';
 import styles from './style';
+import { handleError } from '../../../Utils/helpers';
 
 interface OptionModalProps {
   onImageSelected?: (image: SelectedImage) => void;
 }
 const OptionModal = forwardRef<BottomSheetModal, OptionModalProps>(
   ({onImageSelected}, ref: Ref<BottomSheetModal>) => {
+    const { openMessageBox } = useMessageBox()
     const handleOpenGallery = async () => {
       try {
         const image = await ImagePicker.openPicker({
@@ -32,8 +35,12 @@ const OptionModal = forwardRef<BottomSheetModal, OptionModalProps>(
         if (onImageSelected) {
             onImageSelected(image as SelectedImage); // Pass image URI to parent component
         }
-      } catch (error) {
-        console.error('Error opening gallery:', error);
+      } catch (e) {
+        const error = handleError(e)
+        openMessageBox({
+          title: 'Error',
+          message: error
+        })
       }
     };
 
@@ -51,8 +58,12 @@ const OptionModal = forwardRef<BottomSheetModal, OptionModalProps>(
         if (onImageSelected) {
             onImageSelected(image as SelectedImage); 
         }
-      } catch (error) {
-        console.error('Error opening camera:', error);
+      } catch (e) {
+        const error = handleError(e)
+        openMessageBox({
+          title: 'Error',
+          message: error
+        })
       }
     };
 

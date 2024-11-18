@@ -37,6 +37,7 @@ import GroupOptionsSheet from './GroupOptionsSheet';
 import {useUpdateGroup} from '../../Hooks/reactQuery/useUpdateGroup';
 import {useMessageBox} from '../../Context/MessageBoxContextProvider';
 import styles from './style';
+import { handleError } from '../../Utils/helpers';
 
 type GroupDetails = {
   groupName: string;
@@ -89,7 +90,7 @@ const Home = ({
   });
 
   const ringAlarmMut = useRingAlarm();
-  const {openMessageBox, closeMessageBox} = useMessageBox();
+  const {openMessageBox} = useMessageBox();
 
   const checkForLocationPermission = () => requestLocationPermission();
 
@@ -114,9 +115,16 @@ const Home = ({
       if (tokens.length) {
         await ringAlarmMut.mutateAsync({tokens, payload});
       }
-      Alert.alert('Success', 'Alarm Rang');
+      openMessageBox({
+        title: "Succcess",
+        message: "Panic notification sent"
+      })
     } catch (e) {
-      Alert.alert('Error', e?.message);
+      const error = handleError(e)
+      openMessageBox({
+        title: 'Error',
+        message: error
+      })
     }
   };
 
@@ -168,7 +176,6 @@ const Home = ({
   };
 
   const onCreateGroup = async () => {
-    console.log('onCreateGroup ========>');
     try {
       const payload = {
         contacts: [
@@ -184,7 +191,6 @@ const Home = ({
       };
 
       if (imageMetadata) {
-        console.log('imageMetadata');
         const imageUri = await handleImageUpload();
         if (imageUri) payload.image = imageUri;
       }
@@ -193,12 +199,16 @@ const Home = ({
       createGroupSheetModalRef.current?.dismiss();
       refetch();
     } catch (e) {
-      console.log('onCreateGroup ERR', e.message);
+      const error = handleError(e)
+      openMessageBox({
+        title: 'Error',
+        message: error
+      })
+
     }
   };
 
   const onEditGroup = async () => {
-    console.log('onEditGroup ========>');
     try {
       const payload = {
         contacts: [
@@ -225,7 +235,11 @@ const Home = ({
       refetch();
       setEditGroupMode(false);
     } catch (e) {
-      console.log('onCreateGroup ERR', e.message);
+      const error = handleError(e)
+      openMessageBox({
+        title: 'Error',
+        message: error
+      })
     }
   };
 

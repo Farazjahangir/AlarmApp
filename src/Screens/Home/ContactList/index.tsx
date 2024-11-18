@@ -30,6 +30,8 @@ import BottomSheet from '../../../Components/BottomSheet';
 import closeIcon from '../../../Assets/icons/close.png';
 import searchIcon from '../../../Assets/icons/search.png';
 import {CONTACTS_ITEMS_PER_PAGE} from '../../../Constants';
+import { handleError } from '../../../Utils/helpers';
+import { useMessageBox } from '../../../Context/MessageBoxContextProvider';
 import styles from './style';
 
 interface ContactListProps {
@@ -78,6 +80,7 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
     const contactsLoading = useAppSelector(state => state.contacts.loading);
     const user = useAppSelector(state => state.user.data.user);
     const dispatch = useAppDispatch();
+    const {openMessageBox} = useMessageBox()
 
     const loadMoreContacts = () => {
       const nextPage = page + 1;
@@ -203,10 +206,12 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
           }),
         );
       } catch (e) {
-        Alert.alert(
-          'Error in read contacts',
-          e?.message || 'Something went wrong',
-        );
+        const error = handleError(e)
+        openMessageBox({
+          title: 'Error',
+          message: error
+        })
+  
       } finally {
         dispatch(setContactLoading(false));
       }
@@ -226,7 +231,11 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
           }
         }
       } catch(e) {
-        console.log("ERRR", e.message)
+        const error = handleError(e)
+        openMessageBox({
+          title: 'Error',
+          message: error
+        })
       }
     }
 

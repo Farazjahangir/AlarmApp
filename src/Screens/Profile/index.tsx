@@ -17,6 +17,8 @@ import {useUpdateUserProfile} from '../../Hooks/reactQuery/useUpdateUserProfile'
 import {getFileExtension} from '../../Utils';
 import {useAppDispatch} from '../../Hooks/useAppDispatch';
 import {setUser} from '../../Redux/user/userSlice';
+import { useMessageBox } from '../../Context/MessageBoxContextProvider';
+import { handleError } from '../../Utils/helpers';
 import styles from './style';
 
 type UserData = {
@@ -56,6 +58,7 @@ const Profile = ({
 
   const uploadFileMut = useUploadFile();
   const updateProfileMut = useUpdateUserProfile();
+  const { openMessageBox } = useMessageBox()
 
   const onChangeText = (text: string, key: keyof UserData) => {
     const newData = {...userData};
@@ -105,7 +108,11 @@ const Profile = ({
       const newData = await updateProfileMut.mutateAsync(payload);
       dispatch(setUser({user: newData}));
     } catch (e) {
-      console.log('UPDATE PROFILE ERR', e);
+      const error = handleError(e);
+      openMessageBox({
+        title: 'Error',
+        message: error
+      })
     }
   };
 
@@ -114,7 +121,11 @@ const Profile = ({
       setUserData({...userData, image: image.path});
       setImageMetadata(image);
     } catch (e) {
-      console.log('onImageSelected ERR ==>', e?.response.data?.message);
+      const error = handleError(e);
+      openMessageBox({
+        title: 'Error',
+        message: error
+      })
     }
   };
 

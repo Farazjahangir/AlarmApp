@@ -1,9 +1,10 @@
-import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
+import { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
 
-import {Contact, ContactWithAccount, Group, User} from '../Types/dataType';
-import {getUsersDataInBatchByNumber, addUser, addGroup} from './firebase';
-import {getUserById} from './firebase';
-import {cleanString} from '.';
+import { Contact, ContactWithAccount, Group, User } from '../Types/dataType';
+import { getUsersDataInBatchByNumber, addUser, addGroup } from './firebase';
+import { getUserById } from './firebase';
+import { cleanString } from '.';
+import { FIREBASE_ERROR_CODES } from '../Constants';
 
 type SelectedContacts = {
   [phoneNumber: string]: boolean; // Using an index signature
@@ -11,11 +12,11 @@ type SelectedContacts = {
 
 export const convertFirestoreDataIntoArrayOfObject = <T>(
   snapshot: FirebaseFirestoreTypes.QuerySnapshot,
-): Array<T & {uid: string}> => {
-  const data: Array<T & {uid: string}> = [];
+): Array<T & { uid: string }> => {
+  const data: Array<T & { uid: string }> = [];
   if (!snapshot.empty) {
     snapshot.forEach(doc => {
-      data.push({...doc.data(), uid: doc.id} as T & {uid: string});
+      data.push({ ...doc.data(), uid: doc.id } as T & { uid: string });
     });
   }
   return data;
@@ -52,14 +53,14 @@ export const createSelectedUsersUIDArr = async (
   contacts: Contact[] | ContactWithAccount[],
   selectedContacts: SelectedContacts,
 ) => {
-  const {selectedContactsData, contactsWithoutUID} =
+  const { selectedContactsData, contactsWithoutUID } =
     separateActiveAndNonActiveContacts(contacts, selectedContacts);
 
   // If no contacts need further processing, return early
   if (contactsWithoutUID.length === 0) return selectedContactsData;
 
   // Process Firestore data (both find and create users in one pass)
-  const {foundUserUIDs, newUserUIDs} = await processFirestoreData(
+  const { foundUserUIDs, newUserUIDs } = await processFirestoreData(
     contactsWithoutUID,
   );
 
@@ -107,7 +108,7 @@ export const processFirestoreData = async (contactsWithoutUID: Contact[]) => {
     }
   }
 
-  return {foundUserUIDs, newUserUIDs};
+  return { foundUserUIDs, newUserUIDs };
 };
 
 export const prepareGroupsArray = async (
@@ -125,7 +126,7 @@ export const prepareGroupsArray = async (
     // 3. Check for member UIDs in Redux state first
     for (const uid of groupData.members) {
       if (uid === userUid) {
-        membersData.push({user});
+        membersData.push({ user });
       }
       if (uid !== userUid) {
         // Exclude current user
@@ -140,7 +141,7 @@ export const prepareGroupsArray = async (
           // 5. If member data not found in Redux, fetch from Firestore
           const userData = await getUserById(uid);
           if (userData) {
-            membersData.push({user: userData});
+            membersData.push({ user: userData });
           }
         }
       }
@@ -160,3 +161,22 @@ export const prepareGroupsArray = async (
   }
   return groupsWithMembersData;
 };
+
+export const handleError = (e) => {
+  switch (e.code) {
+    case FIREBASE_ERROR_CODES.INVALID_CREDENTIAL:
+      return 'Invalid credentials'
+    case FIREBASE_ERROR_CODES.EMAIL_EXIST:
+      return 'Email already exist'
+    case FIREBASE_ERROR_CODES.USER_NOT_FOUND:
+      return 'User not Found'
+    case FIREBASE_ERROR_CODES.EMAIL_ALREADY_IN_USER:
+      return "Email is already in use";
+    case FIREBASE_ERROR_CODES.WEAK_PASSWORD:
+      return "Password should be atleast 6 characters"
+    case FIREBASE_ERROR_CODES.INVALID_EMAIL:
+      return "Email address is badly formatted"
+    default:
+      return e.message
+  }
+}
