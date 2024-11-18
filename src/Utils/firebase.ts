@@ -221,3 +221,7 @@ export const leaveGroup: LeaveGroup = async ({ groupUid, userUid }) => {
         });
     return null
 }
+
+export const logoutFirebase = () => {
+    return auth().signOut()
+}

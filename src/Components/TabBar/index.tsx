@@ -15,12 +15,17 @@ import {logout} from '../../Redux/user/userSlice';
 import { useAppSelector } from '../../Hooks/useAppSelector';
 import { setContacts } from '../../Redux/contacts/contactSlice';
 import { useUpdateUserProfile } from '../../Hooks/reactQuery/useUpdateUserProfile';
+import { useMessageBox } from '../../Context/MessageBoxContextProvider';
+import { handleError } from '../../Utils/helpers';
+import { useLogoutFirebase } from '../../Hooks/reactQuery/useLogoutFirebase';
 import styles from './style';
 
 const TabBar = ({state}: BottomTabBarProps) => {
   const dispatch = useAppDispatch();
   const user = useAppSelector(state => state.user.data.user);
   const updateUserProfileMut = useUpdateUserProfile()
+  const logoutFirebaseMut = useLogoutFirebase()
+  const { openMessageBox } = useMessageBox()
 
   const onLogout = async () => {
     try {
@@ -35,9 +40,14 @@ const TabBar = ({state}: BottomTabBarProps) => {
         contactsWithAccount: [],
         contactsWithoutAccount: []
       }))
+      logoutFirebaseMut.mutateAsync()
       dispatch(logout());
     } catch (e) {
-      console.log('ERR', e.message);
+      const error = handleError(e)
+      openMessageBox({
+        title: "Error",
+        message: error
+      })
     }
   };
 
