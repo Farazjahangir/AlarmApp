@@ -46,7 +46,7 @@ const AllGroups = ({
   );
 
   return (
-    <View style={{position: "relative"}}>
+    <View>
       {loading && (
         <View style={{marginTop: 20}}>
           <ActivityIndicator size={'large'} />

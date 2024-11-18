@@ -17,8 +17,9 @@ import {useUpdateUserProfile} from '../../Hooks/reactQuery/useUpdateUserProfile'
 import {getFileExtension} from '../../Utils';
 import {useAppDispatch} from '../../Hooks/useAppDispatch';
 import {setUser} from '../../Redux/user/userSlice';
-import { useMessageBox } from '../../Context/MessageBoxContextProvider';
-import { handleError } from '../../Utils/helpers';
+import {useMessageBox} from '../../Context/MessageBoxContextProvider';
+import {handleError} from '../../Utils/helpers';
+import AppFrame from '../../Components/AppFrame';
 import styles from './style';
 
 type UserData = {
@@ -58,7 +59,7 @@ const Profile = ({
 
   const uploadFileMut = useUploadFile();
   const updateProfileMut = useUpdateUserProfile();
-  const { openMessageBox } = useMessageBox()
+  const {openMessageBox} = useMessageBox();
 
   const onChangeText = (text: string, key: keyof UserData) => {
     const newData = {...userData};
@@ -95,7 +96,7 @@ const Profile = ({
       const payload: UpdatePayload = {
         data: {
           name: userData.name,
-          address: userData.address
+          address: userData.address,
         },
         uid: user?.uid as string,
       };
@@ -111,8 +112,8 @@ const Profile = ({
       const error = handleError(e);
       openMessageBox({
         title: 'Error',
-        message: error
-      })
+        message: error,
+      });
     }
   };
 
@@ -124,8 +125,8 @@ const Profile = ({
       const error = handleError(e);
       openMessageBox({
         title: 'Error',
-        message: error
-      })
+        message: error,
+      });
     }
   };
 
@@ -141,49 +142,51 @@ const Profile = ({
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.contentBox}>
-        <Text style={styles.title}>Profile</Text>
-        <ScrollView>
-          <View style={styles.imageBox}>
-            <ImageUploader
-              value={userData.image}
-              onImageSelected={onImageSelected}
+    <AppFrame>
+      <View style={styles.container}>
+        <View style={styles.contentBox}>
+          <Text style={styles.title}>Profile</Text>
+          <ScrollView>
+            <View style={styles.imageBox}>
+              <ImageUploader
+                value={userData.image}
+                onImageSelected={onImageSelected}
+              />
+            </View>
+            <TextInput
+              placeholder="Name"
+              containerStyle={styles.inputContainer}
+              value={userData.name}
+              onChangeText={text => onChangeText(text, 'name')}
+              error={errors.name}
             />
-          </View>
-          <TextInput
-            placeholder="Name"
-            containerStyle={styles.inputContainer}
-            value={userData.name}
-            onChangeText={text => onChangeText(text, 'name')}
-            error={errors.name}
-          />
-          <TextInput
-            placeholder="Email"
-            containerStyle={styles.inputContainer}
-            value={user?.email}
-            readOnly
-          />
-          <TextInput
-            placeholder="Number"
-            containerStyle={styles.inputContainer}
-            value={user?.number}
-            readOnly
-          />
-          <TextInput
-            placeholder="Address"
-            containerStyle={styles.inputContainer}
-            value={userData.address}
-            onChangeText={text => onChangeText(text, 'address')}
-          />
-          <Button
-            text="Submit"
-            onPress={onSubmit}
-            loading={uploadFileMut.isPending || updateProfileMut.isPending}
-          />
-        </ScrollView>
+            <TextInput
+              placeholder="Email"
+              containerStyle={styles.inputContainer}
+              value={user?.email}
+              readOnly
+            />
+            <TextInput
+              placeholder="Number"
+              containerStyle={styles.inputContainer}
+              value={user?.number}
+              readOnly
+            />
+            <TextInput
+              placeholder="Address"
+              containerStyle={styles.inputContainer}
+              value={userData.address}
+              onChangeText={text => onChangeText(text, 'address')}
+            />
+            <Button
+              text="Submit"
+              onPress={onSubmit}
+              loading={uploadFileMut.isPending || updateProfileMut.isPending}
+            />
+          </ScrollView>
+        </View>
       </View>
-    </View>
+    </AppFrame>
   );
 };
 

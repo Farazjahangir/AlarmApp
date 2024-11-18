@@ -12,7 +12,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         position: 'absolute',
         right: 30,
-        bottom: 95,
+        bottom: 20,
         zIndex: 5
     },
     button: {

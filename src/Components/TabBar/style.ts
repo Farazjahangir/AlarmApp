@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: COLORS.lightGrey,
         backgroundColor: COLORS.white,
-        minHeight: 55,
+        height: 70,
         borderRadius: 13,
         padding: 10,
         justifyContent:'space-between',

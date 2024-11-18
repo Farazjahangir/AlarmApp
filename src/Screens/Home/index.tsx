@@ -36,8 +36,9 @@ import {useUploadFile} from '../../Hooks/reactQuery/useUploadImage';
 import GroupOptionsSheet from './GroupOptionsSheet';
 import {useUpdateGroup} from '../../Hooks/reactQuery/useUpdateGroup';
 import {useMessageBox} from '../../Context/MessageBoxContextProvider';
-import styles from './style';
 import { handleError } from '../../Utils/helpers';
+import AppFrame from '../../Components/AppFrame';
+import styles from './style';
 
 type GroupDetails = {
   groupName: string;
@@ -364,8 +365,7 @@ const Home = ({
   ];
 
   return (
-    <>
-      
+    <AppFrame>
         <ContactList
           ref={contactSheetModalRef}
           onCloseModal={onCloseContactListModal}
@@ -415,7 +415,7 @@ const Home = ({
           </View>
         </View>
     
-    </>
+    </AppFrame>
   );
 };
 
