@@ -4,7 +4,7 @@ import COLORS from '../../../Constants/colors';
 
 const styles = StyleSheet.create({
     title: {
-        fontSize: RFPercentage(3),
+        fontSize: RFPercentage(2.7),
         color: COLORS.black,
         fontWeight: 'bold'
     },

@@ -1,4 +1,4 @@
-import {forwardRef, Ref} from 'react';
+import {forwardRef, Ref, useState} from 'react';
 import {
   View,
   Text,
@@ -12,17 +12,22 @@ import ImagePicker from 'react-native-image-crop-picker';
 import BottomSheet from '../../BottomSheet';
 import cameraIcon from '../../../Assets/icons/camera.png';
 import galleryIcon from '../../../Assets/icons/imagePlaceholder.png';
-import { SelectedImage } from '../../../Types/dataType';
-import { useMessageBox } from '../../../Context/MessageBoxContextProvider';
+import {SelectedImage} from '../../../Types/dataType';
+import {handleError} from '../../../Utils/helpers';
+import MessageBox from '../../MessageBox';
 import styles from './style';
-import { handleError } from '../../../Utils/helpers';
 
 interface OptionModalProps {
   onImageSelected?: (image: SelectedImage) => void;
 }
 const OptionModal = forwardRef<BottomSheetModal, OptionModalProps>(
   ({onImageSelected}, ref: Ref<BottomSheetModal>) => {
-    const { openMessageBox } = useMessageBox()
+    const [messgaeBox, setMessageBox] = useState({
+      open: false,
+      title: '',
+      message: '',
+    });
+
     const handleOpenGallery = async () => {
       try {
         const image = await ImagePicker.openPicker({
@@ -30,17 +35,18 @@ const OptionModal = forwardRef<BottomSheetModal, OptionModalProps>(
           height: 300,
           cropping: true,
           includeBase64: true,
-          compressImageQuality: 0.7
+          compressImageQuality: 0.7,
         });
         if (onImageSelected) {
-            onImageSelected(image as SelectedImage); // Pass image URI to parent component
+          onImageSelected(image as SelectedImage); // Pass image URI to parent component
         }
       } catch (e) {
-        const error = handleError(e)
-        openMessageBox({
+        const error = handleError(e);
+        setMessageBox({
+          open: true,
           title: 'Error',
-          message: error
-        })
+          message: error,
+        });
       }
     };
 
@@ -53,19 +59,28 @@ const OptionModal = forwardRef<BottomSheetModal, OptionModalProps>(
           cropping: true,
           includeBase64: true,
           useFrontCamera: true,
-          compressImageQuality: 0.7
+          compressImageQuality: 0.7,
         });
         if (onImageSelected) {
-            onImageSelected(image as SelectedImage); 
+          onImageSelected(image as SelectedImage);
         }
       } catch (e) {
-        const error = handleError(e)
-        openMessageBox({
+        const error = handleError(e);
+        setMessageBox({
+          open: true,
           title: 'Error',
-          message: error
-        })
+          message: error,
+        });
       }
     };
+
+    const onCloseMessageBox = () => {
+      setMessageBox({
+        open: false,
+        title: '',
+        message: ''
+      })
+    }
 
     const renderOption = (
       icon: ImageSourcePropType,
@@ -81,16 +96,24 @@ const OptionModal = forwardRef<BottomSheetModal, OptionModalProps>(
     );
 
     return (
-      <BottomSheet
-        ref={ref}
-        snapPoints={['18%']}
-        showIndicator
-        backgroundStyle={styles.bottomSheetBgStyle}>
-        <BottomSheetView style={styles.contentBox}>
-          {renderOption(cameraIcon, 'Camera', handleOpenCamera)}
-          {renderOption(galleryIcon, 'Gallery', handleOpenGallery)}
-        </BottomSheetView>
-      </BottomSheet>
+      <>
+        <MessageBox
+          open={messgaeBox.open}
+          title={messgaeBox.title}
+          message={messgaeBox.message}
+          onClose={onCloseMessageBox}
+        />
+        <BottomSheet
+          ref={ref}
+          snapPoints={['18%']}
+          showIndicator
+          backgroundStyle={styles.bottomSheetBgStyle}>
+          <BottomSheetView style={styles.contentBox}>
+            {renderOption(cameraIcon, 'Camera', handleOpenCamera)}
+            {renderOption(galleryIcon, 'Gallery', handleOpenGallery)}
+          </BottomSheetView>
+        </BottomSheet>
+      </>
     );
   },
 );

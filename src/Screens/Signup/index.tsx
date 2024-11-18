@@ -40,10 +40,10 @@ const Signup = ({
   navigation,
 }: NativeStackScreenProps<RootStackParamList, ScreenNameConstants.SIGNUP>) => {
   const [user, setUser] = useState<User>({
-    email: 'dsdsds@example.com',
-    password: '123456',
-    name: 'sdsds',
-    number: '3118162293',
+    email: '',
+    password: '',
+    name: '',
+    number: '',
   });
 
   const [errors, setErrors] = useState<User>({

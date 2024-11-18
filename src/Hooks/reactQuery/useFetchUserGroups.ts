@@ -15,6 +15,7 @@ export const useFetchUserGroups = (params: FetchUserGroupsPayload, options: Opti
     queryKey: [
       queryKeys.USE_GET_USER_GROUPS,
       params.user?.uid,
+      params.contactWithAccount,
     ],
     queryFn: () => fetchUserGroups(params),
     enabled: enabled,

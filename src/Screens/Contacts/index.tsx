@@ -337,6 +337,7 @@ const Contacts = ({
 
   const getContacts = async () => {
     try {
+      console.log("getContacts getting")
       dispatch(setContactLoading(true));
       // await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -348,6 +349,7 @@ const Contacts = ({
           contactsWithoutAccount: firestoreRes?.contactsWithoutAccount,
         }),
       );
+      
     } catch (e) {
       Alert.alert(
         'Error in read contacts',
