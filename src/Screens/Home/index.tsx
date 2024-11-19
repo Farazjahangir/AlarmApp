@@ -72,6 +72,7 @@ const Home = ({
   );
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [editGroupMode, setEditGroupMode] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const user = useAppSelector(state => state.user.data.user);
   const contatcs = useAppSelector(state => state.contacts.data);
@@ -307,14 +308,20 @@ const Home = ({
   const seperatedGroupsWithTypes = useMemo(() => {
     const privateGroups: Group[] = [];
     const publicGroups: Group[] = [];
+    const allGroups: Group[] = [];
 
     if (groups.length) {
       groups.forEach(item => {
-        if (item.groupType === 'public') {
-          publicGroups.push(item);
-        }
-        if (item.groupType === 'private') {
-          privateGroups.push(item);
+        const matchesQuery = item.groupName.toLowerCase().includes(searchQuery.toLowerCase());
+  
+        if (matchesQuery) {
+          allGroups.push(item)
+          if (item.groupType === 'public') {
+            publicGroups.push(item);
+          }
+          if (item.groupType === 'private') {
+            privateGroups.push(item);
+          }
         }
       });
     }
@@ -322,8 +329,9 @@ const Home = ({
     return {
       privateGroups,
       publicGroups,
+      allGroups
     };
-  }, [groups]);
+  }, [groups, searchQuery]);
 
   const routes = [
     {
@@ -332,7 +340,7 @@ const Home = ({
       component: AllGroups,
       props: {
         ringAlarm,
-        groups,
+        groups: seperatedGroupsWithTypes.allGroups,
         loading: isGroupsLoading,
         refetchUserGroups,
         onBoxPress: onGroupBoxPress,
@@ -408,6 +416,7 @@ const Home = ({
               // inputBoxStyle={styles.input}
               containerStyle={styles.mt15}
               leftIcon={searchIcon}
+              onChangeText={setSearchQuery}
             />
             <View style={styles.tabContainer}>
               <TabView routes={routes} />
