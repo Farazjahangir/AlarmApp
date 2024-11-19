@@ -200,6 +200,9 @@ const Home = ({
       await createGroupMut.mutateAsync(payload);
       createGroupSheetModalRef.current?.dismiss();
       refetch();
+      setGroupDetails({...INITIAL_STATE});
+      setSelectedContacts({})
+      
     } catch (e) {
       const error = handleError(e)
       openMessageBox({
@@ -236,6 +239,8 @@ const Home = ({
       createGroupSheetModalRef.current?.dismiss();
       refetch();
       setEditGroupMode(false);
+      setGroupDetails({...INITIAL_STATE});
+      setSelectedContacts({})
     } catch (e) {
       const error = handleError(e)
       openMessageBox({
@@ -417,6 +422,7 @@ const Home = ({
               containerStyle={styles.mt15}
               leftIcon={searchIcon}
               onChangeText={setSearchQuery}
+              value={searchQuery}
             />
             <View style={styles.tabContainer}>
               <TabView routes={routes} />
