@@ -143,11 +143,6 @@ const Contacts = ({
     setFilteredData(filteredData);
   };
 
-  const checkdata = filteredData.filter(
-    item => item.displayName === 'D Rameez New',
-  );
-  console.log('checkdata ============> filteredData ======>', checkdata);
-
   // console.log("DATA ===>", data)
   const mergeData = () => {
     const combinedContacts: CombinedContact[] = [];
@@ -363,6 +358,7 @@ const Contacts = ({
   const checkForContactPermission = async () => {
     try {
       const hasPermission = await hasContactPermission();
+      return
       if (!hasPermission) {
         await askContactsPermission();
         getContacts();

@@ -6,6 +6,7 @@ import {
   Alert,
   RefreshControl,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import {BottomSheetModal, BottomSheetFlatList} from '@gorhom/bottom-sheet';
@@ -30,9 +31,10 @@ import BottomSheet from '../../../Components/BottomSheet';
 import closeIcon from '../../../Assets/icons/close.png';
 import searchIcon from '../../../Assets/icons/search.png';
 import {CONTACTS_ITEMS_PER_PAGE} from '../../../Constants';
-import { handleError } from '../../../Utils/helpers';
-import { useMessageBox } from '../../../Context/MessageBoxContextProvider';
+import {handleError} from '../../../Utils/helpers';
+import {useMessageBox} from '../../../Context/MessageBoxContextProvider';
 import styles from './style';
+import Button from '../../../Components/Button';
 
 interface ContactListProps {
   onChange?: (index: number) => void;
@@ -75,12 +77,13 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
     const [filteredData, setFilteredData] = useState<CombinedContact[]>([]);
     const [page, setPage] = useState(1);
     const [paginatedData, setPaginatedData] = useState<CombinedContact[]>([]);
+    const [hasPermission, setHasPermission] = useState(false);
 
     const contatcs = useAppSelector(state => state.contacts.data);
     const contactsLoading = useAppSelector(state => state.contacts.loading);
     const user = useAppSelector(state => state.user.data.user);
     const dispatch = useAppDispatch();
-    const {openMessageBox} = useMessageBox()
+    const {openMessageBox} = useMessageBox();
 
     const loadMoreContacts = () => {
       const nextPage = page + 1;
@@ -206,12 +209,11 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
           }),
         );
       } catch (e) {
-        const error = handleError(e)
+        const error = handleError(e);
         openMessageBox({
           title: 'Error',
-          message: error
-        })
-  
+          message: error,
+        });
       } finally {
         dispatch(setContactLoading(false));
       }
@@ -223,25 +225,36 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
 
     const checkForContactPermission = async () => {
       try {
-        const hasPermission = await hasContactPermission()
-        if (!hasPermission) {
-          const res = await askContactsPermission()
-          if (res === 'granted') {
-            getContacts()
-          }
-        }
-      } catch(e) {
-        const error = handleError(e)
+        const hasPermission = await hasContactPermission();
+        setHasPermission(hasPermission);
+      } catch (e) {
+        const error = handleError(e);
         openMessageBox({
           title: 'Error',
-          message: error
-        })
+          message: error,
+        });
+      }
+    };
+
+    const getPermission = async () => {
+      try {
+        const res = await askContactsPermission();
+        if (res === 'granted') {
+          getContacts();
+          setHasPermission(true)
+        }
+      } catch(e) {
+        const error = handleError(e);
+        openMessageBox({
+          title: 'Error',
+          message: error,
+        });
       }
     }
 
     useEffect(() => {
-      checkForContactPermission()
-    }, [])
+      checkForContactPermission();
+    }, []);
 
     useEffect(() => {
       if (
@@ -299,23 +312,38 @@ const ContactList = forwardRef<BottomSheetModal, ContactListProps>(
               inputBoxStyle={styles.searchInput}
               leftIcon={searchIcon}
             />
-            <BottomSheetFlatList
-              data={paginatedData}
-              renderItem={renderList}
-              extraData={paginatedData}
-              // keyExtractor={(item, index) => (item as Contact).phoneNumber}
-              keyExtractor={(item, index) => item.localId as string}
-              refreshControl={
-                <RefreshControl
-                  refreshing={contactsLoading}
-                  onRefresh={getContacts}
-                />
-              }
-              onEndReached={loadMoreContacts}
-              onEndReachedThreshold={0.1}
-              contentContainerStyle={{flexGrow: 1, paddingBottom: 60}}
-              showsVerticalScrollIndicator={false}
-            />
+            {!hasPermission && (
+              <View style={styles.askPermBox}>
+                <Text style={styles.permText}>
+                  Allow access to your contacts
+                </Text>
+                <View>
+                  <Button text="Allow" onPress={getPermission} />
+                </View>
+              </View>
+            )}
+            {(contactsLoading && !data.length) && (
+              <ActivityIndicator size="large" style={styles.loader} />
+            )}
+            {hasPermission && (
+              <BottomSheetFlatList
+                data={paginatedData}
+                renderItem={renderList}
+                extraData={paginatedData}
+                // keyExtractor={(item, index) => (item as Contact).phoneNumber}
+                keyExtractor={(item, index) => item.localId as string}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={contactsLoading}
+                    onRefresh={getContacts}
+                  />
+                }
+                onEndReached={loadMoreContacts}
+                onEndReachedThreshold={0.1}
+                contentContainerStyle={{flexGrow: 1, paddingBottom: 60}}
+                showsVerticalScrollIndicator={false}
+              />
+            )}
           </View>
         </View>
       </BottomSheet>

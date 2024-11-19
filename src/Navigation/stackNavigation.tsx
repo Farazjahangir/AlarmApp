@@ -100,6 +100,7 @@ const StackNavigation = () => {
 
   useEffect(() => {
     if (user) {
+      console.log("IF USER ====>", user.isProfileComplete)
       getContacts();
       if (user.isProfileComplete) {
         checkForPermissions()

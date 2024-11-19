@@ -38,6 +38,17 @@ const styles = StyleSheet.create({
     },
     disabledText: {
         color: COLORS.textGrey
+    },
+    askPermBox: {
+        marginTop: 100,
+        alignItems: 'center'
+    },
+    permText: {
+        color: COLORS.black,
+        fontSize: RFPercentage(2.5)
+    },
+    loader: {
+        marginTop: 100
     }
 });
 

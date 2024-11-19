@@ -94,6 +94,7 @@ export const askContactsPermission = async () => {
 
 export const checkForBatteryOptimization = async () => {
     const isOptimied = await notifee.isBatteryOptimizationEnabled();
+    console.log("checkForBatteryOptimization", isOptimied)
     if (isOptimied) {
         return new Promise((resolve) => (
             Alert.alert(
