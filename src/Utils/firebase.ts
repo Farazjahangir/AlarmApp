@@ -21,12 +21,12 @@ import {
     CreateUserWithEmailAndPasswordFirebase,
     LeaveGroup,
     EditGroup,
-    ProcessUpdateGroup
+    ProcessUpdateGroup,
+    SendForgotPasswordEmail
 } from '../Types/firebaseTypes';
 import {
     convertFirestoreDataIntoArrayOfObject,
     createSelectedUsersUIDArr,
-    handleFirebaseAuthError,
     prepareGroupsArray
 } from './helpers';
 import { removeSpaces } from '.';
@@ -224,4 +224,9 @@ export const leaveGroup: LeaveGroup = async ({ groupUid, userUid }) => {
 
 export const logoutFirebase = () => {
     return auth().signOut()
+}
+
+export const sendForgotPasswordEmail: SendForgotPasswordEmail = async ({ email }) => {
+    await auth().sendPasswordResetEmail(email)
+    return null
 }

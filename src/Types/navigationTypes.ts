@@ -12,7 +12,8 @@ const {
     CONTACTS,
     COMPLETE_PROFILE,
     TAB_NAV,
-    PROFILE
+    PROFILE,
+    FORGOT_PASSWORD
 } = ScreenNameConstants
 
 export type RootStackParamList = {
@@ -26,7 +27,8 @@ export type RootStackParamList = {
     },
     [COMPLETE_PROFILE]: undefined;
     [TAB_NAV]: undefined;
-    [PROFILE]: undefined
+    [PROFILE]: undefined;
+    [FORGOT_PASSWORD]: undefined;
 };
 
 export type NavigationObj = {

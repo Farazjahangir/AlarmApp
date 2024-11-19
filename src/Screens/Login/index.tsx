@@ -107,7 +107,10 @@ const Login = ({
             />
           </View>
           <View style={styles.linksBox}>
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate(ScreenNameConstants.FORGOT_PASSWORD)
+              }>
               <Text style={styles.forgotText}>Forgot Password</Text>
             </TouchableOpacity>
             <TouchableOpacity

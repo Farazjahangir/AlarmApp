@@ -143,3 +143,9 @@ export type ProcessUpdateGroupPayload = {
 };
 
 export type ProcessUpdateGroup = (payload: ProcessUpdateGroupPayload) => Promise<null>;
+
+export type SendForgotPasswordEmailPayload = {
+  email: string;
+};
+
+export type SendForgotPasswordEmail = (payload: SendForgotPasswordEmailPayload) => Promise<null>;

@@ -8,6 +8,7 @@ import AlarmScreen from "../Screens/AlarmScreen";
 import CompleteProfile from "../Screens/CompleteProfile";
 import TabNavigation from "../Navigation/tabNavigation";
 import Profile from "../Screens/Profile";
+import ForgotPassword from "../Screens/ForgotPassword";
 
 export enum ScreenNameConstants {
     LOGIN = 'Login',
@@ -17,7 +18,8 @@ export enum ScreenNameConstants {
     ALARM_SCREEN = 'Alarm Screen',
     COMPLETE_PROFILE = 'Complete Profile',
     TAB_NAV= 'tabNav',
-    PROFILE = 'PROFILE'
+    PROFILE = 'PROFILE',
+    FORGOT_PASSWORD = 'Forgot Password'
 }
 
 const defaultNavOptions = {
@@ -33,6 +35,11 @@ export const authNavigationList: NavigationObj[] = [
     {
         name: ScreenNameConstants.SIGNUP,
         component: Signup,
+        options: defaultNavOptions,
+    },
+    {
+        name: ScreenNameConstants.FORGOT_PASSWORD,
+        component: ForgotPassword,
         options: defaultNavOptions,
     }
 ]

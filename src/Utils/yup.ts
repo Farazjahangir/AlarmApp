@@ -28,6 +28,10 @@ export const updateProfileSchema = yup.object({
     name: yup.string().required().label("Name"),
 });
 
+export const sendForgotPasswordEmailSchema = yup.object({
+    email: yup.string().required().email().label("Email"),
+});
+
 
 export const validate = async (
     schema: yup.ObjectSchema<any>,
