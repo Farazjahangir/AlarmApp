@@ -118,6 +118,7 @@ export const prepareGroupsArray = async (
 ) => {
   let groupsWithMembersData: Group[] = [];
   const userUid = user.uid;
+  let nonActiveUsers = 0
   // 2. Loop through each group
   for (const groupDoc of firestoreData.docs) {
     const groupData = groupDoc.data();
@@ -136,11 +137,13 @@ export const prepareGroupsArray = async (
 
         if (memberData) {
           // 4. If member data found in Redux, push it to membersData
+          nonActiveUsers += memberData.user?.isActive ? 0 : 1;
           membersData.push(memberData);
         } else {
           // 5. If member data not found in Redux, fetch from Firestore
           const userData = await getUserById(uid);
           if (userData) {
+            nonActiveUsers += userData.isActive ? 0 : 1;
             membersData.push({ user: userData });
           }
         }
@@ -156,7 +159,8 @@ export const prepareGroupsArray = async (
       createdAt: groupData.createdAt,
       description: groupData.description || '',
       groupType: groupData.groupType,
-      image: groupData.image
+      image: groupData.image,
+      nonActiveUsers
     });
   }
   return groupsWithMembersData;

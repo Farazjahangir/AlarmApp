@@ -24,6 +24,7 @@ const GroupBox = ({item, onBoxPress, onBtnPress}: GroupBoxProps) => {
       <View style={styles.leftContainer}>
         <Text style={styles.groupName}>{item.groupName}</Text>
         <Text style={styles.count}>{item.members.length} Member</Text>
+        {!!item.nonActiveUsers && <Text style={styles.count}>{item.nonActiveUsers} Non Active</Text>}
       </View>
       <Button text="Panic" onPress={onBtnPress} theme="panic" size="small" />
     </TouchableOpacity>

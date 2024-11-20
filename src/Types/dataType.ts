@@ -35,7 +35,8 @@ export type Group = {
     uid: string;
     description?: string;
     groupType: string;
-    image?: string
+    image?: string;
+    nonActiveUsers: number
 }
 
 export type SelectedImage = ImageOrVideo & {
