@@ -1,4 +1,4 @@
-package com.alarmapp
+package com.forteWiz.ResQ
 
 import android.os.Bundle;
 import com.facebook.react.ReactActivity
