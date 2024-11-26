@@ -1,4 +1,4 @@
-package com.forteWiz.ResQ
+package com.fortewiz.resq
 
 import android.os.Bundle;
 import com.facebook.react.ReactActivity
