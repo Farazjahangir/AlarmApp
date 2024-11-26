@@ -4,7 +4,7 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "com.alarmapp",
+  "applicationId": "com.fortewiz.resq",
   "variantName": "release",
   "elements": [
     {
