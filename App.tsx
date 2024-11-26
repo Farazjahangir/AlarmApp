@@ -7,6 +7,7 @@ import Sound from 'react-native-sound';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {BottomSheetModalProvider} from '@gorhom/bottom-sheet';
+import BootSplash from "react-native-bootsplash";
 
 import a from './assets/alarm.mp3';
 import notifee, {EventType} from '@notifee/react-native';
@@ -163,6 +164,7 @@ function App(): React.JSX.Element {
 
   useEffect(() => {
     // takePermissions();
+    BootSplash.hide({ fade: false });
     listenForForegroundMessage();
     checkAsyncForNotif();
     const appStateListener = AppState.addEventListener(
